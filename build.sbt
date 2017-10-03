@@ -7,7 +7,7 @@ organization := "au.com.agiledigital"
 // This version number will be modified by the build system. It should be of the form x.y, not x.y.z
 version := "0.1"
 
-scalaVersion := "2.12.2"
+scalaVersion := "2.12.3"
 
 assemblySettings
 
@@ -41,10 +41,7 @@ scalafmtOnCompile in ThisBuild := true
 
 artifact in (Compile, assembly) := {
   val art = (artifact in (Compile, assembly)).value
-  art.copy(`classifier` = Some("assembly"))
+  art.withClassifier(Some("assembly"))
 }
 
 addArtifact(artifact in (Compile, assembly), assembly)
-
-// To publish, put credentials in ~/.ivy2/credentials
-credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")

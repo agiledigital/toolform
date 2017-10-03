@@ -3,7 +3,7 @@ package au.com.agiledigital.toolform.app
 import com.typesafe.config._
 
 /**
-  * The toolform app is a transformation tool that generates CI/CD pipelines from a high-level HOCON formated descriptor.
+  * Toolform is a CLI app that generates CI/CD pipelines from a project definition.
   */
 object ToolFormApp extends App {
 
@@ -17,12 +17,12 @@ object ToolFormApp extends App {
     val parser = new scopt.OptionParser[CommandConfig]("toolform") {
       head("toolform", "0.1")
       help("help").abbr("h").text("Displays this usage text.")
-      version("version").abbr("v").text("Displays the version text.")
+      version("version").abbr("v").text("Displays version information.")
     }
 
     parser.parse(args, CommandConfig()) match {
       case Some(commandConfig) => Right(ConfigFactory.empty())
-      case None => Left(s"Invalid arguments - toolform failed.")
+      case None                => Left(s"Invalid arguments - toolform failed.")
     }
   }
 
@@ -47,9 +47,4 @@ object ToolFormApp extends App {
 /**
   * The configuration for the tool
   */
-case class CommandConfig() {
-
-}
-
-
-
+final case class CommandConfig() {}
