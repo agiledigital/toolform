@@ -4,9 +4,6 @@ name := "toolform"
 
 organization := "au.com.agiledigital"
 
-// This version number will be modified by the build system. It should be of the form x.y, not x.y.z
-version := "0.1"
-
 scalaVersion := "2.12.3"
 
 assemblySettings
