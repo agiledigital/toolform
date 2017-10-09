@@ -31,6 +31,7 @@ libraryDependencies ++= Seq(
 // Compiler settings. Use scalac -X for other options and their description.
 // See Here for more info http://www.scala-lang.org/files/archive/nightly/docs/manual/html/scalac.html
 scalacOptions ++= List("-feature", "-deprecation", "-unchecked", "-Xlint")
+scalacOptions += "-Xmacro-settings:materialize-derivations"
 
 // ScalaTest settings.
 // Ignore tests tagged as @Slow (they should be picked only by integration test)

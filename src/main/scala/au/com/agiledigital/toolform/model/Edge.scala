@@ -45,7 +45,7 @@ package au.com.agiledigital.toolform.model
   * @param name     the name of the edge.
   * @param subEdges the SubEdges that are a part of the Edge.
   */
-case class Edge(/*path: String, name: String,*/ subEdges: Map[String, SubEdge] /*, project: Project*/) extends ProjectElement {
+case class Edge( /*path: String, name: String,*/ subEdges: Map[String, SubEdge] /*, project: Project*/ ) extends ProjectElement {
 
   /**
     * The id of this element.
@@ -67,7 +67,11 @@ case class Edge(/*path: String, name: String,*/ subEdges: Map[String, SubEdge] /
   * @param locations   the Locations in this subedge.
   * @param project     the project that this subedge is a part of.
   */
-case class SubEdge(/*path: String, name: String, edgeName: String,*/ edgeType: String, edgeBuilder: Option[String], dnsPrefix: String, externalUrl: String, locations: Seq[Location]/*, project: Project*/)
+case class SubEdge( /*path: String, name: String, edgeName: String,*/ edgeType: String,
+                   edgeBuilder: Option[String],
+                   dnsPrefix: String,
+                   externalUrl: String,
+                   locations: Seq[Location] /*, project: Project*/ )
     extends ProjectElement {
 
   override def id: String = "TODO: subedge" //s"${edgeName}_${name}_nginx"
@@ -84,4 +88,4 @@ case class SubEdge(/*path: String, name: String, edgeName: String,*/ edgeType: S
   * @param targetName     the name of the target.
   * @param targetPort     the internal port of the location.
   */
-case class Location(/*path: String,*/ location: Option[String], targetLocation: Option[String], target: Reference, targetName: String, targetPort: Int)
+case class Location( /*path: String,*/ location: Option[String], targetLocation: Option[String], target: Reference, targetName: String, targetPort: Int)

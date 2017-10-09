@@ -14,7 +14,7 @@ import com.typesafe.config.Config
   * @param resourceType the type of the resource (e.g. postgres, elastic search)
   * @param settings     additional settings for the resource.
   */
-case class Resource(/*path: String,*/ id: String, resourceType: String, settings: Option[Config]) extends ProjectElement {
+case class Resource( /*path: String,*/ id: String, resourceType: String, settings: Option[Config]) extends ProjectElement {
   val tagName = id
 }
 
@@ -28,8 +28,7 @@ case class Resource(/*path: String,*/ id: String, resourceType: String, settings
   * @param links       the links that will be made to the resource docker.
   * @param resource    the resource that was mapped.
   */
-case class MappedResource(path: String, tagName: String, environment: Map[String, String], ports: Seq[String], links: Seq[String], resource: Resource)
-    extends ProjectElement {
+case class MappedResource(path: String, tagName: String, environment: Map[String, String], ports: Seq[String], links: Seq[String], resource: Resource) extends ProjectElement {
 
   override def id: String = path
 

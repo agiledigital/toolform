@@ -3,6 +3,7 @@ package au.com.agiledigital.toolform.app
 import java.io.File
 
 import org.scalatest._
+import org.scalatest.Inside.inside
 
 class ToolFormAppTest extends FlatSpec with Matchers {
 
@@ -18,23 +19,27 @@ class ToolFormAppTest extends FlatSpec with Matchers {
 
   "--inspect" should "display an inspect summary for a valid file" in {
     val result = ToolFormApp.execute(List("--inspect", testFile.getAbsolutePath()).toArray)
-    result.right.get should equal("""Project: [StruxureWare Insights Portal]
-                                     |	Components:
-                                     |		public-api ==> 'HTTP Public API'
-                                     |		se_swip_elastic-search ==> 'SE Elastic Search'
-                                     |		se-pub-webapp ==> 'SE Public Web Application'
-                                     |		se-swip-influx-db ==> 'SE Influx DB'
-                                     |	Resources:
-                                     |		se-swip-mail-relay
-                                     |		se-swip-db
-                                     |		se-swip-carbon
-                                     |	Links:
-                                     |		components.se_swip_elastic_search -> components.public_api
-                                     |		resources.se_swip_smtp -> components.public_api
-                                     |		resources.se_swip_carbon -> components.public_api
-                                     |		resources.se_swip_db -> components.public_api
-                                     |		components.se_swip_influx_db -> components.public_api
-                                     |""".stripMargin)
+    inside(result) {
+      case Right(s) =>
+        s should equal("""Project: [StruxureWare Insights Portal]
+                                   |	Components:
+                                   |		public-api ==> 'HTTP Public API'
+                                   |		se_swip_elastic-search ==> 'SE Elastic Search'
+                                   |		se-swip-influx-db ==> 'SE Influx DB'
+                                   |		client/public ==> 'SE Public Web Application'
+                                   |	Resources:
+                                   |		se-swip-mail-relay
+                                   |		se-swip-db
+                                   |		se-swip-carbon
+                                   |	Links:
+                                   |		components.se_swip_elastic_search -> components.public_api
+                                   |		resources.se_swip_smtp -> components.public_api
+                                   |		resources.se_swip_carbon -> components.public_api
+                                   |		resources.se_swip_db -> components.public_api
+                                   |		components.se_swip_influx_db -> components.public_api
+                                   |""".stripMargin)
+      case Left(error) => fail(error.message)
+    }
   }
 
   "--inspect blank file" should "display error string" in {

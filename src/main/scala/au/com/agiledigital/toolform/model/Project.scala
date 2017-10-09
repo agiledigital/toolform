@@ -1,6 +1,13 @@
 package au.com.agiledigital.toolform.model
 
+import pureconfig.ConfigConvert
+import pureconfig.ConfigConvert.viaStringOpt
+
 case class Reference(ref: String)
+object Reference {
+  def converter: ConfigConvert[Reference] =
+    viaStringOpt(s => Some(Reference(s)), _.toString)
+}
 
 /**
   * Configuration for a project.
