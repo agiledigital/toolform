@@ -13,7 +13,6 @@ import com.typesafe.config.Config
   * @param settings       the settings for building the component.
   * @param componentGroup the group that this component is a part of (may be None).
   */
-// TODO: Review optional ID.  Example data has some components without IDs, but this may not be desired.
 case class Component(optionalId: Option[String], path: String, name: String, builder: String, settings: Option[Config], componentGroup: Option[ComponentGroup]) extends ProjectElement {
   override def id: String = optionalId.getOrElse(path)
   val tagName: String     = path + "_" + id
