@@ -28,9 +28,9 @@ class ToolFormAppTest extends FlatSpec with Matchers {
                                    |		se-swip-influx-db ==> 'SE Influx DB'
                                    |		client/public ==> 'SE Public Web Application'
                                    |	Resources:
+                                   |		se-swip-carbon
                                    |		se-swip-mail-relay
                                    |		se-swip-db
-                                   |		se-swip-carbon
                                    |	Links:
                                    |		components.se_swip_elastic_search -> components.public_api
                                    |		resources.se_swip_smtp -> components.public_api

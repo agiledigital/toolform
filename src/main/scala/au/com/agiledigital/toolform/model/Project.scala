@@ -1,13 +1,7 @@
 package au.com.agiledigital.toolform.model
 
-import pureconfig.ConfigConvert
+import pureconfig.{ConfigConvert, ConfigFieldMapping, ProductHint}
 import pureconfig.ConfigConvert.viaStringOpt
-
-case class Reference(ref: String)
-object Reference {
-  def converter: ConfigConvert[Reference] =
-    viaStringOpt(s => Some(Reference(s)), _.toString)
-}
 
 /**
   * Configuration for a project.
@@ -33,6 +27,24 @@ case class Project(id: String,
   * @param edges the edges that will make the components and resources available outside the project.
   */
 case class Topology(links: Seq[Link], edges: Map[String, Edge])
+
+object Topology {
+  implicit val fieldMapping: ProductHint[Topology] = ProductHint[Topology](new ConfigFieldMapping {
+    def apply(fieldName: String): String = fieldName
+  })
+}
+
+/**
+  * A reference points to an element of the project that is defined elsewhere.
+  * See Link, Volume, Location.
+  * @param ref A dot separated path from the project root to the referenced object.  eg. "components.componentA"
+  */
+case class Reference(ref: String)
+
+object Reference {
+  implicit val converter: ConfigConvert[Reference] =
+    viaStringOpt(s => Some(Reference(s)), _.toString)
+}
 
 /**
   * A link between two Taggable components.

@@ -1,5 +1,7 @@
 package au.com.agiledigital.toolform.model
 
+import pureconfig.{CamelCase, ConfigFieldMapping, KebabCase, ProductHint}
+
 /**
   * An Edge makes some of the project Components and Resources available externally.
   *
@@ -11,26 +13,26 @@ package au.com.agiledigital.toolform.model
   *
   * edges {
   *   main {
-  *     subEdges {
+  *     sub-edges {
   *       public {
   *         type: http
-  *         dnsPrefix: public.qhopper
+  *         dns-prefix: public.qhopper
   *         locations: [{
   *             location: /qhopper-api
-  *             targetLocation: /
+  *             target-location: /
   *             target: components.public_api
-  *             targetName: PUBLIC_API
-  *             targetPort: 9000
+  *             target-name: PUBLIC_API
+  *             target-port: 9000
   *           },{
   *             location: /
   *             target: components.public_www
-  *             targetName: PUBLIC_WWW
-  *             targetPort: 8000
+  *             target-name: PUBLIC_WWW
+  *             target-port: 8000
   *           }
   *         ]
   *       },
   *       admin {
-  *         dnsPrefix: admin.qhopper
+  *         dns-prefix: admin.qhopper
   *       }
   *     }
   *   }
@@ -65,6 +67,13 @@ case class SubEdge(edgeType: String, edgeBuilder: Option[String], dnsPrefix: Str
 
   override def id: String = "TODO: subedge id" //s"${edgeName}_${name}_nginx"
 
+}
+
+object SubEdge {
+  implicit val fieldMapping: ProductHint[SubEdge] =
+    ProductHint[SubEdge](new ConfigFieldMapping {
+      def apply(fieldName: String): String = if (fieldName == "edgeType") "type" else KebabCase.fromTokens(CamelCase.toTokens(fieldName))
+    })
 }
 
 /**

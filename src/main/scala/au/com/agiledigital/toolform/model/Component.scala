@@ -1,6 +1,7 @@
 package au.com.agiledigital.toolform.model
 
 import com.typesafe.config.Config
+import pureconfig.{ConfigFieldMapping, ProductHint}
 
 /**
   * A Component is a project element that is built the project. It can be converted into a Docker image and composed
@@ -15,4 +16,10 @@ import com.typesafe.config.Config
   */
 case class Component(optionalId: Option[String], path: String, name: String, builder: String, settings: Option[Config], componentGroup: Option[ComponentGroup]) extends ProjectElement {
   override def id: String = optionalId.getOrElse(path)
+}
+
+object Component {
+  implicit val fieldMapping: ProductHint[Component] = ProductHint[Component](new ConfigFieldMapping {
+    def apply(fieldName: String): String = if (fieldName == "optionalId") "id" else fieldName
+  })
 }

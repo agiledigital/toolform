@@ -52,33 +52,6 @@ object ToolFormApp extends App {
           // Resolve the configuration aka. replace variable substitutions.
           val config = simpleConfig.resolve()
 
-          // Pureconfig relies on naming convention of fields in config files
-          // in kebab-case to map to model member names in CamelCase.
-          // Since the environment config schema has a small number of non-standard
-          // field names that deviate from this convention, they need to be
-          // mapped here.
-          // TODO: Maybe find a better home for the field mappings, especially if the number of mappings grows.
-          implicit val refConvert: ConfigConvert[Reference] = Reference.converter
-
-          implicit val resourceFieldMapping: ProductHint[Resource] = ProductHint[Resource](new ConfigFieldMapping {
-            def apply(fieldName: String): String = if (fieldName == "resourceType") "resource_type" else fieldName
-          })
-          implicit val componentFieldMapping: ProductHint[Component] = ProductHint[Component](new ConfigFieldMapping {
-            def apply(fieldName: String): String = if (fieldName == "optionalId") "id" else fieldName
-          })
-          implicit val edgeFieldMapping: ProductHint[Edge] = ProductHint[Edge](new ConfigFieldMapping {
-            def apply(fieldName: String): String = fieldName
-          })
-          implicit val subEdgeFieldMapping: ProductHint[SubEdge] = ProductHint[SubEdge](new ConfigFieldMapping {
-            def apply(fieldName: String): String = if (fieldName == "edgeType") "type" else fieldName
-          })
-          implicit val locationFieldMapping: ProductHint[Location] = ProductHint[Location](new ConfigFieldMapping {
-            def apply(fieldName: String): String = fieldName
-          })
-          implicit val topologyFieldMapping: ProductHint[Topology] = ProductHint[Topology](new ConfigFieldMapping {
-            def apply(fieldName: String): String = fieldName
-          })
-
           val projectResult = loadConfig[Project](config)
           resultOrCollectReadErrors(projectResult)
         case Failure(e) =>
