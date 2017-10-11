@@ -9,12 +9,11 @@ import com.typesafe.config.Config
   * Developers can provided mappings between a resource and the external resource in their 'dev-resources' file. This
   * will convert the Resource into a MappedResource, which is a Composable element.
   *
-  * @param path         the full path to the Resource's configuration.
   * @param id           the id of the resource.
   * @param resourceType the type of the resource (e.g. postgres, elastic search)
   * @param settings     additional settings for the resource.
   */
-case class Resource( /*path: String,*/ id: String, resourceType: String, settings: Option[Config]) extends ProjectElement {
+case class Resource(id: String, resourceType: String, settings: Option[Config]) extends ProjectElement {
   val tagName = id
 }
 

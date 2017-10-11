@@ -15,5 +15,4 @@ import com.typesafe.config.Config
   */
 case class Component(optionalId: Option[String], path: String, name: String, builder: String, settings: Option[Config], componentGroup: Option[ComponentGroup]) extends ProjectElement {
   override def id: String = optionalId.getOrElse(path)
-  val tagName: String     = path + "_" + id
 }

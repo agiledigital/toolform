@@ -5,12 +5,12 @@ import java.io.File
 import au.com.agiledigital.toolform.model._
 import com.typesafe.config._
 import pureconfig._
-import pureconfig.error.KeyNotFound
+import pureconfig.error.{ConfigReaderFailures, KeyNotFound}
 
 import scala.util.{Failure, Success, Try}
 
 /**
-  * Toolform is a CLI app that generates CI/CD pipelines from a project definition.
+  * A tool to generate CI/CD pipelines from a project definition.
   */
 object ToolFormApp extends App {
 
@@ -21,27 +21,23 @@ object ToolFormApp extends App {
     * @return Either[String, Config] - The configuration or an error.
     */
   def execute(args: Array[String]): Either[ToolFormError, String] =
-    parseCommandLineArgs(args) match {
-      case Some(ToolFormConfiguration(file, true)) =>
-        readProject(file) match {
-          case Right(project) => inspectProject(project)
-          case Left(error)    => Left(error)
-        }
-      case Some(commandConfig) => Right("Not implemented")
-      case None                => Left(ToolFormError(s"Invalid arguments - toolform failed."))
-    }
+    for {
+      toolConfiguration <- parseCommandLineArgs(args)
+      project           <- readProject(toolConfiguration.in)
+      summary           <- projectSummary(project)
+    } yield summary
 
-  private def parseCommandLineArgs(args: Array[String]): Option[ToolFormConfiguration] = {
+  private def parseCommandLineArgs(args: Array[String]): Either[ToolFormError, ToolFormConfiguration] = {
     val parser = new scopt.OptionParser[ToolFormConfiguration]("toolform") {
       head("toolform", "0.1")
-      help("help") abbr "h" text "Displays this usage text."
-      version("version") abbr "v" text "Displays version information."
+      help("help").abbr("h").text("Displays this usage text.")
+      version("version").abbr("v").text("Displays version information.")
       opt[File]('i', "inspect") required () valueName "<file>" action { (x, c) =>
         c.copy(in = x, inspect = true)
       } text "Displays a summary of the project definition."
     }
 
-    parser.parse(args, ToolFormConfiguration())
+    parser.parse(args, ToolFormConfiguration()).toRight(ToolFormError(s"Invalid arguments - toolform failed."))
   }
 
   private def readProject(projectDefinitionFile: File): Either[ToolFormError, Project] =
@@ -83,29 +79,37 @@ object ToolFormApp extends App {
             def apply(fieldName: String): String = fieldName
           })
 
-          loadConfig[Project](config) match {
-            case Left(failures) =>
-              val failureDetails: String = failures.toList map (failure => {
-                val failureMessage: String = failure.description + " @ " + failure.location.get.description
-                failure match {
-                  case KeyNotFound(key, location, candidates) => s"[$key] $failureMessage"
-                  case _                                      => failureMessage
-                }
-              }) mkString ":\n"
-              Left(ToolFormError(s"Failed to read project: $failureDetails"))
-            case Right(project) => Right(project)
-          }
+          val projectResult = loadConfig[Project](config)
+          resultOrCollectReadErrors(projectResult)
         case Failure(e) =>
-          Left(ToolFormError(s"Failed to parse project configuration [$projectDefinitionFile]: " + e.getMessage))
+          Left(ToolFormError(s"Failed to parse project configuration [$projectDefinitionFile]: [${e.getMessage}]"))
       }
     }
 
-  private def inspectProject(project: Project): Either[ToolFormError, String] =
+  private def resultOrCollectReadErrors(projectResult: Either[ConfigReaderFailures, Project]): Either[ToolFormError, Project] =
+    projectResult.left.map(failures => {
+      val failureDetails: String = failures.toList
+        .map(failure => {
+          val failureMessage: String = failure.description + " @ " + failure.location.get.description
+          failure match {
+            case KeyNotFound(key, _, _) => s"[$key] $failureMessage"
+            case _                      => failureMessage
+          }
+        })
+        .mkString(":\n")
+      ToolFormError(s"Failed to read project: [$failureDetails]")
+    })
+
+  private def projectSummary(project: Project): Either[ToolFormError, String] = {
+    val projectComponentsSummary = project.components.values.map(c => s"${c.id} ==> '${c.name}'").mkString("\n\t\t")
+    val projectResourcesSummary  = project.resources.values.map(r => r.id).mkString("\n\t\t")
+    val projectLinksSummary      = project.topology.links.map(l => s"${l.from.ref} -> ${l.to.ref}").mkString("\n\t\t")
     Right(
       s"Project: [${project.name}]\n" +
-        s"\tComponents:\n\t\t${project.components.values map (c => s"${c.id} ==> '${c.name}'") mkString "\n\t\t"}\n" +
-        s"\tResources:\n\t\t${project.resources.values map (r => r.id) mkString "\n\t\t"}\n" +
-        s"\tLinks:\n\t\t${project.topology.links map (l => s"${l.from.ref} -> ${l.to.ref}") mkString "\n\t\t"}\n")
+        s"\tComponents:\n\t\t$projectComponentsSummary\n" +
+        s"\tResources:\n\t\t$projectResourcesSummary\n" +
+        s"\tLinks:\n\t\t$projectLinksSummary\n")
+  }
 
   execute(args) match {
     case Left(error) =>
@@ -129,4 +133,4 @@ final case class ToolFormConfiguration(in: File = new File("."), inspect: Boolea
   *
   * @param message The error detail message.
   */
-case class ToolFormError(message: String)
+final case class ToolFormError(message: String)

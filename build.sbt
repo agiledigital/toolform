@@ -22,7 +22,6 @@ libraryDependencies ++= Seq(
   "org.scalacheck"        %% "scalacheck" % "1.13.4" % "test",
   "com.typesafe"          % "config"      % "1.3.1",
   "com.github.scopt"      %% "scopt"      % "3.7.0",
-  "com.iheart"            %% "ficus"      % "1.4.2",
   "com.github.pureconfig" %% "pureconfig" % "0.8.0"
 )
 
