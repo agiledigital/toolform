@@ -61,15 +61,14 @@ object ToolFormApp extends App {
 
   private def resultOrCollectReadErrors(projectResult: Either[ConfigReaderFailures, Project]): Either[ToolFormError, Project] =
     projectResult.left.map(failures => {
-      val failureDetails: String = failures.toList
-        .map(failure => {
-          val failureMessage: String = failure.description + " @ " + failure.location.get.description
-          failure match {
-            case KeyNotFound(key, _, _) => s"[$key] $failureMessage"
-            case _                      => failureMessage
-          }
-        })
-        .mkString(":\n")
+      val failureDetails: String = failures.toList.map(failure => {
+        val locationDescription = failure.location.map(_.description).getOrElse("Unknown location")
+        val failureMessage: String = failure.description + " @ " + locationDescription
+        failure match {
+          case KeyNotFound(key, _, _) => s"[$key] $failureMessage"
+          case _                      => failureMessage
+        }
+      }).mkString(":\n")
       ToolFormError(s"Failed to read project: [$failureDetails]")
     })
 
@@ -77,14 +76,14 @@ object ToolFormApp extends App {
     val projectComponentsSummary = project.components.values.map(c => s"${c.id} ==> '${c.name}'").mkString("\n\t\t")
     val projectResourcesSummary = project.resources.values.map(r => r.id).mkString("\n\t\t")
     val projectLinksSummary = project.topology.links.map(l => {
-        val resolvedLink = l.resolve(project)
-        s"${resolvedLink.from.id} -> ${resolvedLink.to.id}"
-      }).mkString("\n\t\t")
+      val resolvedLink = l.resolve(project)
+      s"${resolvedLink.from.id} -> ${resolvedLink.to.id}"
+    }).mkString("\n\t\t")
     Right(
       s"Project: [${project.name}]\n" +
-        s"\tComponents:\n\t\t$projectComponentsSummary\n" +
-        s"\tResources:\n\t\t$projectResourcesSummary\n" +
-        s"\tLinks:\n\t\t$projectLinksSummary\n")
+      s"\tComponents:\n\t\t$projectComponentsSummary\n" +
+      s"\tResources:\n\t\t$projectResourcesSummary\n" +
+      s"\tLinks:\n\t\t$projectLinksSummary\n")
   }
 
   execute(args) match {
