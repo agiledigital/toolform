@@ -1,7 +1,7 @@
 package au.com.agiledigital.toolform.model
 
-import pureconfig.{ConfigConvert, ConfigFieldMapping, ProductHint}
-import pureconfig.ConfigConvert.viaStringOpt
+import au.com.agiledigital.toolform.model.ReferenceType.ReferenceType
+import pureconfig.ConfigConvert
 
 /**
   * Configuration for a project.
@@ -13,52 +13,97 @@ import pureconfig.ConfigConvert.viaStringOpt
   * @param topology   the network topology of the environment explains how elements will be related/connected.
   * @param volumes    the volumes that will be mounted into components.
   */
-case class Project(id: String,
-                   name: String,
-                   components: Map[String, Component],
-                   resources: Map[String, Resource],
-                   topology: Topology,
-                   volumes: Option[Seq[Volume]],
-                   componentGroups: Option[Seq[ComponentGroup]])
+final case class Project(id: String,
+                         name: String,
+                         components: Map[String, Component],
+                         resources: Map[String, Resource],
+                         topology: Topology,
+                         volumes: Option[Seq[Volume]],
+                         componentGroups: Option[Seq[ComponentGroup]])
 
 /**
-  * the network topology of the environment explains how elements will be related/connected.
+  * The network topology of the environment explains how elements will be related/connected.
   * @param links the links between components, other components and resources.
   * @param edges the edges that will make the components and resources available outside the project.
   */
-case class Topology(links: Seq[Link], edges: Map[String, Edge])
-
-object Topology {
-  implicit val fieldMapping: ProductHint[Topology] = ProductHint[Topology](new ConfigFieldMapping {
-    def apply(fieldName: String): String = fieldName
-  })
-}
+final case class Topology(links: Seq[Link], edges: Map[String, Edge])
 
 /**
-  * A reference points to an element of the project that is defined elsewhere.
+  * Points to an element of the project that is defined in another part of the project configuration.
   * See Link, Volume, Location.
-  * @param ref A dot separated path from the project root to the referenced object.  eg. "components.componentA"
+  * @param refType type of the referenced object eg. "components", "resources"
+  * @param refId
+  * .  eg. "components.componentA"
   */
-case class Reference(ref: String)
+final case class Reference(refType: ReferenceType, refId: String) {
+  def resolve(project: Project): Option[ProjectElement] = refType match {
+    case ReferenceType.components => project.components.get(refId)
+    case ReferenceType.resources  => project.resources.get(refId)
+    case _                        => None
+  }
+  override def toString: String = s"$refType.$refId"
+}
 
 object Reference {
   implicit val converter: ConfigConvert[Reference] =
-    viaStringOpt(s => Some(Reference(s)), _.toString)
+    ConfigConvert.viaStringOpt(
+      s => {
+        val referenceParts = s.split('.')
+        if (referenceParts.length == 2) {
+          val refType = referenceParts(0)
+          val refId   = referenceParts(1)
+          Some(Reference(ReferenceType.withName(refType), refId))
+        } else
+          throw new IllegalArgumentException(s"Failed to parse reference [$s] - it was not of format [type.id]")
+      },
+      _.toString
+    )
 }
 
 /**
-  * A link between two Taggable components.
-  *
-  * E.g.
-  * {
-  * from: resources.app_database
-  * to: components.public_api
-  * }
+  * Kinds of references that may be used in project config.
+  */
+object ReferenceType extends Enumeration {
+  type ReferenceType = Value
+  val components, resources = Value
+}
+
+/**
+  * A link between two project elements.
   *
   * @param from the ProjectElement that will be linked into the to ProjectElement
   * @param to   the ProjectElement that will be supplied the from ProjectElement
   */
-case class Link(from: Reference, to: Reference)
+final case class ResolvedLink(from: ProjectElement, to: ProjectElement)
+
+/**
+  * A link between two endpoints defined in the project.
+  * An endpoint may be a resource, a component, or another addressable location.
+  * E.g.
+  * {
+  *   from: resources.app_database
+  *   to: components.public_api
+  * }
+  * @param from The source endpoint that will be linked from.
+  * @param to The target endpoint that will be linked to.
+  */
+final case class Link(from: Reference, to: Reference) {
+  def resolve(project: Project): ResolvedLink = {
+    def invalidPathError(ref: Reference): Exception =
+      new IllegalArgumentException(s"""Could not resolve link to path [$ref]. Available components [${project.components.keys.mkString(",")}]""")
+
+    val maybeFrom = from.resolve(project)
+    val maybeTo   = to.resolve(project)
+    maybeFrom match {
+      case None => throw invalidPathError(from)
+      case Some(resolvedFrom) =>
+        maybeTo match {
+          case None             => throw invalidPathError(to)
+          case Some(resolvedTo) => ResolvedLink(resolvedFrom, resolvedTo)
+        }
+    }
+  }
+}
 
 /**
   * A link between a volume resource and a Project element.
@@ -66,4 +111,4 @@ case class Link(from: Reference, to: Reference)
   * @param from the resource that supplies the volume.
   * @param to   the Project element that will be supplied the volume.
   */
-case class Volume(from: Resource, to: Reference)
+final case class Volume(from: Resource, to: Reference)

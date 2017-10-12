@@ -7,12 +7,12 @@ import org.scalatest.Inside.inside
 
 class ToolFormAppTest extends FlatSpec with Matchers {
 
-  val testFile      = pathToFile("/test_project/environment.conf")
-  val emptyFile     = pathToFile("/errors/empty.conf")
+  val testFile = pathToFile("/test_project/environment.conf")
+  val emptyFile = pathToFile("/errors/empty.conf")
   val malformedFile = pathToFile("/errors/malformed.conf")
 
   def pathToFile(pathToFile: String): File = {
-    val url  = getClass.getResource(pathToFile)
+    val url = getClass.getResource(pathToFile)
     val file = new File(url.toURI())
     file
   }
@@ -32,11 +32,11 @@ class ToolFormAppTest extends FlatSpec with Matchers {
                                    |		se-swip-mail-relay
                                    |		se-swip-db
                                    |	Links:
-                                   |		components.se_swip_elastic_search -> components.public_api
-                                   |		resources.se_swip_smtp -> components.public_api
-                                   |		resources.se_swip_carbon -> components.public_api
-                                   |		resources.se_swip_db -> components.public_api
-                                   |		components.se_swip_influx_db -> components.public_api
+                                   |		se_swip_elastic-search -> public-api
+                                   |		se-swip-mail-relay -> public-api
+                                   |		se-swip-carbon -> public-api
+                                   |		se-swip-db -> public-api
+                                   |		se-swip-influx-db -> public-api
                                    |""".stripMargin)
       case Left(error) => fail(error.message)
     }

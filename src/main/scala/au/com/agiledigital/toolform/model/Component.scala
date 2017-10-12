@@ -14,7 +14,7 @@ import pureconfig.{ConfigFieldMapping, ProductHint}
   * @param settings       the settings for building the component.
   * @param componentGroup the group that this component is a part of (may be None).
   */
-case class Component(optionalId: Option[String], path: String, name: String, builder: String, settings: Option[Config], componentGroup: Option[ComponentGroup]) extends ProjectElement {
+final case class Component(optionalId: Option[String], path: String, name: String, builder: String, settings: Option[Config], componentGroup: Option[ComponentGroup]) extends ProjectElement {
   override def id: String = optionalId.getOrElse(path)
 }
 

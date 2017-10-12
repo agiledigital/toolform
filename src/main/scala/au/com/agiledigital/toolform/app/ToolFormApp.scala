@@ -75,8 +75,11 @@ object ToolFormApp extends App {
 
   private def projectSummary(project: Project): Either[ToolFormError, String] = {
     val projectComponentsSummary = project.components.values.map(c => s"${c.id} ==> '${c.name}'").mkString("\n\t\t")
-    val projectResourcesSummary  = project.resources.values.map(r => r.id).mkString("\n\t\t")
-    val projectLinksSummary      = project.topology.links.map(l => s"${l.from.ref} -> ${l.to.ref}").mkString("\n\t\t")
+    val projectResourcesSummary = project.resources.values.map(r => r.id).mkString("\n\t\t")
+    val projectLinksSummary = project.topology.links.map(l => {
+        val resolvedLink = l.resolve(project)
+        s"${resolvedLink.from.id} -> ${resolvedLink.to.id}"
+      }).mkString("\n\t\t")
     Right(
       s"Project: [${project.name}]\n" +
         s"\tComponents:\n\t\t$projectComponentsSummary\n" +

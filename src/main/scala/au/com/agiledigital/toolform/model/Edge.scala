@@ -45,7 +45,7 @@ import pureconfig.{CamelCase, ConfigFieldMapping, KebabCase, ProductHint}
   *
   * @param subEdges the SubEdges that are a part of the Edge.
   */
-case class Edge(subEdges: Map[String, SubEdge]) extends ProjectElement {
+final case class Edge(subEdges: Map[String, SubEdge]) extends ProjectElement {
 
   /**
     * The id of this element.
@@ -63,7 +63,7 @@ case class Edge(subEdges: Map[String, SubEdge]) extends ProjectElement {
   * @param dnsPrefix   the dns prefix for this subedge.
   * @param locations   the Locations in this subedge.
   */
-case class SubEdge(edgeType: String, edgeBuilder: Option[String], dnsPrefix: String, externalUrl: String, locations: Seq[Location]) extends ProjectElement {
+final case class SubEdge(edgeType: String, edgeBuilder: Option[String], dnsPrefix: String, externalUrl: String, locations: Seq[Location]) extends ProjectElement {
 
   override def id: String = "TODO: subedge id" //s"${edgeName}_${name}_nginx"
 
@@ -85,4 +85,4 @@ object SubEdge {
   * @param targetName     the name of the target.
   * @param targetPort     the internal port of the location.
   */
-case class Location(location: Option[String], targetLocation: Option[String], target: Reference, targetName: String, targetPort: Int)
+final case class Location(location: Option[String], targetLocation: Option[String], target: Reference, targetName: String, targetPort: Int)
