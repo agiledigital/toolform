@@ -93,7 +93,7 @@ final case class Link(from: Reference, to: Reference) {
       new IllegalArgumentException(s"""Could not resolve link to path [$ref]. Available components [${project.components.keys.mkString(",")}]""")
 
     val maybeFrom = from.resolve(project)
-    val maybeTo = to.resolve(project)
+    val maybeTo   = to.resolve(project)
     (maybeFrom, maybeTo) match {
       case (None, _) => throw invalidPathError(from)
       case (_, None) => throw invalidPathError(to)
