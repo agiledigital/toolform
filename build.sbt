@@ -44,3 +44,10 @@ artifact in (Compile, assembly) := {
 }
 
 addArtifact(artifact in (Compile, assembly), assembly)
+
+lazy val root = (project in file("."))
+  .enablePlugins(BuildInfoPlugin)
+  .settings(
+    buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+    buildInfoPackage := "au.com.agiledigital.toolform.version"
+  )

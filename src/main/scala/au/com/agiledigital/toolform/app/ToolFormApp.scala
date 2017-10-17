@@ -3,6 +3,7 @@ package au.com.agiledigital.toolform.app
 import java.io.File
 
 import au.com.agiledigital.toolform.model._
+import au.com.agiledigital.toolform.version.BuildInfo
 import com.typesafe.config._
 import pureconfig._
 import pureconfig.error.{ConfigReaderFailures, KeyNotFound}
@@ -28,8 +29,8 @@ object ToolFormApp extends App {
     } yield summary
 
   private def parseCommandLineArgs(args: Array[String]): Either[ToolFormError, ToolFormConfiguration] = {
-    val parser = new scopt.OptionParser[ToolFormConfiguration]("toolform") {
-      head("toolform", "0.1")
+    val parser = new scopt.OptionParser[ToolFormConfiguration](BuildInfo.name) {
+      head(BuildInfo.name, BuildInfo.version)
       help("help").abbr("h").text("Displays this usage text.")
       version("version").abbr("v").text("Displays version information.")
       opt[File]('i', "inspect") required () valueName "<file>" action { (x, c) =>
