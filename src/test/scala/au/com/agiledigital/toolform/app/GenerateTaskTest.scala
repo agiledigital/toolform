@@ -12,7 +12,7 @@ class GenerateTaskTest extends FlatSpec with Matchers {
   val testFile = pathToFile("/test_project/environment.conf")
 
   def pathToFile(pathToFile: String): File = {
-    val url  = getClass.getResource(pathToFile)
+    val url = getClass.getResource(pathToFile)
     val file = new File(url.toURI())
     file
   }
@@ -28,15 +28,27 @@ class GenerateTaskTest extends FlatSpec with Matchers {
           |    HTTP Public API:
           |      image: se_swip/public_api
           |      restart: always
+          |      labels:
+          |        source.path: "server/public"
+          |        project.artefact: "true"
           |    SE Elastic Search:
           |      image: se_swip/se_swip_elastic_search
           |      restart: always
+          |      labels:
+          |        source.path: "resources/elastic_search"
+          |        project.artefact: "true"
           |    SE Influx DB:
           |      image: se_swip/se_swip_influx_db
           |      restart: always
+          |      labels:
+          |        source.path: "resources/influxdb"
+          |        project.artefact: "true"
           |    SE Public Web Application:
           |      image: se_swip/client/public
           |      restart: always
+          |      labels:
+          |        source.path: "client/public"
+          |        project.artefact: "true"
           |    se_swip_carbon:
           |      image: se_swip/se_swip_carbon
           |      restart: always

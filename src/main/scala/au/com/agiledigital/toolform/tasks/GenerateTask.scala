@@ -87,6 +87,19 @@ class GenerateTask() extends Task {
       (outdent _)
         .andThen(outdent)
 
+    // Labels
+
+    def beginLabelsBlock(component: Component) =
+      (write("labels:") _)
+        .andThen(indent)
+
+    // \042 represents the quote character. See:https://stackoverflow.com/a/39457924/1153203
+    def writeLabelsBody(component: Component) =
+      (write(s"source.path: \042${component.path}\042") _)
+        .andThen(write("project.artefact: \"true\""))
+
+    def endLabelsBlock(component: Component) = outdent _
+
     // Resources
 
     def beginResourceBlock(resource: Resource) = {
@@ -113,9 +126,15 @@ class GenerateTask() extends Task {
         .andThen(writeSpecVersion)
         .andThen(beginServicesBlock)
 
+    def writeComponentLabels(component: Component) =
+      beginLabelsBlock(component)
+        .andThen(writeLabelsBody(component))
+        .andThen(endLabelsBlock(component))
+
     def writeComponent(component: Component) =
       beginComponentBlock(component)
         .andThen(writeComponentBody(component))
+        .andThen(writeComponentLabels(component))
         .andThen(endComponentBlock(component))
 
     def writeResource(resource: Resource) =
