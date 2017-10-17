@@ -93,7 +93,7 @@ object ToolFormApp extends App {
     projectResult.left.map(failures => {
       val failureDetails: String = failures.toList
         .map(failure => {
-          val locationDescription = failure.location.map(_.description).getOrElse("Unknown location")
+          val locationDescription    = failure.location.map(_.description).getOrElse("Unknown location")
           val failureMessage: String = failure.description + " @ " + locationDescription
           failure match {
             case KeyNotFound(key, _, _) => s"[$key] $failureMessage"
@@ -111,6 +111,7 @@ object ToolFormApp extends App {
     case Right(result) =>
       println(result)
   }
+
 }
 
 /**
