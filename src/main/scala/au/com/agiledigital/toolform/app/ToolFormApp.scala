@@ -1,9 +1,10 @@
 package au.com.agiledigital.toolform.app
 
 import java.io.File
+import java.util.ServiceLoader
 
 import au.com.agiledigital.toolform.model._
-import au.com.agiledigital.toolform.tasks.generate.{GenerateTask, GenerateTaskConfiguration, GenerateTaskOutputType}
+import au.com.agiledigital.toolform.plugin.ToolFormPlugin
 import au.com.agiledigital.toolform.version.BuildInfo
 import au.com.agiledigital.toolform.tasks.InspectTask
 import au.com.agiledigital.toolform.tasks.generate.GenerateTask
@@ -11,8 +12,9 @@ import com.typesafe.config._
 import enumeratum.{Enum, EnumEntry}
 import pureconfig._
 import pureconfig.error.{ConfigReaderFailures, KeyNotFound}
+import scopt._
 
-import scala.collection.immutable.IndexedSeq
+import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -26,48 +28,26 @@ object ToolFormApp extends App {
     * @param args Command line arguments.
     * @return Either[String, Config] - The configuration or an error.
     */
-  def execute(args: Array[String]): Either[ToolFormError, String] =
+  def execute(args: Array[String]): Either[ToolFormError, String] = {
+    val plugins = loadPlugins
     for {
-      toolConfiguration <- parseCommandLineArgs(args)
+      toolConfiguration <- parseCommandLineArgs(args, plugins)
       project           <- readProject(toolConfiguration.in)
-      result <- toolConfiguration.mode match {
-        case ToolFormAppMode.Inspect  => new InspectTask().run(toolConfiguration, project)
-        case ToolFormAppMode.Generate => new GenerateTask().run(toolConfiguration, project)
-        case _                        => Left(ToolFormError("Cannot determine app mode"))
-      }
+      plugin            <- toolConfiguration.activePlugin
+      command           <- plugin.configureCommand(toolConfiguration)
+      result            <- command.execute(project)
     } yield result
+  }
 
-  private def parseCommandLineArgs(args: Array[String]): Either[ToolFormError, ToolFormConfiguration] = {
-    val parser = new scopt.OptionParser[ToolFormConfiguration](BuildInfo.name) {
+  private def loadPlugins: List[ToolFormPlugin] =
+    ServiceLoader.load(classOf[ToolFormPlugin]).asScala.toList
+
+  private def parseCommandLineArgs(args: Array[String], plugins: List[ToolFormPlugin]): Either[ToolFormError, ToolFormConfiguration] = {
+    val parser = new OptionParser[ToolFormConfiguration](BuildInfo.name) {
       head(BuildInfo.name, BuildInfo.version)
       help("help").abbr("h").text("Displays this usage text.")
       version("version").abbr("v").text("Displays version information.")
-
-      cmd("inspect")
-        .action((_, c) => c.copy(mode = ToolFormAppMode.Inspect))
-        .text("displays a summary of the project definition.")
-        .children(
-          opt[File]('i', "in-file") required () valueName "<file>" action { (x, c) =>
-            c.copy(in = x)
-          } text "the path to the project file to inspect"
-        )
-
-      cmd("generate")
-        .action((_, c) => c.copy(mode = ToolFormAppMode.Generate))
-        .text("generates config files for container orchestration.")
-        .children(
-          opt[File]('i', "in-file") required () valueName "<file>" action { (x, c) =>
-            c.copy(in = x)
-          } text "the path to the project file to inspect",
-          opt[File]('o', "out-file") required () valueName "<file>" action { (x, c) =>
-            c.copy(generateTaskConfiguration = c.generateTaskConfiguration.copy(out = x))
-          } text "the path to output the generated file/s",
-          opt[Unit]('d', "generate-docker-compose")
-            .action((_, c) => c.copy(generateTaskConfiguration = c.generateTaskConfiguration.copy(generateTaskOutputType = GenerateTaskOutputType.DockerComposeV3)))
-            .text("generate a Docker Compose v3 file as output (default)")
-        )
     }
-
     parser.parse(args, ToolFormConfiguration()).toRight(ToolFormError(s"Invalid arguments - toolform failed."))
   }
 
@@ -94,7 +74,7 @@ object ToolFormApp extends App {
     projectResult.left.map(failures => {
       val failureDetails: String = failures.toList
         .map(failure => {
-          val locationDescription    = failure.location.map(_.description).getOrElse("Unknown location")
+          val locationDescription = failure.location.map(_.description).getOrElse("Unknown location")
           val failureMessage: String = failure.description + " @ " + locationDescription
           failure match {
             case KeyNotFound(key, _, _) => s"[$key] $failureMessage"
@@ -119,10 +99,9 @@ object ToolFormApp extends App {
   * The configuration for the tool.
   *
   * @param in The name of the file to be processed.
-  * @param mode The mode the tool should run in.
-  * @param generateTaskConfiguration The configuration used by the "Generate" task.
+  * @param activePlugin The plugin to be executed.
   */
-final case class ToolFormConfiguration(in: File = new File("."), mode: ToolFormAppMode = ToolFormAppMode.None, generateTaskConfiguration: GenerateTaskConfiguration = GenerateTaskConfiguration())
+final case class ToolFormConfiguration(in: File = new File("."), out: File = new File("."), activePlugin: Either[ToolFormError, ToolFormPlugin] = Left(ToolFormError("Command not specified")))
 
 /**
   * A simple error type for the toolform CLI app.

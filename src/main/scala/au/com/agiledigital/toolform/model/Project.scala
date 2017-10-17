@@ -61,7 +61,7 @@ object Reference {
         val referenceParts = s.split('.')
         if (referenceParts.length == 2) {
           val refType = referenceParts(0)
-          val refId   = referenceParts(1)
+          val refId = referenceParts(1)
           Some(Reference(ReferenceType.withName(refType), refId))
         } else
           throw new IllegalArgumentException(s"Failed to parse reference [$s] - it was not of format [type.id]")
