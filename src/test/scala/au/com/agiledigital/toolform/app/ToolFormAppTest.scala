@@ -17,8 +17,8 @@ class ToolFormAppTest extends FlatSpec with Matchers {
     file
   }
 
-  "--inspect" should "display an inspect summary for a valid file" in {
-    val result = ToolFormApp.execute(List("--inspect", testFile.getAbsolutePath()).toArray)
+  "inspect" should "display an inspect summary for a valid file" in {
+    val result = ToolFormApp.execute(List("inspect", "-i", testFile.getAbsolutePath()).toArray)
     inside(result) {
       case Right(s) =>
         s should equal("""Project: [StruxureWare Insights Portal]
@@ -42,18 +42,18 @@ class ToolFormAppTest extends FlatSpec with Matchers {
     }
   }
 
-  "--inspect blank file" should "display error string" in {
-    val result = ToolFormApp.execute(List("--inspect", emptyFile.getAbsolutePath()).toArray)
+  "inspect blank file" should "display error string" in {
+    val result = ToolFormApp.execute(List("inspect", "-i", emptyFile.getAbsolutePath()).toArray)
     result.left.get.message should startWith("Failed to read project")
   }
 
-  "--inspect file that does not exist" should "display error string" in {
-    val result = ToolFormApp.execute(List("--inspect", "bad.txt").toArray)
+  "inspect file that does not exist" should "display error string" in {
+    val result = ToolFormApp.execute(List("inspect", "-i", "bad.txt").toArray)
     result.left.get.message should equal("File [bad.txt] does not exist.")
   }
 
-  "--inspect malformed file" should "display error string" in {
-    val result = ToolFormApp.execute(List("--inspect", malformedFile.getAbsolutePath()).toArray)
+  "inspect malformed file" should "display error string" in {
+    val result = ToolFormApp.execute(List("inspect", "-i", malformedFile.getAbsolutePath()).toArray)
     result.left.get.message should include("Failed to parse project configuration")
   }
 
@@ -63,7 +63,7 @@ class ToolFormAppTest extends FlatSpec with Matchers {
   }
 
   "--inspect with missing argument option" should "display error string" in {
-    val result = ToolFormApp.execute(List("--inspect").toArray)
+    val result = ToolFormApp.execute(List("inspect").toArray)
     result.left.get.message should include("Invalid arguments")
   }
 
