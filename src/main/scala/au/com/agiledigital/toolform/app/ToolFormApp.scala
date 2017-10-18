@@ -2,11 +2,11 @@ package au.com.agiledigital.toolform.app
 
 import java.io.File
 
-import au.com.agiledigital.toolform.app.ToolFormAppMode.ToolFormAppMode
 import au.com.agiledigital.toolform.model._
 import au.com.agiledigital.toolform.version.BuildInfo
-import au.com.agiledigital.toolform.tasks._
+import au.com.agiledigital.toolform.tasks.{GenerateTaskOutputType, _}
 import com.typesafe.config._
+import enumeratum.{Enum, EnumEntry}
 import pureconfig._
 import pureconfig.error.{ConfigReaderFailures, KeyNotFound}
 
@@ -28,8 +28,9 @@ object ToolFormApp extends App {
       toolConfiguration <- parseCommandLineArgs(args)
       project           <- readProject(toolConfiguration.in)
       result <- toolConfiguration.mode match {
-        case ToolFormAppMode.Inspect  => new InspectTask().run(toolConfiguration, project)
-        case ToolFormAppMode.Generate => new GenerateTask().run(toolConfiguration, project)
+        case ToolFormAppMode.inspect  => new InspectTask().run(toolConfiguration, project)
+        case ToolFormAppMode.generate => new GenerateTask().run(toolConfiguration, project)
+        case _                        => Left(ToolFormError("Cannot determine app mode"))
       }
     } yield result
 
@@ -40,7 +41,7 @@ object ToolFormApp extends App {
       version("version").abbr("v").text("Displays version information.")
 
       cmd("inspect")
-        .action((_, c) => c.copy(mode = ToolFormAppMode.Inspect))
+        .action((_, c) => c.copy(mode = ToolFormAppMode.inspect))
         .text("displays a summary of the project definition.")
         .children(
           opt[File]('i', "in-file") required () valueName "<file>" action { (x, c) =>
@@ -49,7 +50,7 @@ object ToolFormApp extends App {
         )
 
       cmd("generate")
-        .action((_, c) => c.copy(mode = ToolFormAppMode.Generate))
+        .action((_, c) => c.copy(mode = ToolFormAppMode.generate))
         .text("generates config files for container orchestration.")
         .children(
           opt[File]('i', "in-file") required () valueName "<file>" action { (x, c) =>
@@ -59,10 +60,10 @@ object ToolFormApp extends App {
             c.copy(generateTaskConfiguration = c.generateTaskConfiguration.copy(out = x))
           } text "the path to output the generated file/s",
           opt[Unit]('d', "generate-docker-compose")
-            .action((_, c) => c.copy(generateTaskConfiguration = c.generateTaskConfiguration.copy(generateTaskOutputType = GenerateTaskOutputType.DockerComposeV3)))
+            .action((_, c) => c.copy(generateTaskConfiguration = c.generateTaskConfiguration.copy(generateTaskOutputType = GenerateTaskOutputType.dockerComposeV3)))
             .text("generate a Docker Compose v3 file as output (default)"),
           opt[Unit]('k', "generate-kubernetes")
-            .action((_, c) => c.copy(generateTaskConfiguration = c.generateTaskConfiguration.copy(generateTaskOutputType = GenerateTaskOutputType.Kubernetes)))
+            .action((_, c) => c.copy(generateTaskConfiguration = c.generateTaskConfiguration.copy(generateTaskOutputType = GenerateTaskOutputType.kubernetes)))
             .text("generate a Kubernetes config set as output")
         )
     }
@@ -121,7 +122,7 @@ object ToolFormApp extends App {
   * @param mode The mode the tool should run in.
   * @param generateTaskConfiguration The configuration used by the "Generate" task.
   */
-final case class ToolFormConfiguration(in: File = new File("."), mode: ToolFormAppMode = ToolFormAppMode.None, generateTaskConfiguration: GenerateTaskConfiguration = GenerateTaskConfiguration())
+final case class ToolFormConfiguration(in: File = new File("."), mode: ToolFormAppMode = ToolFormAppMode.none, generateTaskConfiguration: GenerateTaskConfiguration = GenerateTaskConfiguration())
 
 /**
   * A simple error type for the toolform CLI app.
@@ -133,8 +134,12 @@ final case class ToolFormError(message: String)
 /**
   * An enumeration representing all the modes this tool can function in.
   */
-object ToolFormAppMode extends Enumeration {
-  type ToolFormAppMode = Value
+sealed trait ToolFormAppMode extends EnumEntry
 
-  val None, Inspect, Generate = Value
+object ToolFormAppMode extends Enum[ToolFormAppMode] {
+  val values = findValues
+
+  case object none     extends ToolFormAppMode
+  case object inspect  extends ToolFormAppMode
+  case object generate extends ToolFormAppMode
 }

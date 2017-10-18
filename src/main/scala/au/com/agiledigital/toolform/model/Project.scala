@@ -24,8 +24,8 @@ final case class Project(id: String,
                          volumes: Option[Seq[Volume]],
                          componentGroups: Option[Seq[ComponentGroup]]) {
 
-  val sortedComponents : SortedMap[String, Component] = TreeMap(components.toArray:_*)
-  val sortedResources : SortedMap[String, Resource] = TreeMap(resources.toArray:_*)
+  val sortedComponents: SortedMap[String, Component] = TreeMap(components.toArray: _*)
+  val sortedResources: SortedMap[String, Resource] = TreeMap(resources.toArray: _*)
 }
 
 /**
@@ -35,7 +35,7 @@ final case class Project(id: String,
   */
 final case class Topology(links: Seq[Link], edges: Map[String, Edge]) {
 
-  val sortedEdges : SortedMap[String, Edge] = TreeMap(edges.toArray:_*)
+  val sortedEdges: SortedMap[String, Edge] = TreeMap(edges.toArray: _*)
 }
 
 /**
@@ -61,7 +61,7 @@ object Reference {
         val referenceParts = s.split('.')
         if (referenceParts.length == 2) {
           val refType = referenceParts(0)
-          val refId   = referenceParts(1)
+          val refId = referenceParts(1)
           Some(Reference(ReferenceType.withName(refType), refId))
         } else
           throw new IllegalArgumentException(s"Failed to parse reference [$s] - it was not of format [type.id]")
@@ -73,6 +73,11 @@ object Reference {
 /**
   * Kinds of references that may be used in project config.
   */
+// TODO: Cannot convert to Enumeratum because of a bug which causes the following compiler errors:
+// [error] knownDirectSubclasses of ReferenceType observed before subclass components registered
+// [error] knownDirectSubclasses of ReferenceType observed before subclass resources registered
+// It seems to be a compiler bug but I don't know why it is only happening here.
+// See: https://github.com/lloydmeta/enumeratum/issues/90#issuecomment-295875285
 object ReferenceType extends Enumeration {
   type ReferenceType = Value
   val components, resources = Value
@@ -103,7 +108,7 @@ final case class Link(from: Reference, to: Reference) {
       new IllegalArgumentException(s"""Could not resolve link to path [$ref]. Available components [${project.components.keys.mkString(",")}]""")
 
     val maybeFrom = from.resolve(project)
-    val maybeTo   = to.resolve(project)
+    val maybeTo = to.resolve(project)
     (maybeFrom, maybeTo) match {
       case (None, _) => throw invalidPathError(from)
       case (_, None) => throw invalidPathError(to)

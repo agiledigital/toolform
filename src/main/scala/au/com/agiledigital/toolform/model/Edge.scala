@@ -57,7 +57,7 @@ final case class Edge(subEdges: Map[String, SubEdge]) extends ProjectElement {
     */
   override def id: String = "TODO: edge id" // name + "_nginx"
 
-  val sortedSubEdges : SortedMap[String, SubEdge] = TreeMap(subEdges.toArray:_*)
+  val sortedSubEdges: SortedMap[String, SubEdge] = TreeMap(subEdges.toArray: _*)
 }
 
 /**

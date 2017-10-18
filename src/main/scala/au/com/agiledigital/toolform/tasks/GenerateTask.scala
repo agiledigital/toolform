@@ -4,8 +4,7 @@ import java.io.{BufferedWriter, File, FileWriter}
 
 import au.com.agiledigital.toolform.app.{ToolFormConfiguration, ToolFormError}
 import au.com.agiledigital.toolform.model.{Service, _}
-import au.com.agiledigital.toolform.tasks.GenerateTaskOutputType.GenerateTaskOutputType
-import au.com.agiledigital.toolform.tasks.SubEdgeType.{Http, Https}
+import au.com.agiledigital.toolform.tasks.SubEdgeType.{http, https}
 import au.com.agiledigital.toolform.version.BuildInfo
 import enumeratum._
 
@@ -17,8 +16,8 @@ class GenerateTask() extends Task {
 
   override def run(toolFormConfiguration: ToolFormConfiguration, project: Project): Either[ToolFormError, String] =
     toolFormConfiguration.generateTaskConfiguration.generateTaskOutputType match {
-      case GenerateTaskOutputType.DockerComposeV3 => runDockerComposeV3(toolFormConfiguration, project)
-      case other                                  => Left(ToolFormError(s"Output type [$other] not supported at this time"))
+      case GenerateTaskOutputType.`dockerComposeV3` => runDockerComposeV3(toolFormConfiguration, project)
+      case other                                    => Left(ToolFormError(s"Output type [$other] not supported at this time"))
 
     }
 
@@ -28,7 +27,7 @@ class GenerateTask() extends Task {
       return Left(ToolFormError("Output path is a directory. Docker Compose V3 output requires a single file as an output."))
     }
 
-    val passthrough = (c: WriterContext) => c
+    val identity = (c: WriterContext) => c
 
     // Utility Functions
 
@@ -76,8 +75,8 @@ class GenerateTask() extends Task {
 
     def subEdgePortDefinition(subEdgeDef: SubEdgeDef): String =
       SubEdgeType.withNameInsensitive(subEdgeDef.subEdge.edgeType) match {
-        case Http  => "- \"80:80\""
-        case Https => "- \"443:443\""
+        case http  => "- \"80:80\""
+        case https => "- \"443:443\""
       }
 
     def formatEnvironment(entry: (String, String)): String = s"- ${entry._1}=${entry._2}"
@@ -180,36 +179,34 @@ class GenerateTask() extends Task {
     def beginEnvironmentBlock(service: Service) =
       service.environment match {
         case Some(_) => write("environment:") _
-        case _ => passthrough
+        case _       => identity
       }
 
     def writeEnvironmentBody(service: Service) =
       service.environment match {
         case Some(environmentEntries) =>
-          environmentEntries.foldLeft((a: WriterContext) => a)((prev, environmentPair) =>
-            prev.andThen(write(formatEnvironment(environmentPair))))
-        case _ => passthrough
+          environmentEntries.foldLeft((a: WriterContext) => a)((prev, environmentPair) => prev.andThen(write(formatEnvironment(environmentPair))))
+        case _ => identity
       }
 
-    def endEnvironmentBlock(service: Service) = passthrough
+    def endEnvironmentBlock(service: Service) = identity
 
     // Exposed Ports
 
     def beginExposedPortsBlock(service: Service) =
       service.exposedPorts match {
         case Some(_) => write("ports:") _
-        case _ => passthrough
+        case _       => identity
       }
 
     def writeExposedPortsBlock(service: Service) =
       service.exposedPorts match {
         case Some(ports) =>
-          ports.foldLeft((a: WriterContext) => a)((prev, port) =>
-            prev.andThen(write(s"- \042${port}\042")))
-        case _ => passthrough
+          ports.foldLeft((a: WriterContext) => a)((prev, port) => prev.andThen(write(s"- \042${port}\042")))
+        case _ => identity
       }
 
-    def endExposedPortsBlock(service: Service) = passthrough
+    def endExposedPortsBlock(service: Service) = identity
 
     // Sections
 
@@ -230,40 +227,40 @@ class GenerateTask() extends Task {
 
     def writeEnvironmentVariables(service: Service) =
       beginEnvironmentBlock(service)
-         .andThen(writeEnvironmentBody(service))
-         .andThen(endEnvironmentBlock(service))
+        .andThen(writeEnvironmentBody(service))
+        .andThen(endEnvironmentBlock(service))
 
     def writePorts(service: Service) =
       beginExposedPortsBlock(service)
-         .andThen(writeExposedPortsBlock(service))
-         .andThen(endExposedPortsBlock(service))
+        .andThen(writeExposedPortsBlock(service))
+        .andThen(endExposedPortsBlock(service))
 
     def writeComponent(component: Component) =
       beginComponentBlock(component)
         .andThen(writeComponentBody(component))
         .andThen(writeComponentLabels(component))
-         .andThen(writeEnvironmentVariables(component))
-         .andThen(writePorts(component))
-       .andThen(endComponentBlock(component))
+        .andThen(writeEnvironmentVariables(component))
+        .andThen(writePorts(component))
+        .andThen(endComponentBlock(component))
 
     def writeResource(resource: Resource) =
       beginResourceBlock(resource)
         .andThen(writeResourceBody(resource))
-         .andThen(writeEnvironmentVariables(resource))
-         .andThen(writePorts(resource))
+        .andThen(writeEnvironmentVariables(resource))
+        .andThen(writePorts(resource))
         .andThen(endResourceBlock(resource))
 
     def writeComponents =
       project.sortedComponents.values
-        .foldLeft(passthrough)((prev, component) => prev.andThen(writeComponent(component)))
+        .foldLeft(identity)((prev, component) => prev.andThen(writeComponent(component)))
 
     def writeResources =
       project.sortedResources.values
-        .foldLeft(passthrough)((prev, component) => prev.andThen(writeResource(component)))
+        .foldLeft(identity)((prev, component) => prev.andThen(writeResource(component)))
 
     def writeEdges =
       generateSubEdgeDefs(project)
-        .foldLeft(passthrough)((prev, component) => prev.andThen(writeSubEdge(component)))
+        .foldLeft(identity)((prev, component) => prev.andThen(writeSubEdge(component)))
 
     // Logic
 
@@ -302,15 +299,18 @@ class GenerateTask() extends Task {
   *                               For Kubernetes this will be a folder.
   * @param generateTaskOutputType The format of the file generated by the "Generate" task.
   */
-final case class GenerateTaskConfiguration(out: File = new File("."), generateTaskOutputType: GenerateTaskOutputType = GenerateTaskOutputType.DockerComposeV3)
+final case class GenerateTaskConfiguration(out: File = new File("."), generateTaskOutputType: GenerateTaskOutputType = GenerateTaskOutputType.dockerComposeV3)
 
 /**
   * An enumeration representing all the modes this tool can function in.
   */
-object GenerateTaskOutputType extends Enumeration {
-  type GenerateTaskOutputType = Value
+sealed trait GenerateTaskOutputType extends EnumEntry
 
-  val DockerComposeV3, Kubernetes = Value
+object GenerateTaskOutputType extends Enum[GenerateTaskOutputType] {
+  val values = findValues
+
+  case object dockerComposeV3 extends GenerateTaskOutputType
+  case object kubernetes      extends GenerateTaskOutputType
 }
 
 /**
@@ -321,8 +321,8 @@ sealed trait SubEdgeType extends EnumEntry
 object SubEdgeType extends Enum[SubEdgeType] {
   val values = findValues
 
-  case object Http  extends SubEdgeType
-  case object Https extends SubEdgeType
+  case object http  extends SubEdgeType
+  case object https extends SubEdgeType
 
 }
 

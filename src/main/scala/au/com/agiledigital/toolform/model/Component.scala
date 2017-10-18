@@ -25,7 +25,8 @@ final case class Component(optionalId: Option[String],
                            componentGroup: Option[ComponentGroup],
                            environment: Option[Map[String, String]],
                            exposedPorts: Option[List[String]])
-    extends ProjectElement with Service {
+    extends ProjectElement
+    with Service {
   override def id: String = optionalId.getOrElse(path)
 }
 

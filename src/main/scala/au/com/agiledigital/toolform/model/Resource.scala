@@ -18,7 +18,8 @@ import com.typesafe.config.Config
   *                     (This is usually done through the edge/nginx reverse proxy but sometimes you need to expose a container)
   */
 final case class Resource(id: String, resourceType: String, settings: Option[Config], image: String, environment: Option[Map[String, String]], exposedPorts: Option[List[String]])
-    extends ProjectElement with Service {
+    extends ProjectElement
+    with Service {
   val tagName = id
 }
 
