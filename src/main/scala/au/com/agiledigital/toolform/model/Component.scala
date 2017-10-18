@@ -13,8 +13,19 @@ import pureconfig.{ConfigFieldMapping, ProductHint}
   * @param builder        the Docker image that will be used to build the component.
   * @param settings       the settings for building the component.
   * @param componentGroup the group that this component is a part of (may be None).
+  * @param environment    an optional map of environment variables to inject into the container.
+  * @param exposedPorts   an list of ports that are exposed to an outside network.
+  *                       (This is usually done through the edge/nginx reverse proxy but sometimes you need to expose a container)
   */
-final case class Component(optionalId: Option[String], path: String, name: String, builder: String, settings: Option[Config], componentGroup: Option[ComponentGroup]) extends ProjectElement {
+final case class Component(optionalId: Option[String],
+                           path: String,
+                           name: String,
+                           builder: String,
+                           settings: Option[Config],
+                           componentGroup: Option[ComponentGroup],
+                           environment: Option[Map[String, String]],
+                           exposedPorts: Option[List[String]])
+    extends ProjectElement with Service {
   override def id: String = optionalId.getOrElse(path)
 }
 

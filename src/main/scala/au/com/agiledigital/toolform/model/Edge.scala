@@ -2,6 +2,9 @@ package au.com.agiledigital.toolform.model
 
 import pureconfig.{CamelCase, ConfigFieldMapping, KebabCase, ProductHint}
 
+import scala.collection.SortedMap
+import scala.collection.immutable.TreeMap
+
 /**
   * An Edge makes some of the project Components and Resources available externally.
   *
@@ -53,6 +56,8 @@ final case class Edge(subEdges: Map[String, SubEdge]) extends ProjectElement {
     * @return the unique identifier of the element.
     */
   override def id: String = "TODO: edge id" // name + "_nginx"
+
+  val sortedSubEdges : SortedMap[String, SubEdge] = TreeMap(subEdges.toArray:_*)
 }
 
 /**

@@ -3,7 +3,7 @@ package au.com.agiledigital.toolform.tasks
 import java.io.{BufferedWriter, File, FileWriter}
 
 import au.com.agiledigital.toolform.app.{ToolFormConfiguration, ToolFormError}
-import au.com.agiledigital.toolform.model._
+import au.com.agiledigital.toolform.model.{Service, _}
 import au.com.agiledigital.toolform.tasks.GenerateTaskOutputType.GenerateTaskOutputType
 import au.com.agiledigital.toolform.tasks.SubEdgeType.{Http, Https}
 import au.com.agiledigital.toolform.version.BuildInfo
@@ -27,6 +27,8 @@ class GenerateTask() extends Task {
     if (outFile.isDirectory) {
       return Left(ToolFormError("Output path is a directory. Docker Compose V3 output requires a single file as an output."))
     }
+
+    val passthrough = (c: WriterContext) => c
 
     // Utility Functions
 
@@ -67,7 +69,7 @@ class GenerateTask() extends Task {
       normaliseImageName(s"${project.id}/${component.id}")
 
     def resourceImageName(resource: Resource): String =
-      normaliseImageName(s"${project.id}/${resource.id}")
+      normaliseImageName(s"${resource.image}")
 
     def subEdgeImageName(subEdgeDef: SubEdgeDef): String =
       normaliseImageName(s"${project.id}_${subEdgeDef.edgeId}_${subEdgeDef.subEdgeId}_nginx")
@@ -78,6 +80,7 @@ class GenerateTask() extends Task {
         case Https => "- \"443:443\""
       }
 
+    def formatEnvironment(entry: (String, String)): String = s"- ${entry._1}=${entry._2}"
 
     // Indentation
 
@@ -163,7 +166,7 @@ class GenerateTask() extends Task {
     }
 
     def writeResourceBody(resource: Resource) = {
-      val imageName = normaliseImageName(resourceImageName(resource))
+      val imageName = resourceImageName(resource)
       (write(s"image: $imageName") _)
         .andThen(write(s"restart: always"))
     }
@@ -171,6 +174,42 @@ class GenerateTask() extends Task {
     def endResourceBlock(resource: Resource) =
       (outdent _)
         .andThen(outdent)
+
+    // Environment
+
+    def beginEnvironmentBlock(service: Service) =
+      service.environment match {
+        case Some(_) => write("environment:") _
+        case _ => passthrough
+      }
+
+    def writeEnvironmentBody(service: Service) =
+      service.environment match {
+        case Some(environmentEntries) =>
+          environmentEntries.foldLeft((a: WriterContext) => a)((prev, environmentPair) =>
+            prev.andThen(write(formatEnvironment(environmentPair))))
+        case _ => passthrough
+      }
+
+    def endEnvironmentBlock(service: Service) = passthrough
+
+    // Exposed Ports
+
+    def beginExposedPortsBlock(service: Service) =
+      service.exposedPorts match {
+        case Some(_) => write("ports:") _
+        case _ => passthrough
+      }
+
+    def writeExposedPortsBlock(service: Service) =
+      service.exposedPorts match {
+        case Some(ports) =>
+          ports.foldLeft((a: WriterContext) => a)((prev, port) =>
+            prev.andThen(write(s"- \042${port}\042")))
+        case _ => passthrough
+      }
+
+    def endExposedPortsBlock(service: Service) = passthrough
 
     // Sections
 
@@ -189,28 +228,42 @@ class GenerateTask() extends Task {
         .andThen(writeSubEdgeBody(subEdgeDef))
         .andThen(endSubEdgeBlock(subEdgeDef))
 
+    def writeEnvironmentVariables(service: Service) =
+      beginEnvironmentBlock(service)
+         .andThen(writeEnvironmentBody(service))
+         .andThen(endEnvironmentBlock(service))
+
+    def writePorts(service: Service) =
+      beginExposedPortsBlock(service)
+         .andThen(writeExposedPortsBlock(service))
+         .andThen(endExposedPortsBlock(service))
+
     def writeComponent(component: Component) =
       beginComponentBlock(component)
         .andThen(writeComponentBody(component))
         .andThen(writeComponentLabels(component))
-        .andThen(endComponentBlock(component))
+         .andThen(writeEnvironmentVariables(component))
+         .andThen(writePorts(component))
+       .andThen(endComponentBlock(component))
 
     def writeResource(resource: Resource) =
       beginResourceBlock(resource)
         .andThen(writeResourceBody(resource))
+         .andThen(writeEnvironmentVariables(resource))
+         .andThen(writePorts(resource))
         .andThen(endResourceBlock(resource))
 
     def writeComponents =
-      project.components.values
-        .foldLeft((a: WriterContext) => a)((prev, component) => prev.andThen(writeComponent(component)))
+      project.sortedComponents.values
+        .foldLeft(passthrough)((prev, component) => prev.andThen(writeComponent(component)))
 
     def writeResources =
-      project.resources.values
-        .foldLeft((a: WriterContext) => a)((prev, component) => prev.andThen(writeResource(component)))
+      project.sortedResources.values
+        .foldLeft(passthrough)((prev, component) => prev.andThen(writeResource(component)))
 
     def writeEdges =
       generateSubEdgeDefs(project)
-        .foldLeft((a: WriterContext) => a)((prev, component) => prev.andThen(writeSubEdge(component)))
+        .foldLeft(passthrough)((prev, component) => prev.andThen(writeSubEdge(component)))
 
     // Logic
 
@@ -233,9 +286,9 @@ class GenerateTask() extends Task {
   }
 
   private def generateSubEdgeDefs(project: Project): Iterable[SubEdgeDef] =
-    project.topology.edges.flatMap((edgePair) => {
+    project.topology.sortedEdges.flatMap((edgePair) => {
       val (edgeName, edge) = edgePair
-      edge.subEdges.map((subEdgePair) => {
+      edge.sortedSubEdges.map((subEdgePair) => {
         val (subEdgeName, subEdge) = subEdgePair
         SubEdgeDef(edgeName, subEdgeName, subEdge)
       })

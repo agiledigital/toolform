@@ -30,6 +30,12 @@ class GenerateTaskTest extends FlatSpec with Matchers {
           |      restart: always
           |      ports:
           |      - "80:80"
+          |    clientpublic:
+          |      image: se_swip/client/public
+          |      restart: always
+          |      labels:
+          |        source.path: "client/public"
+          |        project.artefact: "true"
           |    publicapi:
           |      image: se_swip/public_api
           |      restart: always
@@ -48,20 +54,17 @@ class GenerateTaskTest extends FlatSpec with Matchers {
           |      labels:
           |        source.path: "resources/influxdb"
           |        project.artefact: "true"
-          |    clientpublic:
-          |      image: se_swip/client/public
-          |      restart: always
-          |      labels:
-          |        source.path: "client/public"
-          |        project.artefact: "true"
           |    seswipcarbon:
-          |      image: se_swip/se_swip_carbon
-          |      restart: always
-          |    seswipmailrelay:
-          |      image: se_swip/se_swip_mail_relay
+          |      image: dockerana/carbon
           |      restart: always
           |    seswipdb:
-          |      image: se_swip/se_swip_db
+          |      image: docker.agiledigital.com.au:5000/agile/pgpool2
+          |      restart: always
+          |      environment:
+          |      - BACKEND_PORT=5432
+          |      - BACKEND_HOST=localhost
+          |    seswipmailrelay:
+          |      image: djfarrelly/maildev
           |      restart: always
           |""".stripMargin)
   }
