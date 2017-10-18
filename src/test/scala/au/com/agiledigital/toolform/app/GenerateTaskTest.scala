@@ -12,7 +12,7 @@ class GenerateTaskTest extends FlatSpec with Matchers {
   val testFile = pathToFile("/test_project/environment.conf")
 
   def pathToFile(pathToFile: String): File = {
-    val url  = getClass.getResource(pathToFile)
+    val url = getClass.getResource(pathToFile)
     val file = new File(url.toURI())
     file
   }
