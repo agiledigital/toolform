@@ -22,7 +22,8 @@ libraryDependencies ++= Seq(
   "org.scalacheck"        %% "scalacheck" % "1.13.4" % "test",
   "com.typesafe"          % "config"      % "1.3.1",
   "com.github.scopt"      %% "scopt"      % "3.7.0",
-  "com.github.pureconfig" %% "pureconfig" % "0.8.0"
+  "com.github.pureconfig" %% "pureconfig" % "0.8.0",
+  "com.beachape"          %% "enumeratum" % "1.5.12"
 )
 
 // For Settings/Task reference, see http://www.scala-sbt.org/release/sxr/sbt/Keys.scala.html

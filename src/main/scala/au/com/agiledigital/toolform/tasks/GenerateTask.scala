@@ -3,9 +3,11 @@ package au.com.agiledigital.toolform.tasks
 import java.io.{BufferedWriter, File, FileWriter}
 
 import au.com.agiledigital.toolform.app.{ToolFormConfiguration, ToolFormError}
-import au.com.agiledigital.toolform.model.{Component, Project, Resource}
+import au.com.agiledigital.toolform.model._
 import au.com.agiledigital.toolform.tasks.GenerateTaskOutputType.GenerateTaskOutputType
+import au.com.agiledigital.toolform.tasks.SubEdgeType.{Http, Https}
 import au.com.agiledigital.toolform.version.BuildInfo
+import enumeratum._
 
 import scala.compat.Platform.EOL
 
@@ -17,9 +19,10 @@ class GenerateTask() extends Task {
     toolFormConfiguration.generateTaskConfiguration.generateTaskOutputType match {
       case GenerateTaskOutputType.DockerComposeV3 => runDockerComposeV3(toolFormConfiguration, project)
       case other                                  => Left(ToolFormError(s"Output type [$other] not supported at this time"))
+
     }
 
-  def runDockerComposeV3(toolFormConfiguration: ToolFormConfiguration, project: Project): Either[ToolFormError, String] = {
+  private def runDockerComposeV3(toolFormConfiguration: ToolFormConfiguration, project: Project): Either[ToolFormError, String] = {
     val outFile = toolFormConfiguration.generateTaskConfiguration.out
     if (outFile.isDirectory) {
       return Left(ToolFormError("Output path is a directory. Docker Compose V3 output requires a single file as an output."))
@@ -37,17 +40,44 @@ class GenerateTask() extends Task {
 
     // Name Formatting
 
-    def normaliseName(name: String): String =
+    def normaliseServiceName(name: String): String =
       name
-        .replace(' ', '_')
-        .replace('-', '_')
+        .replace("/", "")
+        .replace(" ", "")
+        .replace("-", "")
+        .replace("_", "")
         .toLowerCase
 
-    def componentName(component: Component): String =
-      normaliseName(s"${project.id}/${component.id}")
+    def normaliseImageName(name: String): String =
+      name
+        .replace(" ", "_")
+        .replace("-", "_")
+        .toLowerCase
 
-    def resourceName(resource: Resource): String =
-      normaliseName(s"${project.id}/${resource.id}")
+    def componentServiceName(component: Component): String =
+      normaliseServiceName(s"${component.id}")
+
+    def resourceServiceName(resource: Resource): String =
+      normaliseServiceName(s"${resource.id}")
+
+    def subEdgeServiceName(subEdgeDef: SubEdgeDef): String =
+      normaliseServiceName(s"${project.id}${subEdgeDef.edgeId}${subEdgeDef.subEdgeId}nginx")
+
+    def componentImageName(component: Component): String =
+      normaliseImageName(s"${project.id}/${component.id}")
+
+    def resourceImageName(resource: Resource): String =
+      normaliseImageName(s"${project.id}/${resource.id}")
+
+    def subEdgeImageName(subEdgeDef: SubEdgeDef): String =
+      normaliseImageName(s"${project.id}_${subEdgeDef.edgeId}_${subEdgeDef.subEdgeId}_nginx")
+
+    def subEdgePortDefinition(subEdgeDef: SubEdgeDef): String =
+      SubEdgeType.withNameInsensitive(subEdgeDef.subEdge.edgeType) match {
+        case Http  => "- \"80:80\""
+        case Https => "- \"443:443\""
+      }
+
 
     // Indentation
 
@@ -70,15 +100,38 @@ class GenerateTask() extends Task {
 
     def beginServicesBlock = (indent _).andThen(write("services:"))
 
+    // Edges
+
+    def beginSubEdgeBlock(subEdgeDef: SubEdgeDef) = {
+      val serviceName = subEdgeServiceName(subEdgeDef)
+      (indent _)
+        .andThen(write(s"$serviceName:"))
+        .andThen(indent)
+    }
+
+    def writeSubEdgeBody(subEdgeDef: SubEdgeDef) = {
+      val imageName = subEdgeImageName(subEdgeDef)
+      (write(s"image: $imageName") _)
+        .andThen(write(s"restart: always"))
+        .andThen(write(s"ports:"))
+        .andThen(write(subEdgePortDefinition(subEdgeDef)))
+    }
+
+    def endSubEdgeBlock(subEdgeDef: SubEdgeDef) =
+      (outdent _)
+        .andThen(outdent)
+
     // Components
 
-    def beginComponentBlock(component: Component) =
+    def beginComponentBlock(component: Component) = {
+      val serviceName = componentServiceName(component)
       (indent _)
-        .andThen(write(s"${component.name}:"))
+        .andThen(write(s"$serviceName:"))
         .andThen(indent)
+    }
 
     def writeComponentBody(component: Component) = {
-      val imageName = componentName(component)
+      val imageName = componentImageName(component)
       (write(s"image: $imageName") _)
         .andThen(write(s"restart: always"))
     }
@@ -103,19 +156,19 @@ class GenerateTask() extends Task {
     // Resources
 
     def beginResourceBlock(resource: Resource) = {
-      val resourceKey = normaliseName(resource.id)
+      val serviceName = resourceServiceName(resource)
       (indent _)
-        .andThen(write(s"$resourceKey:"))
+        .andThen(write(s"$serviceName:"))
         .andThen(indent)
     }
 
     def writeResourceBody(resource: Resource) = {
-      val imageName = normaliseName(resourceName(resource))
+      val imageName = normaliseImageName(resourceImageName(resource))
       (write(s"image: $imageName") _)
         .andThen(write(s"restart: always"))
     }
 
-    def enResourceBlock(resource: Resource) =
+    def endResourceBlock(resource: Resource) =
       (outdent _)
         .andThen(outdent)
 
@@ -131,6 +184,11 @@ class GenerateTask() extends Task {
         .andThen(writeLabelsBody(component))
         .andThen(endLabelsBlock(component))
 
+    def writeSubEdge(subEdgeDef: SubEdgeDef) =
+      beginSubEdgeBlock(subEdgeDef)
+        .andThen(writeSubEdgeBody(subEdgeDef))
+        .andThen(endSubEdgeBlock(subEdgeDef))
+
     def writeComponent(component: Component) =
       beginComponentBlock(component)
         .andThen(writeComponentBody(component))
@@ -140,7 +198,7 @@ class GenerateTask() extends Task {
     def writeResource(resource: Resource) =
       beginResourceBlock(resource)
         .andThen(writeResourceBody(resource))
-        .andThen(enResourceBlock(resource))
+        .andThen(endResourceBlock(resource))
 
     def writeComponents =
       project.components.values
@@ -150,12 +208,17 @@ class GenerateTask() extends Task {
       project.resources.values
         .foldLeft((a: WriterContext) => a)((prev, component) => prev.andThen(writeResource(component)))
 
+    def writeEdges =
+      generateSubEdgeDefs(project)
+        .foldLeft((a: WriterContext) => a)((prev, component) => prev.andThen(writeSubEdge(component)))
+
     // Logic
 
     val writer = new BufferedWriter(new FileWriter(outFile, false))
     try {
 
       val writeFile = writePreamble
+        .andThen(writeEdges)
         .andThen(writeComponents)
         .andThen(writeResources)
         .andThen(finish)
@@ -168,6 +231,15 @@ class GenerateTask() extends Task {
       writer.close()
     }
   }
+
+  private def generateSubEdgeDefs(project: Project): Iterable[SubEdgeDef] =
+    project.topology.edges.flatMap((edgePair) => {
+      val (edgeName, edge) = edgePair
+      edge.subEdges.map((subEdgePair) => {
+        val (subEdgeName, subEdge) = subEdgePair
+        SubEdgeDef(edgeName, subEdgeName, subEdge)
+      })
+    })
 }
 
 /**
@@ -189,9 +261,44 @@ object GenerateTaskOutputType extends Enumeration {
 }
 
 /**
+  * An enumeration representing types a subedge can be.
+  */
+sealed trait SubEdgeType extends EnumEntry
+
+object SubEdgeType extends Enum[SubEdgeType] {
+  val values = findValues
+
+  case object Http  extends SubEdgeType
+  case object Https extends SubEdgeType
+
+}
+
+/**
   * An object that is used provide context to the generator while it is writing.
   *
   * @param writer      The object used to do the actual writing to the file.
   * @param indentLevel The number of indent levels deep the current context is.
   */
 final case class WriterContext(writer: BufferedWriter, indentLevel: Int = 0)
+
+/**
+  * An object that collects relevant data on a sub edge.
+  *
+  * This was created because the Edge and SubEdge objects don't seem to have a way of knowing their own ID.
+  * The ID is specified as the key of the dictionary they are defined in so they have no access to it.
+  *
+  * E.g.
+  * "some_id": {
+  *   "object_key": "object_value"
+  * }
+  *
+  * The object defined by the key "some_id" has no way of knowing it's ID is "some_id".
+  * Therefore this context must be constructed by iterating the maps and collecting the data into this object.
+  *
+  * We could put the ID in the object itself but this would add redundancy.
+  *
+  * @param edgeId     The ID of the parent edge of the wrapped subedge.
+  * @param subEdgeId  The ID of the wrapped subedge.
+  * @param subEdge    The subedge that is wrapped by this object.
+  */
+final case class SubEdgeDef(edgeId: String, subEdgeId: String, subEdge: SubEdge)
