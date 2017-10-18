@@ -21,9 +21,7 @@ class GenerateTask() extends Task {
 
   override def run(toolFormConfiguration: ToolFormConfiguration, project: Project): Either[ToolFormError, String] =
     toolFormConfiguration.generateTaskConfiguration.generateTaskOutputType match {
-      case GenerateTaskOutputType.`dockerComposeV3` => runDockerComposeV3(toolFormConfiguration, project)
-      case other                                    => Left(ToolFormError(s"Output type [$other] not supported at this time"))
-
+      case GenerateTaskOutputType.dockerComposeV3 => runDockerComposeV3(toolFormConfiguration, project)
     }
 
   private def runDockerComposeV3(toolFormConfiguration: ToolFormConfiguration, project: Project): Either[ToolFormError, String] = {
@@ -392,7 +390,6 @@ object GenerateTaskOutputType extends Enum[GenerateTaskOutputType] {
   val values = findValues
 
   case object dockerComposeV3 extends GenerateTaskOutputType
-  case object kubernetes      extends GenerateTaskOutputType
 }
 
 /**

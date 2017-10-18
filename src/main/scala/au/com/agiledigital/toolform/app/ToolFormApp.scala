@@ -61,10 +61,7 @@ object ToolFormApp extends App {
           } text "the path to output the generated file/s",
           opt[Unit]('d', "generate-docker-compose")
             .action((_, c) => c.copy(generateTaskConfiguration = c.generateTaskConfiguration.copy(generateTaskOutputType = GenerateTaskOutputType.dockerComposeV3)))
-            .text("generate a Docker Compose v3 file as output (default)"),
-          opt[Unit]('k', "generate-kubernetes")
-            .action((_, c) => c.copy(generateTaskConfiguration = c.generateTaskConfiguration.copy(generateTaskOutputType = GenerateTaskOutputType.kubernetes)))
-            .text("generate a Kubernetes config set as output")
+            .text("generate a Docker Compose v3 file as output (default)")
         )
     }
 
