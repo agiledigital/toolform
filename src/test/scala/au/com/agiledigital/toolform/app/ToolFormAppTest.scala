@@ -23,14 +23,14 @@ class ToolFormAppTest extends FlatSpec with Matchers {
       case Right(s) =>
         s should equal("""Project: [StruxureWare Insights Portal]
                                    |	Components:
+                                   |		client/public ==> 'SE Public Web Application'
                                    |		public-api ==> 'HTTP Public API'
                                    |		se_swip_elastic-search ==> 'SE Elastic Search'
                                    |		se-swip-influx-db ==> 'SE Influx DB'
-                                   |		client/public ==> 'SE Public Web Application'
                                    |	Resources:
                                    |		se-swip-carbon
-                                   |		se-swip-mail-relay
                                    |		se-swip-db
+                                   |		se-swip-mail-relay
                                    |	Links:
                                    |		se_swip_elastic-search -> public-api
                                    |		se-swip-mail-relay -> public-api
