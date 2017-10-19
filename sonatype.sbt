@@ -1,4 +1,5 @@
 import ReleaseTransformations._
+import Release._
 
 credentials ++= (for {
   username <- Option(System.getenv().get("SONATYPE_USERNAME"))
@@ -17,8 +18,11 @@ releaseProcess := Seq[ReleaseStep](
   commitReleaseVersion,
   tagRelease,
   releaseStepCommand("publishSigned"),
+  releaseStepCommand("sonatypeReleaseAll"),
+  updateScripts,
+  updateLaunchers,
+  commitUpdates,
   setNextVersion,
   commitNextVersion,
-  releaseStepCommand("sonatypeReleaseAll"),
   pushChanges
 )
