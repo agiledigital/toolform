@@ -6,8 +6,9 @@ import scalaz._
 trait YamlWriter {
 
   type Result[A] = State[WriterContext, A]
-  val indentSize = 2
   type IndexedState[A] = IndexedStateT[scalaz.Id.Id, WriterContext, WriterContext, A]
+
+  private val indentSize = 2
 
   def write(text: String): Result[Unit] = State[WriterContext, Unit] { context =>
     {
