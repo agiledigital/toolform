@@ -7,6 +7,7 @@ trait YamlWriter {
 
   type Result[A] = State[WriterContext, A]
   val indentSize = 2
+  type IndexedState[A] = IndexedStateT[scalaz.Id.Id, WriterContext, WriterContext, A]
 
   def write(text: String): Result[Unit] = State[WriterContext, Unit] { context =>
     {
@@ -25,6 +26,13 @@ trait YamlWriter {
   def resetIndent(indexLevel: Int): Result[Int] = State[WriterContext, Int] { context =>
     (context.copy(indentLevel = indexLevel), context.indentLevel)
   }
+
+  def indented(innerState: IndexedState[Unit]): IndexedState[Unit] =
+    for {
+      initialIndentation <- indent()
+      _                  <- innerState
+      _                  <- resetIndent(initialIndentation)
+    } yield ()
 }
 
 /**
