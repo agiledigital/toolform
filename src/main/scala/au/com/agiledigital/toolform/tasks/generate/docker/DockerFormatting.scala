@@ -37,8 +37,8 @@ object DockerFormatting {
 
   def subEdgePortDefinition(subEdgeDef: SubEdgeDef): String =
     SubEdgeType.withNameInsensitive(subEdgeDef.subEdge.edgeType) match {
-      case SubEdgeType.http  => "- \"80:80\""
-      case SubEdgeType.https => "- \"443:443\""
+      case SubEdgeType.http  => formatPort("80:80")
+      case SubEdgeType.https => formatPort("443:443")
     }
 
   def formatEnvironment(entry: (String, String)): String = s"- ${entry._1}=${entry._2}"
