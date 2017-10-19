@@ -18,10 +18,10 @@ object DockerFormatting {
       .toLowerCase
 
   def componentServiceName(component: Component): String =
-    normaliseServiceName(s"${component.id}")
+    normaliseServiceName(component.id)
 
   def resourceServiceName(resource: Resource): String =
-    normaliseServiceName(s"${resource.id}")
+    normaliseServiceName(resource.id)
 
   def subEdgeServiceName(projectId: String, subEdgeDef: SubEdgeDef): String =
     normaliseServiceName(s"$projectId${subEdgeDef.edgeId}${subEdgeDef.subEdgeId}nginx")
@@ -30,7 +30,7 @@ object DockerFormatting {
     normaliseImageName(s"$projectId/${component.id}")
 
   def resourceImageName(resource: Resource): String =
-    normaliseImageName(s"${resource.image}")
+    normaliseImageName(resource.image)
 
   def subEdgeImageName(projectId: String, subEdgeDef: SubEdgeDef): String =
     normaliseImageName(s"${projectId}_${subEdgeDef.edgeId}_${subEdgeDef.subEdgeId}_nginx")
