@@ -2,6 +2,9 @@ package au.com.agiledigital.toolform.tasks.generate.docker
 
 import au.com.agiledigital.toolform.model.{Component, Resource, SubEdgeType}
 
+/**
+  * A collection of pure formatting functions for use by the GenerateDockerComposeV3 class.
+  */
 object DockerFormatting {
   def normaliseServiceName(name: String): String =
     name

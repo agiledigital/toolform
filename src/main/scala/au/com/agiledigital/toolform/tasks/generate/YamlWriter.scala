@@ -37,7 +37,7 @@ trait YamlWriter {
 }
 
 /**
-  * An object that is used provide context to the generator while it is writing.
+  * Provides context to the generator while it is writing.
   *
   * @param writer      The object used to do the actual writing to the file.
   * @param indentLevel The number of indent levels deep the current context is.
