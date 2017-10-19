@@ -14,11 +14,11 @@ import scala.io.Source
 
 class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMethodTester {
 
-  val testFile = pathToFile("/test_project/environment.conf")
+  val testFile: File = pathToFile("/test_project/environment.conf")
 
   def pathToFile(pathToFile: String): File = {
     val url = getClass.getResource(pathToFile)
-    val file = new File(url.toURI())
+    val file = new File(url.toURI)
     file
   }
 
