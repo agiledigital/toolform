@@ -3,7 +3,8 @@ package au.com.agiledigital.toolform.model
 import enumeratum.{Enum, EnumEntry}
 import pureconfig.{CamelCase, ConfigFieldMapping, KebabCase, ProductHint}
 
-import scala.collection.SortedMap
+import scala.collection.{SortedMap}
+import scala.collection.immutable.IndexedSeq
 import scala.collection.immutable.TreeMap
 
 /**
@@ -99,9 +100,9 @@ final case class Location(location: Option[String], targetLocation: Option[Strin
 sealed trait SubEdgeType extends EnumEntry
 
 object SubEdgeType extends Enum[SubEdgeType] {
-  val values = findValues
+  val values: IndexedSeq[SubEdgeType] = findValues
 
-  case object http  extends SubEdgeType
-  case object https extends SubEdgeType
+  case object Http  extends SubEdgeType
+  case object Https extends SubEdgeType
 
 }

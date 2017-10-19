@@ -12,6 +12,7 @@ import enumeratum.{Enum, EnumEntry}
 import pureconfig._
 import pureconfig.error.{ConfigReaderFailures, KeyNotFound}
 
+import scala.collection.immutable.IndexedSeq
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -30,8 +31,8 @@ object ToolFormApp extends App {
       toolConfiguration <- parseCommandLineArgs(args)
       project           <- readProject(toolConfiguration.in)
       result <- toolConfiguration.mode match {
-        case ToolFormAppMode.inspect  => new InspectTask().run(toolConfiguration, project)
-        case ToolFormAppMode.generate => new GenerateTask().run(toolConfiguration, project)
+        case ToolFormAppMode.Inspect  => new InspectTask().run(toolConfiguration, project)
+        case ToolFormAppMode.Generate => new GenerateTask().run(toolConfiguration, project)
         case _                        => Left(ToolFormError("Cannot determine app mode"))
       }
     } yield result
@@ -43,7 +44,7 @@ object ToolFormApp extends App {
       version("version").abbr("v").text("Displays version information.")
 
       cmd("inspect")
-        .action((_, c) => c.copy(mode = ToolFormAppMode.inspect))
+        .action((_, c) => c.copy(mode = ToolFormAppMode.Inspect))
         .text("displays a summary of the project definition.")
         .children(
           opt[File]('i', "in-file") required () valueName "<file>" action { (x, c) =>
@@ -52,7 +53,7 @@ object ToolFormApp extends App {
         )
 
       cmd("generate")
-        .action((_, c) => c.copy(mode = ToolFormAppMode.generate))
+        .action((_, c) => c.copy(mode = ToolFormAppMode.Generate))
         .text("generates config files for container orchestration.")
         .children(
           opt[File]('i', "in-file") required () valueName "<file>" action { (x, c) =>
@@ -62,7 +63,7 @@ object ToolFormApp extends App {
             c.copy(generateTaskConfiguration = c.generateTaskConfiguration.copy(out = x))
           } text "the path to output the generated file/s",
           opt[Unit]('d', "generate-docker-compose")
-            .action((_, c) => c.copy(generateTaskConfiguration = c.generateTaskConfiguration.copy(generateTaskOutputType = GenerateTaskOutputType.dockerComposeV3)))
+            .action((_, c) => c.copy(generateTaskConfiguration = c.generateTaskConfiguration.copy(generateTaskOutputType = GenerateTaskOutputType.DockerComposeV3)))
             .text("generate a Docker Compose v3 file as output (default)")
         )
     }
@@ -121,7 +122,7 @@ object ToolFormApp extends App {
   * @param mode The mode the tool should run in.
   * @param generateTaskConfiguration The configuration used by the "Generate" task.
   */
-final case class ToolFormConfiguration(in: File = new File("."), mode: ToolFormAppMode = ToolFormAppMode.none, generateTaskConfiguration: GenerateTaskConfiguration = GenerateTaskConfiguration())
+final case class ToolFormConfiguration(in: File = new File("."), mode: ToolFormAppMode = ToolFormAppMode.None, generateTaskConfiguration: GenerateTaskConfiguration = GenerateTaskConfiguration())
 
 /**
   * A simple error type for the toolform CLI app.
@@ -136,9 +137,9 @@ final case class ToolFormError(message: String)
 sealed trait ToolFormAppMode extends EnumEntry
 
 object ToolFormAppMode extends Enum[ToolFormAppMode] {
-  val values = findValues
+  val values: IndexedSeq[ToolFormAppMode] = findValues
 
-  case object none     extends ToolFormAppMode
-  case object inspect  extends ToolFormAppMode
-  case object generate extends ToolFormAppMode
+  case object None     extends ToolFormAppMode
+  case object Inspect  extends ToolFormAppMode
+  case object Generate extends ToolFormAppMode
 }
