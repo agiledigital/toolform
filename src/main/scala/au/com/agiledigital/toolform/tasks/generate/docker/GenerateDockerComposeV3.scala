@@ -31,12 +31,6 @@ class GenerateDockerComposeV3() extends YamlWriter {
     */
   def runDockerComposeV3(toolFormConfiguration: ToolFormConfiguration, project: Project): Either[ToolFormError, String] = {
     val outFile = toolFormConfiguration.generateTaskConfiguration.out
-    if (outFile.isDirectory) {
-      return Left(ToolFormError("Output path is a directory. Docker Compose V3 output requires a single file as an output."))
-    }
-
-    // Logic
-
     val sourceFilePath = toolFormConfiguration.in.getAbsolutePath
     val writer = new BufferedWriter(new FileWriter(outFile, false))
     try {
