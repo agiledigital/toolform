@@ -1,8 +1,7 @@
 package au.com.agiledigital.toolform.plugin
 
-import au.com.agiledigital.toolform.app.{ToolFormConfiguration, ToolFormError}
-import au.com.agiledigital.toolform.model.Project
-import scopt.OptionParser
+import au.com.agiledigital.toolform.app.ToolFormError
+import com.monovore.decline._
 
 /**
   * Extension point to add new commands to toolform.
@@ -12,15 +11,5 @@ import scopt.OptionParser
   * on the runtime classpath.
   */
 trait ToolFormPlugin {
-  def commandName: String
-  def commandVersion: String
-  def commandLineArgs(parser: OptionParser[ToolFormConfiguration]): Unit
-  def configureCommand(toolConfig: ToolFormConfiguration): Either[ToolFormError, ToolFormCommand]
-}
-
-/**
-  * The command that will be executed when the plugin is invoked by the toolform app.
-  */
-trait ToolFormCommand {
-  def execute(project: Project): Either[ToolFormError, String]
+  def command: Opts[Either[ToolFormError, String]]
 }

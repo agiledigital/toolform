@@ -1,36 +1,34 @@
 package au.com.agiledigital.toolform.plugin
 
-import java.io.File
+import java.nio.file.Path
 
-import au.com.agiledigital.toolform.app.{ToolFormConfiguration, ToolFormError}
+import au.com.agiledigital.toolform.app.ToolFormError
 import au.com.agiledigital.toolform.model.Project
-import scopt.OptionParser
+import au.com.agiledigital.toolform.reader.ProjectReader
 
+import com.monovore.decline._
+
+/**
+  * Prints a summary of a project definition.
+  */
 final class InspectPlugin extends ToolFormPlugin {
-  override def commandName = "inspect"
 
-  override def commandVersion = "0.0.1"
-
-  override def commandLineArgs(parser: OptionParser[ToolFormConfiguration]): Unit = {
-    val plugin = this
-    parser
-      .opt[File]('i', commandName)
-      .required()
-      .valueName("<file>")
-      .action { (x, c) =>
-        c.copy(in = x, activePlugin = Right(plugin))
+  override val command: Opts[Either[ToolFormError, String]] =
+    Opts
+      .subcommand("inspect", "Inspect and print the content of the project file") {
+        Opts.option[Path]("input", short = "i", metavar = "file", help = "Input file")
       }
-      .text("Displays a summary of the project definition.")
-  }
+      .map(execute)
 
-  override def configureCommand(toolConfig: ToolFormConfiguration) = Right(new InspectCommand(toolConfig))
-}
+  def execute(inputFilePath: Path): Either[ToolFormError, String] =
+    for {
+      project <- ProjectReader.readProject(inputFilePath.toFile)
+      summary <- summary(project)
+    } yield summary
 
-final class InspectCommand(toolFormConfiguration: ToolFormConfiguration) extends ToolFormCommand {
-
-  override def execute(project: Project): Either[ToolFormError, String] = {
+  private def summary(project: Project): Either[ToolFormError, String] = {
     val projectComponentsSummary = project.components.values.map(c => s"${c.id} ==> '${c.name}'").mkString("\n\t\t")
-    val projectResourcesSummary = project.resources.values.map(r => r.id).mkString("\n\t\t")
+    val projectResourcesSummary  = project.resources.values.map(r => r.id).mkString("\n\t\t")
     val projectLinksSummary = project.topology.links
       .map(l => {
         val resolvedLink = l.resolve(project)
