@@ -5,7 +5,7 @@ import java.io.File
 import au.com.agiledigital.toolform.app.{ToolFormConfiguration, ToolFormError}
 import au.com.agiledigital.toolform.model.Project
 import au.com.agiledigital.toolform.tasks.Task
-import au.com.agiledigital.toolform.tasks.generate.docker.GenerateDockerComposeV3
+import au.com.agiledigital.toolform.tasks.generate.docker.GenerateDockerComposeV3.runDockerComposeV3
 import enumeratum.{Enum, EnumEntry}
 
 import scala.collection.immutable.IndexedSeq
@@ -14,7 +14,7 @@ class GenerateTask() extends Task with YamlWriter {
 
   override def run(toolFormConfiguration: ToolFormConfiguration, project: Project): Either[ToolFormError, String] =
     toolFormConfiguration.generateTaskConfiguration.generateTaskOutputType match {
-      case GenerateTaskOutputType.DockerComposeV3 => new GenerateDockerComposeV3().runDockerComposeV3(toolFormConfiguration, project)
+      case GenerateTaskOutputType.DockerComposeV3 => runDockerComposeV3(toolFormConfiguration, project)
     }
 }
 

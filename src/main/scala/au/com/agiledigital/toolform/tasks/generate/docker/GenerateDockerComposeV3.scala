@@ -5,7 +5,6 @@ import java.io.{BufferedWriter, FileWriter}
 import au.com.agiledigital.toolform.app.{ToolFormConfiguration, ToolFormError}
 import au.com.agiledigital.toolform.model._
 import au.com.agiledigital.toolform.tasks.generate.docker.DockerFormatting._
-import au.com.agiledigital.toolform.tasks.generate.docker.GenerateDockerComposeV3.{writeComponents, writeEdges, writeResources}
 import au.com.agiledigital.toolform.tasks.generate.docker.SubEdgeDef.subEdgeDefsFromProject
 import au.com.agiledigital.toolform.tasks.generate.{WriterContext, YamlWriter}
 import au.com.agiledigital.toolform.util.DateUtil
@@ -15,11 +14,15 @@ import scalaz.Scalaz._
 import scalaz._
 
 /**
-  * Takes an abstract project definition and outputs it to a file in the Docker Compose V3 YAML format.
+  * A Takes an abstract project definition and outputs it to a file in the Docker Compose V3 YAML format.
   *
   * @see https://docs.docker.com/compose/compose-file/
   */
-class GenerateDockerComposeV3() extends YamlWriter {
+object GenerateDockerComposeV3 extends YamlWriter {
+
+  val identity: State[WriterContext, Unit] = State[WriterContext, Unit] { context =>
+    (context, ())
+  }
 
   /**
     * The main entry point into the Docker Compose file generation.
@@ -56,16 +59,6 @@ class GenerateDockerComposeV3() extends YamlWriter {
     } finally {
       writer.close()
     }
-  }
-}
-
-/**
-  * A collection of pure functions used by the GenerateDockerComposeV3 class to generate the Docker Compose file.
-  */
-object GenerateDockerComposeV3 extends YamlWriter {
-
-  val identity: State[WriterContext, Unit] = State[WriterContext, Unit] { context =>
-    (context, ())
   }
 
   def writeEdges(projectId: String, subEdgeDefs: List[SubEdgeDef]): State[WriterContext, Unit] = State[WriterContext, Unit] { context =>
