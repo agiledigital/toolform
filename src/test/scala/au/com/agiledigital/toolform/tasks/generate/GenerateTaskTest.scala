@@ -17,7 +17,9 @@ class GenerateTaskTest extends FlatSpec with Matchers {
     file
   }
 
-  "generate" should "generate a valid Docker Compose v3 file" in {
+  behavior of "The Generate Task"
+
+  it should "generate a valid Docker Compose v3 file by default" in {
     val outputFile = File.createTempFile(getClass.getName, ".yaml")
     outputFile.deleteOnExit()
     ToolFormApp.execute(List("generate", "-i", testFile.getAbsolutePath, "-o", outputFile.getAbsolutePath).toArray)

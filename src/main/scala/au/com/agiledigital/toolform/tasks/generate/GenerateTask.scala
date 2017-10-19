@@ -8,6 +8,8 @@ import au.com.agiledigital.toolform.tasks.Task
 import au.com.agiledigital.toolform.tasks.generate.docker.GenerateDockerComposeV3
 import enumeratum.{Enum, EnumEntry}
 
+import scala.collection.immutable.IndexedSeq
+
 class GenerateTask() extends Task with YamlWriter {
 
   override def run(toolFormConfiguration: ToolFormConfiguration, project: Project): Either[ToolFormError, String] =
@@ -31,7 +33,7 @@ final case class GenerateTaskConfiguration(out: File = new File("."), generateTa
 sealed trait GenerateTaskOutputType extends EnumEntry
 
 object GenerateTaskOutputType extends Enum[GenerateTaskOutputType] {
-  val values = findValues
+  val values: IndexedSeq[GenerateTaskOutputType] = findValues
 
   case object dockerComposeV3 extends GenerateTaskOutputType
 }
