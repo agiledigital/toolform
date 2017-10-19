@@ -1,9 +1,6 @@
 package au.com.agiledigital.toolform.tasks.generate.docker
 
-import java.io.StringWriter
-
 import au.com.agiledigital.toolform.model._
-import au.com.agiledigital.toolform.tasks.generate.WriterContext
 import org.scalatest.{FlatSpec, Matchers, PrivateMethodTester}
 
 class SubEdgeDefTest extends FlatSpec with Matchers with PrivateMethodTester {

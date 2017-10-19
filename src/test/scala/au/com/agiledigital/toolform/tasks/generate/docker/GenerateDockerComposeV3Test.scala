@@ -11,10 +11,10 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
 
   "writePorts" should "write ports if exposedPorts is defined" in {
     val testService = new Service {
-      def environment  = None
-      def exposedPorts = Some(List("80:80", "443:443", "anything", "9999999"))
+      def environment = Map()
+      def exposedPorts = List("80:80", "443:443", "anything", "9999999")
     }
-    val testWriter  = new StringWriter()
+    val testWriter = new StringWriter()
     val testContext = WriterContext(testWriter)
 
     writePorts(testService).exec(testContext)
@@ -31,25 +31,12 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
     )
   }
 
-  "writePorts" should "not write anything if no ports defined" in {
-    val testService = new Service {
-      def environment  = None
-      def exposedPorts = None
-    }
-    val testWriter  = new StringWriter()
-    val testContext = WriterContext(testWriter)
-
-    writePorts(testService).exec(testContext)
-
-    testWriter.toString should equal("")
-  }
-
   "writePorts" should "not write anything if empty list of ports defined" in {
     val testService = new Service {
-      def environment  = None
-      def exposedPorts = Some(List())
+      def environment = Map()
+      def exposedPorts = List()
     }
-    val testWriter  = new StringWriter()
+    val testWriter = new StringWriter()
     val testContext = WriterContext(testWriter)
 
     writePorts(testService).exec(testContext)
@@ -60,14 +47,13 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
   "writeEnvironmentVariables" should "write environment variables if environment is defined" in {
     val testService = new Service {
       def environment =
-        Some(
-          Map(
-            "ABC" -> "DEF",
-            "123" -> "345"
-          ))
-      def exposedPorts = None
+        Map(
+          "ABC" -> "DEF",
+          "123" -> "345"
+        )
+      def exposedPorts = List()
     }
-    val testWriter  = new StringWriter()
+    val testWriter = new StringWriter()
     val testContext = WriterContext(testWriter)
 
     writeEnvironmentVariables(testService).exec(testContext)
@@ -82,25 +68,12 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
     )
   }
 
-  "writeEnvironmentVariables" should "not write anything if no environment defined" in {
-    val testService = new Service {
-      def environment  = None
-      def exposedPorts = None
-    }
-    val testWriter  = new StringWriter()
-    val testContext = WriterContext(testWriter)
-
-    writeEnvironmentVariables(testService).exec(testContext)
-
-    testWriter.toString should equal("")
-  }
-
   "writeEnvironmentVariables" should "not write anything if empty map of environment variables defined" in {
     val testService = new Service {
-      def environment  = Some(Map())
-      def exposedPorts = None
+      def environment = Map()
+      def exposedPorts = List()
     }
-    val testWriter  = new StringWriter()
+    val testWriter = new StringWriter()
     val testContext = WriterContext(testWriter)
 
     writeEnvironmentVariables(testService).exec(testContext)
@@ -109,8 +82,8 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
   }
 
   "writeEdges" should "not write anything if an empty list of edges is provided" in {
-    val testEdges   = List[SubEdgeDef]()
-    val testWriter  = new StringWriter()
+    val testEdges = List[SubEdgeDef]()
+    val testWriter = new StringWriter()
     val testContext = WriterContext(testWriter)
 
     writeEdges("", testEdges).exec(testContext)
@@ -120,8 +93,8 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
 
   "writeResources" should "not write anything if an empty list of resources is provided" in {
     val testResources = List[Resource]()
-    val testWriter    = new StringWriter()
-    val testContext   = WriterContext(testWriter)
+    val testWriter = new StringWriter()
+    val testContext = WriterContext(testWriter)
 
     writeResources(testResources).exec(testContext)
 
@@ -130,8 +103,8 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
 
   "writeComponents" should "not write anything if an empty list of components is provided" in {
     val testComponents = List[Component]()
-    val testWriter     = new StringWriter()
-    val testContext    = WriterContext(testWriter)
+    val testWriter = new StringWriter()
+    val testContext = WriterContext(testWriter)
 
     writeComponents("", testComponents).exec(testContext)
 

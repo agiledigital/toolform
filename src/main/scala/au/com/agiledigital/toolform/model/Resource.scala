@@ -13,11 +13,11 @@ import com.typesafe.config.Config
   * @param resourceType the type of the resource (e.g. postgres, elastic search)
   * @param settings     additional settings for the resource.
   * @param image        the docker URL for the image associated with this resource.
-  * @param environment  an optional map of environment variables to inject into the container.
-  * @param exposedPorts an list of ports that are exposed to an outside network.
+  * @param environment  a map of environment variables to inject into the container.
+  * @param exposedPorts a list of ports that are exposed to an outside network.
   *                     (This is usually done through the edge/nginx reverse proxy but sometimes you need to expose a container)
   */
-final case class Resource(id: String, resourceType: String, settings: Option[Config], image: String, environment: Option[Map[String, String]], exposedPorts: Option[List[String]])
+final case class Resource(id: String, resourceType: String, settings: Option[Config], image: String, environment: Map[String, String] = Map(), exposedPorts: List[String] = List())
     extends ProjectElement
     with Service {
   val tagName = id

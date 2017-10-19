@@ -152,13 +152,13 @@ object GenerateDockerComposeV3 extends YamlWriter {
     } yield ()
   }
 
-  def writeEnvironmentVariables(service: Service): State[WriterContext, Unit] = service.environment match {
-    case Some(environmentEntries) if environmentEntries.nonEmpty =>
+  def writeEnvironmentVariables(service: Service): State[WriterContext, Unit] =
+    if (service.environment.nonEmpty) {
       for {
         _ <- write("environment:")
         _ <- State[WriterContext, Unit] { context =>
           {
-            (environmentEntries.toList
+            (service.environment.toList
                .map((entry) => formatEnvironment(entry))
                .traverseU(write)
                .exec(context),
@@ -166,24 +166,25 @@ object GenerateDockerComposeV3 extends YamlWriter {
           }
         }
       } yield ()
-    case _ => identity
-  }
+    } else {
+      identity
+    }
 
   def writePorts(service: Service): State[WriterContext, Unit] =
-    service.exposedPorts match {
-      case Some(ports) if ports.nonEmpty =>
-        for {
-          _ <- write("ports:")
-          _ <- State[WriterContext, Unit] { context =>
-            {
-              (ports
-                 .map((port) => formatPort(port))
-                 .traverseU(write)
-                 .exec(context),
-               ())
-            }
+    if (service.exposedPorts.nonEmpty) {
+      for {
+        _ <- write("ports:")
+        _ <- State[WriterContext, Unit] { context =>
+          {
+            (service.exposedPorts
+               .map((port) => formatPort(port))
+               .traverseU(write)
+               .exec(context),
+             ())
           }
-        } yield ()
-      case _ => identity
+        }
+      } yield ()
+    } else {
+      identity
     }
 }
