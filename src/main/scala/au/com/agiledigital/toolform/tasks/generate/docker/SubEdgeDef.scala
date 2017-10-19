@@ -33,11 +33,9 @@ object SubEdgeDef {
     * @return a iterable of SubEdgeDef objects.
     */
   def subEdgeDefsFromProject(project: Project): Iterable[SubEdgeDef] =
-    project.topology.sortedEdges.flatMap((edgePair) => {
-      val (edgeName, edge) = edgePair
-      edge.sortedSubEdges.map((subEdgePair) => {
-        val (subEdgeName, subEdge) = subEdgePair
-        SubEdgeDef(edgeName, subEdgeName, subEdge)
-      })
-    })
+    for {
+      (edgeName, edge)       <- project.topology.sortedEdges
+      (subEdgeName, subEdge) <- edge.sortedSubEdges
+    } yield SubEdgeDef(edgeName, subEdgeName, subEdge)
+
 }
