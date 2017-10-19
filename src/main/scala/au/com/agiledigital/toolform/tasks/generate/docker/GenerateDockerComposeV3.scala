@@ -114,7 +114,6 @@ class GenerateDockerComposeV3() extends YamlWriter {
       _ <- write("labels:")
       i <- indent()
       _ <- for {
-
         _ <- write(s"source.path: \042${component.path}\042")
         _ <- write("project.artefact: \"true\"")
       } yield ()
