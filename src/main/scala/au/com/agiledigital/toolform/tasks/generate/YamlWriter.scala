@@ -1,7 +1,5 @@
 package au.com.agiledigital.toolform.tasks.generate
 
-import java.io.BufferedWriter
-
 import scala.compat.Platform.EOL
 import scalaz._
 
@@ -35,4 +33,4 @@ trait YamlWriter {
   * @param writer      The object used to do the actual writing to the file.
   * @param indentLevel The number of indent levels deep the current context is.
   */
-final case class WriterContext(writer: BufferedWriter, indentLevel: Int = 0)
+final case class WriterContext(writer: java.io.Writer, indentLevel: Int = 0)

@@ -55,28 +55,28 @@ class GenerateDockerComposeV3() extends YamlWriter {
 
   // Sections
 
-  private def writeEdges(projectId: String, subEdgeDefs: List[SubEdgeDef]) = State[WriterContext, Unit] { context =>
+  private[docker] def writeEdges(projectId: String, subEdgeDefs: List[SubEdgeDef]) = State[WriterContext, Unit] { context =>
     (subEdgeDefs
        .traverseU(subEdge => writeSubEdge(projectId, subEdge))
        .exec(context),
      ())
   }
 
-  private def writeComponents(projectId: String, components: List[Component]) = State[WriterContext, Unit] { context =>
+  private[docker] def writeComponents(projectId: String, components: List[Component]) = State[WriterContext, Unit] { context =>
     (components
        .traverseU(component => writeComponent(projectId, component))
        .exec(context),
      ())
   }
 
-  private def writeResources(resources: List[Resource]) = State[WriterContext, Unit] { context =>
+  private[docker] def writeResources(resources: List[Resource]) = State[WriterContext, Unit] { context =>
     (resources
        .traverseU(resource => writeResource(resource))
        .exec(context),
      ())
   }
 
-  private def writeSubEdge(projectId: String, subEdgeDef: SubEdgeDef) = {
+  private[docker] def writeSubEdge(projectId: String, subEdgeDef: SubEdgeDef) = {
     val serviceName = subEdgeServiceName(projectId, subEdgeDef)
     val imageName   = subEdgeImageName(projectId, subEdgeDef)
     for {
@@ -92,7 +92,7 @@ class GenerateDockerComposeV3() extends YamlWriter {
     } yield ()
   }
 
-  private def writeComponent(projectId: String, component: Component) = {
+  private[docker] def writeComponent(projectId: String, component: Component) = {
     val serviceName = componentServiceName(component)
     val imageName   = componentImageName(projectId, component)
     for {
@@ -109,7 +109,7 @@ class GenerateDockerComposeV3() extends YamlWriter {
     } yield ()
   }
 
-  private def writeComponentLabels(component: Component) =
+  private[docker] def writeComponentLabels(component: Component) =
     for {
       _ <- write("labels:")
       i <- indent()
@@ -121,7 +121,7 @@ class GenerateDockerComposeV3() extends YamlWriter {
       _ <- resetIndent(i)
     } yield ()
 
-  private def writeResource(resource: Resource) = {
+  private[docker] def writeResource(resource: Resource) = {
     val serviceName = resourceServiceName(resource)
     val imageName   = resourceImageName(resource)
     for {
@@ -138,8 +138,8 @@ class GenerateDockerComposeV3() extends YamlWriter {
     } yield ()
   }
 
-  private def writeEnvironmentVariables(service: Service) = service.environment match {
-    case Some(environmentEntries) =>
+  private[docker] def writeEnvironmentVariables(service: Service) = service.environment match {
+    case Some(environmentEntries) if environmentEntries.nonEmpty =>
       for {
         _ <- write("environment:")
         _ <- State[WriterContext, Unit] { context =>
@@ -152,12 +152,12 @@ class GenerateDockerComposeV3() extends YamlWriter {
           }
         }
       } yield ()
-    case None => identity
+    case _ => identity
   }
 
-  private def writePorts(service: Service) =
+  private[docker] def writePorts(service: Service) =
     service.exposedPorts match {
-      case Some(ports) =>
+      case Some(ports) if ports.nonEmpty =>
         for {
           _ <- write("ports:")
           _ <- State[WriterContext, Unit] { context =>
@@ -170,6 +170,6 @@ class GenerateDockerComposeV3() extends YamlWriter {
             }
           }
         } yield ()
-      case None => identity
+      case _ => identity
     }
 }

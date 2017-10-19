@@ -24,10 +24,10 @@ object DockerFormatting {
     normaliseServiceName(s"${resource.id}")
 
   def subEdgeServiceName(projectId: String, subEdgeDef: SubEdgeDef): String =
-    normaliseServiceName(s"${projectId}${subEdgeDef.edgeId}${subEdgeDef.subEdgeId}nginx")
+    normaliseServiceName(s"$projectId${subEdgeDef.edgeId}${subEdgeDef.subEdgeId}nginx")
 
   def componentImageName(projectId: String, component: Component): String =
-    normaliseImageName(s"${projectId}/${component.id}")
+    normaliseImageName(s"$projectId/${component.id}")
 
   def resourceImageName(resource: Resource): String =
     normaliseImageName(s"${resource.image}")
