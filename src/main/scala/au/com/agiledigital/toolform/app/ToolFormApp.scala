@@ -3,8 +3,10 @@ package au.com.agiledigital.toolform.app
 import java.io.File
 
 import au.com.agiledigital.toolform.model._
+import au.com.agiledigital.toolform.tasks.generate.{GenerateTask, GenerateTaskConfiguration, GenerateTaskOutputType}
 import au.com.agiledigital.toolform.version.BuildInfo
-import au.com.agiledigital.toolform.tasks.{GenerateTaskOutputType, _}
+import au.com.agiledigital.toolform.tasks.InspectTask
+import au.com.agiledigital.toolform.tasks.generate.GenerateTask
 import com.typesafe.config._
 import enumeratum.{Enum, EnumEntry}
 import pureconfig._
@@ -91,7 +93,7 @@ object ToolFormApp extends App {
     projectResult.left.map(failures => {
       val failureDetails: String = failures.toList
         .map(failure => {
-          val locationDescription = failure.location.map(_.description).getOrElse("Unknown location")
+          val locationDescription    = failure.location.map(_.description).getOrElse("Unknown location")
           val failureMessage: String = failure.description + " @ " + locationDescription
           failure match {
             case KeyNotFound(key, _, _) => s"[$key] $failureMessage"

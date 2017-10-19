@@ -1,5 +1,6 @@
 package au.com.agiledigital.toolform.model
 
+import enumeratum.{Enum, EnumEntry}
 import pureconfig.{CamelCase, ConfigFieldMapping, KebabCase, ProductHint}
 
 import scala.collection.SortedMap
@@ -91,3 +92,16 @@ object SubEdge {
   * @param targetPort     the internal port of the location.
   */
 final case class Location(location: Option[String], targetLocation: Option[String], target: Reference, targetName: String, targetPort: Int)
+
+/**
+  * An enumeration representing types a subedge can be.
+  */
+sealed trait SubEdgeType extends EnumEntry
+
+object SubEdgeType extends Enum[SubEdgeType] {
+  val values = findValues
+
+  case object http  extends SubEdgeType
+  case object https extends SubEdgeType
+
+}
