@@ -7,12 +7,12 @@ import org.scalatest.Inside.inside
 
 class ToolFormAppTest extends FlatSpec with Matchers {
 
-  val testFile: File = pathToFile("/test_project/environment.conf")
-  val emptyFile: File = pathToFile("/errors/empty.conf")
-  val malformedFile: File = pathToFile("/errors/malformed.conf")
+  private val testFile: File      = pathToFile("/testprojects/realworldsample/environment.conf")
+  private val emptyFile: File     = pathToFile("/errors/empty.conf")
+  private val malformedFile: File = pathToFile("/errors/malformed.conf")
 
-  def pathToFile(pathToFile: String): File = {
-    val url = getClass.getResource(pathToFile)
+  private def pathToFile(pathToFile: String): File = {
+    val url  = getClass.getResource(pathToFile)
     val file = new File(url.toURI)
     file
   }
