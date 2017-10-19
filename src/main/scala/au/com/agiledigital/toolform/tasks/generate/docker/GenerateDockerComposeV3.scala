@@ -64,8 +64,6 @@ class GenerateDockerComposeV3() extends YamlWriter {
   */
 object GenerateDockerComposeV3 extends YamlWriter {
 
-  // TODO: Surely Scalaz has a built in identity function that could replace this.
-  // Maybe it could be replaced with a different construct altogether?
   val identity: State[WriterContext, Unit] = State[WriterContext, Unit] { context =>
     (context, ())
   }
