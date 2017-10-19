@@ -1,13 +1,13 @@
 package au.com.agiledigital.toolform.model
 
 import com.typesafe.config.Config
-import pureconfig.{ConfigFieldMapping, ProductHint}
+import pureconfig.{CamelCase, ConfigFieldMapping, KebabCase, ProductHint}
 
 /**
   * A Component is a project element that is built the project. It can be converted into a Docker image and composed
   * into the .yml.
   *
-  * @param optionalId     the identifier of the component.
+  * @param idOverride     the identifier of the component.
   * @param path           the full path to the component in the configuration.
   * @param name           the name of the component.
   * @param builder        the Docker image that will be used to build the component.
@@ -17,7 +17,7 @@ import pureconfig.{ConfigFieldMapping, ProductHint}
   * @param exposedPorts   a list of ports that are exposed to an outside network.
   *                       (This is usually done through the edge/nginx reverse proxy but sometimes you need to expose a container)
   */
-final case class Component(optionalId: Option[String],
+final case class Component(idOverride: Option[String],
                            path: String,
                            name: String,
                            builder: String,
@@ -27,11 +27,10 @@ final case class Component(optionalId: Option[String],
                            exposedPorts: List[String] = List())
     extends ProjectElement
     with Service {
-  override def id: String = optionalId.getOrElse(path)
+  override def id: String = idOverride.getOrElse(path)
 }
 
 object Component {
-  implicit val fieldMapping: ProductHint[Component] = ProductHint[Component](new ConfigFieldMapping {
-    def apply(fieldName: String): String = if (fieldName == "optionalId") "id" else fieldName
-  })
+
+  implicit val fieldMapping: ProductHint[Component] = ProductHint[Component](ConfigFieldMapping(CamelCase, KebabCase).withOverrides("idOverride" -> "id"))
 }

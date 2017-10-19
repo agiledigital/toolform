@@ -7,6 +7,7 @@ import au.com.agiledigital.toolform.model.{Component, Resource, Service}
 import au.com.agiledigital.toolform.tasks.generate.WriterContext
 import au.com.agiledigital.toolform.tasks.generate.docker.GenerateDockerComposeV3._
 import org.scalatest.{FlatSpec, Matchers, PrivateMethodTester}
+import scala.compat.Platform.EOL
 
 import scala.io.Source
 
@@ -15,7 +16,7 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
   private val rootTestFolder: File = pathToFile("/testprojects")
 
   private def pathToFile(pathToFile: String): File = {
-    val url  = getClass.getResource(pathToFile)
+    val url = getClass.getResource(pathToFile)
     val file = new File(url.toURI)
     file
   }
@@ -27,7 +28,11 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
     * @return a string representing the specified file with the commented lines removed.
     */
   private def readFileIgnoringComments(file: File) =
-    Source.fromFile(file.getAbsolutePath).getLines().filterNot(line => line.startsWith("#")).mkString
+    Source
+      .fromFile(file.getAbsolutePath)
+      .getLines()
+      .filterNot(line => line.startsWith("#"))
+      .mkString(EOL)
 
   val testFolders = rootTestFolder
     .listFiles()
@@ -35,15 +40,15 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
 
   for (folder <- testFolders) {
     "runDockerComposeV3" should s"generate valid Docker Compose v3 files for scenario: ${folder.getName}" in {
-      val inputFile    = new File(s"${folder.getAbsolutePath}/environment.conf")
+      val inputFile = new File(s"${folder.getAbsolutePath}/environment.conf")
       val expectedFile = new File(s"${folder.getAbsolutePath}/expected.yaml")
-      val outputFile   = File.createTempFile(getClass.getName, ".yaml")
+      val outputFile = File.createTempFile(getClass.getName, ".yaml")
       outputFile.deleteOnExit()
       ToolFormApp.execute(List("generate", "-i", inputFile.getAbsolutePath, "-o", outputFile.getAbsolutePath).toArray) match {
         case Left(error)    => println(s"runDockerComposeV3 --> Error: ${error.message}")
         case Right(message) => println(s"runDockerComposeV3 --> Output: ${message}")
       }
-      val actual   = readFileIgnoringComments(outputFile)
+      val actual = readFileIgnoringComments(outputFile)
       val expected = readFileIgnoringComments(expectedFile)
       actual should equal(expected)
     }
@@ -51,10 +56,10 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
 
   "writePorts" should "write ports if exposedPorts is defined" in {
     val testService = new Service {
-      def environment  = Map()
+      def environment = Map()
       def exposedPorts = List("80:80", "443:443", "anything", "9999999")
     }
-    val testWriter  = new StringWriter()
+    val testWriter = new StringWriter()
     val testContext = WriterContext(testWriter)
 
     writePorts(testService).exec(testContext)
@@ -73,10 +78,10 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
 
   "writePorts" should "not write anything if empty list of ports defined" in {
     val testService = new Service {
-      def environment  = Map()
+      def environment = Map()
       def exposedPorts = List()
     }
-    val testWriter  = new StringWriter()
+    val testWriter = new StringWriter()
     val testContext = WriterContext(testWriter)
 
     writePorts(testService).exec(testContext)
@@ -93,7 +98,7 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
         )
       def exposedPorts = List()
     }
-    val testWriter  = new StringWriter()
+    val testWriter = new StringWriter()
     val testContext = WriterContext(testWriter)
 
     writeEnvironmentVariables(testService).exec(testContext)
@@ -110,10 +115,10 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
 
   "writeEnvironmentVariables" should "not write anything if empty map of environment variables defined" in {
     val testService = new Service {
-      def environment  = Map()
+      def environment = Map()
       def exposedPorts = List()
     }
-    val testWriter  = new StringWriter()
+    val testWriter = new StringWriter()
     val testContext = WriterContext(testWriter)
 
     writeEnvironmentVariables(testService).exec(testContext)
@@ -122,8 +127,8 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
   }
 
   "writeEdges" should "not write anything if an empty list of edges is provided" in {
-    val testEdges   = List[SubEdgeDef]()
-    val testWriter  = new StringWriter()
+    val testEdges = List[SubEdgeDef]()
+    val testWriter = new StringWriter()
     val testContext = WriterContext(testWriter)
 
     writeEdges("", testEdges).exec(testContext)
@@ -133,8 +138,8 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
 
   "writeResources" should "not write anything if an empty list of resources is provided" in {
     val testResources = List[Resource]()
-    val testWriter    = new StringWriter()
-    val testContext   = WriterContext(testWriter)
+    val testWriter = new StringWriter()
+    val testContext = WriterContext(testWriter)
 
     writeResources(testResources).exec(testContext)
 
@@ -143,8 +148,8 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
 
   "writeComponents" should "not write anything if an empty list of components is provided" in {
     val testComponents = List[Component]()
-    val testWriter     = new StringWriter()
-    val testContext    = WriterContext(testWriter)
+    val testWriter = new StringWriter()
+    val testContext = WriterContext(testWriter)
 
     writeComponents("", testComponents).exec(testContext)
 

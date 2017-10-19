@@ -3,6 +3,15 @@
 # Date: 44//10/2017
 version: '3'
 services:
+  somecomponent:
+    image: se_swip/some_component
+    restart: always
+    labels:
+      source.path: "some/component"
+      project.artefact: "true"
+    environment:
+    - EEE=FFF
+    - GGG=HHH
   someresource:
     image: djfarrelly/maildev
     restart: always
