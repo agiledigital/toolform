@@ -7,7 +7,7 @@ import org.scalatest._
 
 class InspectPluginTest extends FlatSpec with Matchers {
 
-  val testFile: File = pathToFile("/test_project/environment.conf")
+  val testFile: File = pathToFile("/testprojects/realworldsample/environment.conf")
   val emptyFile: File = pathToFile("/errors/empty.conf")
 
   def pathToFile(pathToFile: String): File = {
@@ -27,8 +27,8 @@ class InspectPluginTest extends FlatSpec with Matchers {
                          |		se-swip-influx-db ==> 'SE Influx DB'
                          |		client/public ==> 'SE Public Web Application'
                          |	Resources:
-                         |		se-swip-carbon
                          |		se-swip-mail-relay
+                         |		se-swip-carbon
                          |		se-swip-db
                          |	Links:
                          |		se_swip_elastic-search -> public-api

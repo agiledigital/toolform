@@ -22,9 +22,8 @@ libraryDependencies ++= Seq(
   "org.scalacheck"        %% "scalacheck" % "1.13.4" % "test",
   "com.typesafe"          % "config"      % "1.3.1",
   "com.github.pureconfig" %% "pureconfig" % "0.8.0",
-  "com.beachape"          %% "enumeratum" % "1.5.12",
-  "org.typelevel"         %% "cats-core"  % "1.0.0-MF",
-  "com.monovore"          %% "decline"    % "0.3.0"
+  "com.monovore"          %% "decline"    % "0.3.0",
+  "com.beachape"          %% "enumeratum" % "1.5.12"
 )
 
 // For Settings/Task reference, see http://www.scala-sbt.org/release/sxr/sbt/Keys.scala.html

@@ -2,6 +2,7 @@ package au.com.agiledigital.toolform.app
 
 import java.io.File
 
+import au.com.agiledigital.toolform.app.ToolFormAppSimulator.simulateAppForTest
 import au.com.agiledigital.toolform.plugin.InspectPlugin
 import au.com.agiledigital.toolform.version.BuildInfo
 import org.scalatest._
@@ -28,8 +29,8 @@ class ToolFormAppTest extends FlatSpec with Matchers {
                          |		se-swip-influx-db ==> 'SE Influx DB'
                          |		client/public ==> 'SE Public Web Application'
                          |	Resources:
-                         |		se-swip-carbon
                          |		se-swip-mail-relay
+                         |		se-swip-carbon
                          |		se-swip-db
                          |	Links:
                          |		se_swip_elastic-search -> public-api
@@ -67,10 +68,12 @@ class ToolFormAppTest extends FlatSpec with Matchers {
 
   "plugin loader" should "load the inspect plugin" in {
     val plugins = ToolFormPluginLoader.loadPlugins
-    plugins.size should be(1)
+    plugins.size should be > 1
     plugins.head shouldBe a[InspectPlugin]
   }
+}
 
+object ToolFormAppSimulator {
   def simulateAppForTest(args: Array[String]): String = {
     val resultBuffer = new StringBuffer()
     val parserOpts = CliParserOptions.commandLineOptions.map {

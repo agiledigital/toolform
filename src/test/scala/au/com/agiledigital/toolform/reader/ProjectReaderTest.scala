@@ -8,7 +8,7 @@ import org.scalatest._
 
 class ProjectReaderTest extends FlatSpec with Matchers {
 
-  val testFile = pathToFile("/test_project/environment.conf")
+  val testFile = pathToFile("/testprojects/realworldsample/environment.conf")
   val emptyFile = pathToFile("/errors/empty.conf")
   val malformedFile = pathToFile("/errors/malformed.conf")
 

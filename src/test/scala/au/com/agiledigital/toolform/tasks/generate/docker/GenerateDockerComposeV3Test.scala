@@ -2,13 +2,13 @@ package au.com.agiledigital.toolform.tasks.generate.docker
 
 import java.io.{File, StringWriter}
 
-import au.com.agiledigital.toolform.app.ToolFormApp
+import au.com.agiledigital.toolform.app.ToolFormAppSimulator
 import au.com.agiledigital.toolform.model.{Component, Resource, Service}
 import au.com.agiledigital.toolform.tasks.generate.WriterContext
 import au.com.agiledigital.toolform.tasks.generate.docker.GenerateDockerComposeV3._
 import org.scalatest.{FlatSpec, Matchers, PrivateMethodTester}
-import scala.compat.Platform.EOL
 
+import scala.compat.Platform.EOL
 import scala.io.Source
 
 class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMethodTester {
@@ -44,10 +44,9 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
       val expectedFile = new File(s"${folder.getAbsolutePath}/expected.yaml")
       val outputFile = File.createTempFile(getClass.getName, ".yaml")
       outputFile.deleteOnExit()
-      ToolFormApp.execute(List("generate", "-i", inputFile.getAbsolutePath, "-o", outputFile.getAbsolutePath).toArray) match {
-        case Left(error)    => println(s"runDockerComposeV3 --> Error: ${error.message}")
-        case Right(message) => println(s"runDockerComposeV3 --> Output: $message")
-      }
+      val output = ToolFormAppSimulator.simulateAppForTest(List("generate", "-i", inputFile.getAbsolutePath, "-o", outputFile.getAbsolutePath, "-d").toArray)
+      println(s"runDockerComposeV3 --> Output: $output")
+
       val actual = readFileIgnoringComments(outputFile)
       val expected = readFileIgnoringComments(expectedFile)
       actual should equal(expected)
