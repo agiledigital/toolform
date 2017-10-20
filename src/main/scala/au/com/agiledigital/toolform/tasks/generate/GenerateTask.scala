@@ -15,7 +15,7 @@ import scala.collection.immutable.IndexedSeq
   * You should use this class as it will automatically delegate to the relevant subtask according to the configuration
   * parsed on the command line.
   */
-class GenerateTask() extends Task with YamlWriter {
+class GenerateTask() extends Task {
 
   /**
     * The main entry point into config file generation.
