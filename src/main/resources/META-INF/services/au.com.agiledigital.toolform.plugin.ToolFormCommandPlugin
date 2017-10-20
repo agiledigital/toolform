@@ -1,2 +1,3 @@
 au.com.agiledigital.toolform.command.inspect.InspectCommand
-au.com.agiledigital.toolform.command.generate.GenerateCommand
+au.com.agiledigital.toolform.command.generate.minikube.GenerateMinikubeCommand
+au.com.agiledigital.toolform.command.generate.docker.GenerateDockerComposeV3Command

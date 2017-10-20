@@ -4,8 +4,7 @@ import enumeratum.{Enum, EnumEntry}
 import pureconfig.{CamelCase, ConfigFieldMapping, KebabCase, ProductHint}
 
 import scala.collection.SortedMap
-import scala.collection.immutable.IndexedSeq
-import scala.collection.immutable.TreeMap
+import scala.collection.immutable.{IndexedSeq, TreeMap}
 
 /**
   * An Edge makes some of the project Components and Resources available externally.

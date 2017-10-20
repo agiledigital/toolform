@@ -4,7 +4,7 @@ name := "toolform"
 
 organization := "au.com.agiledigital"
 
-scalaVersion := "2.12.3"
+scalaVersion := "2.12.4"
 
 assemblySettings
 

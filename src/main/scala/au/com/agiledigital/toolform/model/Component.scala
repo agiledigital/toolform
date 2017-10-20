@@ -14,7 +14,8 @@ import pureconfig.{CamelCase, ConfigFieldMapping, KebabCase, ProductHint}
   * @param settings       the settings for building the component.
   * @param componentGroup the group that this component is a part of (may be None).
   * @param environment    a map of environment variables to inject into the container.
-  * @param exposedPorts   a list of ports that are exposed to an outside network.
+  * @param exposedPorts  a list of ports that are exposed to other services in the internal network.
+  * @param externalPorts   a list of ports that are exposed to an outside network.
   *                       (This is usually done through the edge/nginx reverse proxy but sometimes you need to expose a container)
   */
 final case class Component(idOverride: Option[String],
@@ -24,9 +25,9 @@ final case class Component(idOverride: Option[String],
                            settings: Option[Config],
                            componentGroup: Option[ComponentGroup],
                            environment: Map[String, String] = Map(),
-                           exposedPorts: List[String] = List())
-    extends ProjectElement
-    with Service {
+                           exposedPorts: List[PortMapping] = List(),
+                           externalPorts: List[PortMapping] = List())
+    extends ToolFormService {
   override def id: String = idOverride.getOrElse(path)
 }
 

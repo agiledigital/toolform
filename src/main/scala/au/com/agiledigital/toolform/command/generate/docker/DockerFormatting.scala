@@ -1,43 +1,26 @@
 package au.com.agiledigital.toolform.command.generate.docker
 
-import au.com.agiledigital.toolform.model.{Component, SubEdgeType}
+import au.com.agiledigital.toolform.command.generate.Formatting.normaliseImageName
+import au.com.agiledigital.toolform.model.{PortMapping, SubEdgeType}
 
 /**
-  * A collection of pure formatting functions for use by the GenerateDockerComposeV3 class.
+  * A collection of pure formatting functions for use for Docker Compose file generation.
   */
 object DockerFormatting {
-  def normaliseServiceId(name: String): String =
-    name
-      .replace("/", "-")
-      .replace(" ", "-")
-      .replace("_", "-")
-      .toLowerCase
 
-  def normaliseImageName(name: String): String =
-    name
-      .replace(" ", "_")
-      .replace("-", "_")
-      .toLowerCase
+  def formatEnvironment(entry: (String, String)): String = s"- ${entry._1}=${entry._2}"
 
-  def componentServiceName(component: Component): String =
-    normaliseServiceId(component.id)
-
-  def subEdgeServiceName(projectId: String, subEdgeDef: SubEdgeDef): String =
-    normaliseServiceId(s"$projectId-${subEdgeDef.edgeId}-${subEdgeDef.subEdgeId}-nginx")
-
-  def componentImageName(projectId: String, component: Component): String =
-    normaliseImageName(s"$projectId/${component.id}")
+  def formatPort(port: PortMapping): String = {
+    val portString = port.toPortString
+    s"- \042$portString\042"
+  }
 
   def subEdgeImageName(projectId: String, subEdgeDef: SubEdgeDef): String =
     normaliseImageName(s"${projectId}_${subEdgeDef.edgeId}_${subEdgeDef.subEdgeId}_nginx")
 
-  def subEdgePortDefinition(subEdgeDef: SubEdgeDef): String =
+  def subEdgePortDefinition(subEdgeDef: SubEdgeDef): PortMapping =
     SubEdgeType.withNameInsensitive(subEdgeDef.subEdge.edgeType) match {
-      case SubEdgeType.Http  => formatPort("80:80")
-      case SubEdgeType.Https => formatPort("443:443")
+      case SubEdgeType.Http  => PortMapping(80, 80)
+      case SubEdgeType.Https => PortMapping(443, 443)
     }
-
-  def formatEnvironment(entry: (String, String)): String = s"- ${entry._1}=${entry._2}"
-
-  def formatPort(port: String): String = s"- \042$port\042"
 }
