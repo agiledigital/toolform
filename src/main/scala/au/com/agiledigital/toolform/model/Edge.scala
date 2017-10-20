@@ -78,9 +78,8 @@ final case class SubEdge(edgeType: String, edgeBuilder: Option[String], dnsPrefi
 
 object SubEdge {
   implicit val fieldMapping: ProductHint[SubEdge] =
-    ProductHint[SubEdge](new ConfigFieldMapping {
-      def apply(fieldName: String): String = if (fieldName == "edgeType") "type" else KebabCase.fromTokens(CamelCase.toTokens(fieldName))
-    })
+    ProductHint[SubEdge](ConfigFieldMapping(CamelCase, KebabCase).withOverrides("edgeType" -> "type"))
+
 }
 
 /**
