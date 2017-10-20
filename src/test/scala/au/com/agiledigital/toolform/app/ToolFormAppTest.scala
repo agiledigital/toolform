@@ -7,30 +7,30 @@ import org.scalatest.Inside.inside
 
 class ToolFormAppTest extends FlatSpec with Matchers {
 
-  val testFile = pathToFile("/test_project/environment.conf")
-  val emptyFile = pathToFile("/errors/empty.conf")
-  val malformedFile = pathToFile("/errors/malformed.conf")
+  private val testFile: File = pathToFile("/testprojects/realworldsample/environment.conf")
+  private val emptyFile: File = pathToFile("/errors/empty.conf")
+  private val malformedFile: File = pathToFile("/errors/malformed.conf")
 
-  def pathToFile(pathToFile: String): File = {
+  private def pathToFile(pathToFile: String): File = {
     val url = getClass.getResource(pathToFile)
-    val file = new File(url.toURI())
+    val file = new File(url.toURI)
     file
   }
 
-  "--inspect" should "display an inspect summary for a valid file" in {
-    val result = ToolFormApp.execute(List("--inspect", testFile.getAbsolutePath()).toArray)
+  "inspect" should "display an inspect summary for a valid file" in {
+    val result = ToolFormApp.execute(List("inspect", "-i", testFile.getAbsolutePath).toArray)
     inside(result) {
       case Right(s) =>
         s should equal("""Project: [StruxureWare Insights Portal]
                                    |	Components:
+                                   |		client/public ==> 'SE Public Web Application'
                                    |		public-api ==> 'HTTP Public API'
                                    |		se_swip_elastic-search ==> 'SE Elastic Search'
                                    |		se-swip-influx-db ==> 'SE Influx DB'
-                                   |		client/public ==> 'SE Public Web Application'
                                    |	Resources:
                                    |		se-swip-carbon
-                                   |		se-swip-mail-relay
                                    |		se-swip-db
+                                   |		se-swip-mail-relay
                                    |	Links:
                                    |		se_swip_elastic-search -> public-api
                                    |		se-swip-mail-relay -> public-api
@@ -42,18 +42,18 @@ class ToolFormAppTest extends FlatSpec with Matchers {
     }
   }
 
-  "--inspect blank file" should "display error string" in {
-    val result = ToolFormApp.execute(List("--inspect", emptyFile.getAbsolutePath()).toArray)
+  "inspect blank file" should "display error string" in {
+    val result = ToolFormApp.execute(List("inspect", "-i", emptyFile.getAbsolutePath).toArray)
     result.left.get.message should startWith("Failed to read project")
   }
 
-  "--inspect file that does not exist" should "display error string" in {
-    val result = ToolFormApp.execute(List("--inspect", "bad.txt").toArray)
+  "inspect file that does not exist" should "display error string" in {
+    val result = ToolFormApp.execute(List("inspect", "-i", "bad.txt").toArray)
     result.left.get.message should equal("File [bad.txt] does not exist.")
   }
 
-  "--inspect malformed file" should "display error string" in {
-    val result = ToolFormApp.execute(List("--inspect", malformedFile.getAbsolutePath()).toArray)
+  "inspect malformed file" should "display error string" in {
+    val result = ToolFormApp.execute(List("inspect", "-i", malformedFile.getAbsolutePath).toArray)
     result.left.get.message should include("Failed to parse project configuration")
   }
 
@@ -63,7 +63,7 @@ class ToolFormAppTest extends FlatSpec with Matchers {
   }
 
   "--inspect with missing argument option" should "display error string" in {
-    val result = ToolFormApp.execute(List("--inspect").toArray)
+    val result = ToolFormApp.execute(List("inspect").toArray)
     result.left.get.message should include("Invalid arguments")
   }
 

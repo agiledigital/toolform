@@ -3,6 +3,9 @@ package au.com.agiledigital.toolform.model
 import au.com.agiledigital.toolform.model.ReferenceType.ReferenceType
 import pureconfig.ConfigConvert
 
+import scala.collection.SortedMap
+import scala.collection.immutable.TreeMap
+
 /**
   * Configuration for a project.
   *
@@ -19,14 +22,21 @@ final case class Project(id: String,
                          resources: Map[String, Resource],
                          topology: Topology,
                          volumes: Option[Seq[Volume]],
-                         componentGroups: Option[Seq[ComponentGroup]])
+                         componentGroups: Option[Seq[ComponentGroup]]) {
+
+  val sortedComponents: SortedMap[String, Component] = TreeMap(components.toArray: _*)
+  val sortedResources: SortedMap[String, Resource]   = TreeMap(resources.toArray: _*)
+}
 
 /**
   * The network topology of the environment explains how elements will be related/connected.
   * @param links the links between components, other components and resources.
   * @param edges the edges that will make the components and resources available outside the project.
   */
-final case class Topology(links: Seq[Link], edges: Map[String, Edge])
+final case class Topology(links: Seq[Link], edges: Map[String, Edge]) {
+
+  val sortedEdges: SortedMap[String, Edge] = TreeMap(edges.toArray: _*)
+}
 
 /**
   * Points to an element of the project that is defined in another part of the project configuration.
@@ -63,6 +73,11 @@ object Reference {
 /**
   * Kinds of references that may be used in project config.
   */
+// TODO: Cannot convert to Enumeratum because of a bug which causes the following compiler errors:
+// [error] knownDirectSubclasses of ReferenceType observed before subclass components registered
+// [error] knownDirectSubclasses of ReferenceType observed before subclass resources registered
+// It seems to be a compiler bug but I don't know why it is only happening here.
+// See: https://github.com/lloydmeta/enumeratum/issues/90#issuecomment-295875285
 object ReferenceType extends Enumeration {
   type ReferenceType = Value
   val components, resources = Value
@@ -93,7 +108,7 @@ final case class Link(from: Reference, to: Reference) {
       new IllegalArgumentException(s"""Could not resolve link to path [$ref]. Available components [${project.components.keys.mkString(",")}]""")
 
     val maybeFrom = from.resolve(project)
-    val maybeTo = to.resolve(project)
+    val maybeTo   = to.resolve(project)
     (maybeFrom, maybeTo) match {
       case (None, _) => throw invalidPathError(from)
       case (_, None) => throw invalidPathError(to)

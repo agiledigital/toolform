@@ -1,6 +1,11 @@
 package au.com.agiledigital.toolform.model
 
+import enumeratum.{Enum, EnumEntry}
 import pureconfig.{CamelCase, ConfigFieldMapping, KebabCase, ProductHint}
+
+import scala.collection.SortedMap
+import scala.collection.immutable.IndexedSeq
+import scala.collection.immutable.TreeMap
 
 /**
   * An Edge makes some of the project Components and Resources available externally.
@@ -53,6 +58,8 @@ final case class Edge(subEdges: Map[String, SubEdge]) extends ProjectElement {
     * @return the unique identifier of the element.
     */
   override def id: String = "TODO: edge id" // name + "_nginx"
+
+  val sortedSubEdges: SortedMap[String, SubEdge] = TreeMap(subEdges.toArray: _*)
 }
 
 /**
@@ -71,9 +78,8 @@ final case class SubEdge(edgeType: String, edgeBuilder: Option[String], dnsPrefi
 
 object SubEdge {
   implicit val fieldMapping: ProductHint[SubEdge] =
-    ProductHint[SubEdge](new ConfigFieldMapping {
-      def apply(fieldName: String): String = if (fieldName == "edgeType") "type" else KebabCase.fromTokens(CamelCase.toTokens(fieldName))
-    })
+    ProductHint[SubEdge](ConfigFieldMapping(CamelCase, KebabCase).withOverrides("edgeType" -> "type"))
+
 }
 
 /**
@@ -86,3 +92,16 @@ object SubEdge {
   * @param targetPort     the internal port of the location.
   */
 final case class Location(location: Option[String], targetLocation: Option[String], target: Reference, targetName: String, targetPort: Int)
+
+/**
+  * An enumeration representing types a subedge can be.
+  */
+sealed trait SubEdgeType extends EnumEntry
+
+object SubEdgeType extends Enum[SubEdgeType] {
+  val values: IndexedSeq[SubEdgeType] = findValues
+
+  case object Http  extends SubEdgeType
+  case object Https extends SubEdgeType
+
+}

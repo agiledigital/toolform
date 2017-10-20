@@ -3,11 +3,16 @@ package au.com.agiledigital.toolform.app
 import java.io.File
 
 import au.com.agiledigital.toolform.model._
+import au.com.agiledigital.toolform.tasks.generate.{GenerateTask, GenerateTaskConfiguration, GenerateTaskOutputType}
 import au.com.agiledigital.toolform.version.BuildInfo
+import au.com.agiledigital.toolform.tasks.InspectTask
+import au.com.agiledigital.toolform.tasks.generate.GenerateTask
 import com.typesafe.config._
+import enumeratum.{Enum, EnumEntry}
 import pureconfig._
 import pureconfig.error.{ConfigReaderFailures, KeyNotFound}
 
+import scala.collection.immutable.IndexedSeq
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -25,17 +30,42 @@ object ToolFormApp extends App {
     for {
       toolConfiguration <- parseCommandLineArgs(args)
       project           <- readProject(toolConfiguration.in)
-      summary           <- projectSummary(project)
-    } yield summary
+      result <- toolConfiguration.mode match {
+        case ToolFormAppMode.Inspect  => new InspectTask().run(toolConfiguration, project)
+        case ToolFormAppMode.Generate => new GenerateTask().run(toolConfiguration, project)
+        case _                        => Left(ToolFormError("Cannot determine app mode"))
+      }
+    } yield result
 
   private def parseCommandLineArgs(args: Array[String]): Either[ToolFormError, ToolFormConfiguration] = {
     val parser = new scopt.OptionParser[ToolFormConfiguration](BuildInfo.name) {
       head(BuildInfo.name, BuildInfo.version)
       help("help").abbr("h").text("Displays this usage text.")
       version("version").abbr("v").text("Displays version information.")
-      opt[File]('i', "inspect") required () valueName "<file>" action { (x, c) =>
-        c.copy(in = x, inspect = true)
-      } text "Displays a summary of the project definition."
+
+      cmd("inspect")
+        .action((_, c) => c.copy(mode = ToolFormAppMode.Inspect))
+        .text("displays a summary of the project definition.")
+        .children(
+          opt[File]('i', "in-file") required () valueName "<file>" action { (x, c) =>
+            c.copy(in = x)
+          } text "the path to the project file to inspect"
+        )
+
+      cmd("generate")
+        .action((_, c) => c.copy(mode = ToolFormAppMode.Generate))
+        .text("generates config files for container orchestration.")
+        .children(
+          opt[File]('i', "in-file") required () valueName "<file>" action { (x, c) =>
+            c.copy(in = x)
+          } text "the path to the project file to inspect",
+          opt[File]('o', "out-file") required () valueName "<file>" action { (x, c) =>
+            c.copy(generateTaskConfiguration = c.generateTaskConfiguration.copy(out = x))
+          } text "the path to output the generated file/s",
+          opt[Unit]('d', "generate-docker-compose")
+            .action((_, c) => c.copy(generateTaskConfiguration = c.generateTaskConfiguration.copy(generateTaskOutputType = GenerateTaskOutputType.DockerComposeV3)))
+            .text("generate a Docker Compose v3 file as output (default)")
+        )
     }
 
     parser.parse(args, ToolFormConfiguration()).toRight(ToolFormError(s"Invalid arguments - toolform failed."))
@@ -62,30 +92,18 @@ object ToolFormApp extends App {
 
   private def resultOrCollectReadErrors(projectResult: Either[ConfigReaderFailures, Project]): Either[ToolFormError, Project] =
     projectResult.left.map(failures => {
-      val failureDetails: String = failures.toList.map(failure => {
-        val locationDescription = failure.location.map(_.description).getOrElse("Unknown location")
-        val failureMessage: String = failure.description + " @ " + locationDescription
-        failure match {
-          case KeyNotFound(key, _, _) => s"[$key] $failureMessage"
-          case _                      => failureMessage
-        }
-      }).mkString(":\n")
+      val failureDetails: String = failures.toList
+        .map(failure => {
+          val locationDescription    = failure.location.map(_.description).getOrElse("Unknown location")
+          val failureMessage: String = failure.description + " @ " + locationDescription
+          failure match {
+            case KeyNotFound(key, _, _) => s"[$key] $failureMessage"
+            case _                      => failureMessage
+          }
+        })
+        .mkString(":\n")
       ToolFormError(s"Failed to read project: [$failureDetails]")
     })
-
-  private def projectSummary(project: Project): Either[ToolFormError, String] = {
-    val projectComponentsSummary = project.components.values.map(c => s"${c.id} ==> '${c.name}'").mkString("\n\t\t")
-    val projectResourcesSummary = project.resources.values.map(r => r.id).mkString("\n\t\t")
-    val projectLinksSummary = project.topology.links.map(l => {
-      val resolvedLink = l.resolve(project)
-      s"${resolvedLink.from.id} -> ${resolvedLink.to.id}"
-    }).mkString("\n\t\t")
-    Right(
-      s"Project: [${project.name}]\n" +
-      s"\tComponents:\n\t\t$projectComponentsSummary\n" +
-      s"\tResources:\n\t\t$projectResourcesSummary\n" +
-      s"\tLinks:\n\t\t$projectLinksSummary\n")
-  }
 
   execute(args) match {
     case Left(error) =>
@@ -94,15 +112,17 @@ object ToolFormApp extends App {
     case Right(result) =>
       println(result)
   }
+
 }
 
 /**
   * The configuration for the tool.
   *
   * @param in The name of the file to be processed.
-  * @param inspect Is this an inspect command?
+  * @param mode The mode the tool should run in.
+  * @param generateTaskConfiguration The configuration used by the "Generate" task.
   */
-final case class ToolFormConfiguration(in: File = new File("."), inspect: Boolean = false)
+final case class ToolFormConfiguration(in: File = new File("."), mode: ToolFormAppMode = ToolFormAppMode.None, generateTaskConfiguration: GenerateTaskConfiguration = GenerateTaskConfiguration())
 
 /**
   * A simple error type for the toolform CLI app.
@@ -110,3 +130,16 @@ final case class ToolFormConfiguration(in: File = new File("."), inspect: Boolea
   * @param message The error detail message.
   */
 final case class ToolFormError(message: String)
+
+/**
+  * An enumeration representing all the modes this tool can function in.
+  */
+sealed trait ToolFormAppMode extends EnumEntry
+
+object ToolFormAppMode extends Enum[ToolFormAppMode] {
+  val values: IndexedSeq[ToolFormAppMode] = findValues
+
+  case object None     extends ToolFormAppMode
+  case object Inspect  extends ToolFormAppMode
+  case object Generate extends ToolFormAppMode
+}
