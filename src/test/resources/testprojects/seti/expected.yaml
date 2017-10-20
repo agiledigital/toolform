@@ -3,36 +3,36 @@
 # Date: 20/10/2017
 version: '3'
 services:
-  d61plussetimainnificonsolenginx:
+  d61plus-seti-main-nifi-console-nginx:
     image: d61plus_seti_main_nifi_console_nginx
     restart: always
     ports:
     - "80:80"
-  nifiloader:
+  nifi-loader:
     image: d61plus_seti/nifi_loader
     restart: always
     labels:
       source.path: "resources/nifi-loader"
       project.artefact: "true"
-  nifiseed:
+  nifi-seed:
     image: d61plus_seti/nifi_seed
     restart: always
     labels:
       source.path: "resources/nifi-seed"
       project.artefact: "true"
-  mongoexpress:
+  mongo-express:
     image: mongo-express
     restart: always
     environment:
     - ME_CONFIG_MONGODB_SERVER=setimongo
     ports:
     - "8081:8081"
-  setimongo:
+  seti-mongo:
     image: mongo
     restart: always
-  setistatsd:
+  seti-statsd:
     image: kamon/grafana_graphite
     restart: always
-  setizookeeper:
+  seti-zookeeper:
     image: zookeeper
     restart: always

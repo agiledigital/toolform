@@ -3,12 +3,12 @@
 # Date: 19/10/2017
 version: '3'
 services:
-  seswipmainshouldbe443nginx:
+  se-swip-main-should-be-443-nginx:
     image: se_swip_main_should_be_443_nginx
     restart: always
     ports:
     - "443:443"
-  seswipmainshouldbe80nginx:
+  se-swip-main-should-be-80-nginx:
     image: se_swip_main_should_be_80_nginx
     restart: always
     ports:

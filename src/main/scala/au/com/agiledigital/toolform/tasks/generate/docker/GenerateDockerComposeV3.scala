@@ -119,10 +119,9 @@ object GenerateDockerComposeV3 extends YamlWriter {
       }
     } yield ()
 
-  def writeResource(resource: Resource): Result[Unit] = {
-    val serviceName = resourceServiceName(resource)
+  def writeResource(resource: Resource): Result[Unit] =
     for {
-      _ <- write(s"$serviceName:")
+      _ <- write(s"${resource.id}:")
       _ <- indented {
         for {
           _ <- write(s"image: ${resource.image}")
@@ -132,7 +131,6 @@ object GenerateDockerComposeV3 extends YamlWriter {
         } yield ()
       }
     } yield ()
-  }
 
   def writeEnvironmentVariables(service: Service): Result[Unit] =
     if (service.environment.nonEmpty) {

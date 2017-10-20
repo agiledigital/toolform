@@ -3,44 +3,44 @@
 # Date: 19/10/2017
 version: '3'
 services:
-  seswipmainpublicapinginx:
+  se-swip-main-public-api-nginx:
     image: se_swip_main_public_api_nginx
     restart: always
     ports:
     - "80:80"
-  clientpublic:
+  client-public:
     image: se_swip/client/public
     restart: always
     labels:
       source.path: "client/public"
       project.artefact: "true"
-  publicapi:
+  public-api:
     image: se_swip/public_api
     restart: always
     labels:
       source.path: "server/public"
       project.artefact: "true"
-  seswipelasticsearch:
+  se-swip-elastic-search:
     image: se_swip/se_swip_elastic_search
     restart: always
     labels:
       source.path: "resources/elastic_search"
       project.artefact: "true"
-  seswipinfluxdb:
+  se-swip-influx-db:
     image: se_swip/se_swip_influx_db
     restart: always
     labels:
       source.path: "resources/influxdb"
       project.artefact: "true"
-  seswipcarbon:
+  se-swip-carbon:
     image: dockerana/carbon
     restart: always
-  seswipdb:
+  se-swip-db:
     image: docker.agiledigital.com.au:5000/agile/pgpool2
     restart: always
     environment:
     - BACKEND_PORT=5432
     - BACKEND_HOST=localhost
-  seswipmailrelay:
+  se-swip-mail-relay:
     image: djfarrelly/maildev
     restart: always
