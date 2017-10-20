@@ -3,7 +3,7 @@
 # Date: 44//10/2017
 version: '3'
 services:
-  somecomponent:
+  some-component:
     image: se_swip/some_component
     restart: always
     labels:
@@ -12,7 +12,7 @@ services:
     environment:
     - EEE=FFF
     - GGG=HHH
-  someresource:
+  some-resource:
     image: djfarrelly/maildev
     restart: always
     environment:

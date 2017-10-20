@@ -1,17 +1,16 @@
 package au.com.agiledigital.toolform.tasks.generate.docker
 
-import au.com.agiledigital.toolform.model.{Component, Resource, SubEdgeType}
+import au.com.agiledigital.toolform.model.{Component, SubEdgeType}
 
 /**
   * A collection of pure formatting functions for use by the GenerateDockerComposeV3 class.
   */
 object DockerFormatting {
-  def normaliseServiceName(name: String): String =
+  def normaliseServiceId(name: String): String =
     name
-      .replace("/", "")
-      .replace(" ", "")
-      .replace("-", "")
-      .replace("_", "")
+      .replace("/", "-")
+      .replace(" ", "-")
+      .replace("_", "-")
       .toLowerCase
 
   def normaliseImageName(name: String): String =
@@ -21,19 +20,13 @@ object DockerFormatting {
       .toLowerCase
 
   def componentServiceName(component: Component): String =
-    normaliseServiceName(component.id)
-
-  def resourceServiceName(resource: Resource): String =
-    normaliseServiceName(resource.id)
+    normaliseServiceId(component.id)
 
   def subEdgeServiceName(projectId: String, subEdgeDef: SubEdgeDef): String =
-    normaliseServiceName(s"$projectId${subEdgeDef.edgeId}${subEdgeDef.subEdgeId}nginx")
+    normaliseServiceId(s"$projectId-${subEdgeDef.edgeId}-${subEdgeDef.subEdgeId}-nginx")
 
   def componentImageName(projectId: String, component: Component): String =
     normaliseImageName(s"$projectId/${component.id}")
-
-  def resourceImageName(resource: Resource): String =
-    normaliseImageName(resource.image)
 
   def subEdgeImageName(projectId: String, subEdgeDef: SubEdgeDef): String =
     normaliseImageName(s"${projectId}_${subEdgeDef.edgeId}_${subEdgeDef.subEdgeId}_nginx")
