@@ -3,7 +3,7 @@ package au.com.agiledigital.toolform.model
 import enumeratum.{Enum, EnumEntry}
 import pureconfig.{CamelCase, ConfigFieldMapping, KebabCase, ProductHint}
 
-import scala.collection.{SortedMap}
+import scala.collection.SortedMap
 import scala.collection.immutable.IndexedSeq
 import scala.collection.immutable.TreeMap
 

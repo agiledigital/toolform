@@ -20,7 +20,7 @@ import com.typesafe.config.Config
 final case class Resource(id: String, resourceType: String, settings: Option[Config], image: String, environment: Map[String, String] = Map(), exposedPorts: List[String] = List())
     extends ProjectElement
     with Service {
-  val tagName = id
+  val tagName: String = id
 }
 
 /**

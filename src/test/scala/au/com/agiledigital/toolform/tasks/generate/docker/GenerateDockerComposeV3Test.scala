@@ -34,7 +34,7 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
       .filterNot(line => line.startsWith("#"))
       .mkString(EOL)
 
-  val testFolders = rootTestFolder
+  private val testFolders = rootTestFolder
     .listFiles()
     .filter(_.isDirectory)
 
@@ -46,7 +46,7 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
       outputFile.deleteOnExit()
       ToolFormApp.execute(List("generate", "-i", inputFile.getAbsolutePath, "-o", outputFile.getAbsolutePath).toArray) match {
         case Left(error)    => println(s"runDockerComposeV3 --> Error: ${error.message}")
-        case Right(message) => println(s"runDockerComposeV3 --> Output: ${message}")
+        case Right(message) => println(s"runDockerComposeV3 --> Output: $message")
       }
       val actual = readFileIgnoringComments(outputFile)
       val expected = readFileIgnoringComments(expectedFile)
