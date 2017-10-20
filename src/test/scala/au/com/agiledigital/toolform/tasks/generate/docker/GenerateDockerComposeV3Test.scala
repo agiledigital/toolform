@@ -62,7 +62,7 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
     val testWriter = new StringWriter()
     val testContext = WriterContext(testWriter)
 
-    writePorts(testService).exec(testContext)
+    writePorts(testService).run(testContext).value
 
     print(testWriter.toString)
 
@@ -84,7 +84,7 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
     val testWriter = new StringWriter()
     val testContext = WriterContext(testWriter)
 
-    writePorts(testService).exec(testContext)
+    writePorts(testService).run(testContext).value
 
     testWriter.toString should equal("")
   }
@@ -101,7 +101,7 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
     val testWriter = new StringWriter()
     val testContext = WriterContext(testWriter)
 
-    writeEnvironmentVariables(testService).exec(testContext)
+    writeEnvironmentVariables(testService).run(testContext).value
 
     print(testWriter.toString)
 
@@ -121,7 +121,7 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
     val testWriter = new StringWriter()
     val testContext = WriterContext(testWriter)
 
-    writeEnvironmentVariables(testService).exec(testContext)
+    writeEnvironmentVariables(testService).run(testContext).value
 
     testWriter.toString should equal("")
   }
@@ -131,7 +131,7 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
     val testWriter = new StringWriter()
     val testContext = WriterContext(testWriter)
 
-    writeEdges("", testEdges).exec(testContext)
+    writeEdges("", testEdges).run(testContext).value
 
     testWriter.toString should equal("")
   }
@@ -141,7 +141,7 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
     val testWriter = new StringWriter()
     val testContext = WriterContext(testWriter)
 
-    writeResources(testResources).exec(testContext)
+    writeResources(testResources).run(testContext).value
 
     testWriter.toString should equal("")
   }
@@ -151,7 +151,7 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
     val testWriter = new StringWriter()
     val testContext = WriterContext(testWriter)
 
-    writeComponents("", testComponents).exec(testContext)
+    writeComponents("", testComponents).run(testContext).value
 
     testWriter.toString should equal("")
   }

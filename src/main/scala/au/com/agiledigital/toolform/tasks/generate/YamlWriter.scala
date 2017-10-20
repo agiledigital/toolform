@@ -1,12 +1,12 @@
 package au.com.agiledigital.toolform.tasks.generate
 
+import cats.data._
+
 import scala.compat.Platform.EOL
-import scalaz._
 
 trait YamlWriter {
 
   type Result[A] = State[WriterContext, A]
-  type IndexedState[A] = IndexedStateT[scalaz.Id.Id, WriterContext, WriterContext, A]
 
   private val indentSize = 2
 
@@ -28,7 +28,7 @@ trait YamlWriter {
     (context.copy(indentLevel = indexLevel), context.indentLevel)
   }
 
-  def indented(innerState: IndexedState[Unit]): IndexedState[Unit] =
+  def indented(innerState: Result[Unit]): Result[Unit] =
     for {
       initialIndentation <- indent()
       _                  <- innerState

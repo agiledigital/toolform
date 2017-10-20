@@ -5,16 +5,31 @@ import java.io.File
 import au.com.agiledigital.toolform.app.{ToolFormConfiguration, ToolFormError}
 import au.com.agiledigital.toolform.model.Project
 import au.com.agiledigital.toolform.tasks.Task
-import au.com.agiledigital.toolform.tasks.generate.docker.GenerateDockerComposeV3.runDockerComposeV3
+import au.com.agiledigital.toolform.tasks.generate.docker.GenerateDockerComposeV3.runGenerateDockerComposeV3
 import enumeratum.{Enum, EnumEntry}
 
 import scala.collection.immutable.IndexedSeq
 
+/**
+  * The primary class for generating config files.
+  * You should use this class as it will automatically delegate to the relevant subtask according to the configuration
+  * parsed on the command line.
+  */
 class GenerateTask() extends Task with YamlWriter {
 
+  /**
+    * The main entry point into config file generation.
+    * It will delegate the actual generation to the relevant sub task.
+    * @see GenerateDockerComposeV3
+    *
+    * @param toolFormConfiguration  a configuration object that is parsed from command line options.
+    * @param project                the abstract project definition parsed by ToolFormApp.
+    * @return                       on success it returns a status message to print to the screen, otherwise it will return an
+    *                               error object describing what went wrong.
+    */
   override def run(toolFormConfiguration: ToolFormConfiguration, project: Project): Either[ToolFormError, String] =
     toolFormConfiguration.generateTaskConfiguration.generateTaskOutputType match {
-      case GenerateTaskOutputType.DockerComposeV3 => runDockerComposeV3(toolFormConfiguration, project)
+      case GenerateTaskOutputType.DockerComposeV3 => runGenerateDockerComposeV3(toolFormConfiguration, project)
     }
 }
 

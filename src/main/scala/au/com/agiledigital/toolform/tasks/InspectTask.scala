@@ -7,7 +7,7 @@ class InspectTask() extends Task {
 
   override def run(toolFormConfiguration: ToolFormConfiguration, project: Project): Either[ToolFormError, String] = {
     val projectComponentsSummary = project.sortedComponents.values.map(c => s"${c.id} ==> '${c.name}'").mkString("\n\t\t")
-    val projectResourcesSummary = project.sortedResources.values.map(r => r.id).mkString("\n\t\t")
+    val projectResourcesSummary  = project.sortedResources.values.map(r => r.id).mkString("\n\t\t")
     val projectLinksSummary = project.topology.links
       .map(l => {
         val resolvedLink = l.resolve(project)
