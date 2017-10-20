@@ -21,7 +21,7 @@ services:
       source.path: "resources/nifi-seed"
       project.artefact: "true"
   mongoexpress:
-    image: mongoexpress
+    image: mongo-express
     restart: always
     environment:
     - ME_CONFIG_MONGODB_SERVER=setimongo

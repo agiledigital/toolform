@@ -14,7 +14,7 @@ services:
     - "22"
     - "33"
   somehoribleresourcenamewithspacesandsymbols:
-    image: aaa///terriiiible______image_name____
+    image: aaa///terriiiible   -  image name __
     restart: always
     ports:
     - "8080"

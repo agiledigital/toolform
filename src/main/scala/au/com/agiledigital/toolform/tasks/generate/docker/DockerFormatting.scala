@@ -32,9 +32,6 @@ object DockerFormatting {
   def componentImageName(projectId: String, component: Component): String =
     normaliseImageName(s"$projectId/${component.id}")
 
-  def resourceImageName(resource: Resource): String =
-    normaliseImageName(resource.image)
-
   def subEdgeImageName(projectId: String, subEdgeDef: SubEdgeDef): String =
     normaliseImageName(s"${projectId}_${subEdgeDef.edgeId}_${subEdgeDef.subEdgeId}_nginx")
 
