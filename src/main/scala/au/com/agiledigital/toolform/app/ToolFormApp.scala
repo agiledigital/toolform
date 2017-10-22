@@ -2,7 +2,7 @@ package au.com.agiledigital.toolform.app
 
 import java.util.ServiceLoader
 
-import au.com.agiledigital.toolform.plugin.ToolFormPlugin
+import au.com.agiledigital.toolform.plugin.ToolFormCommandPlugin
 import au.com.agiledigital.toolform.version.BuildInfo
 import com.monovore.decline._
 
@@ -32,8 +32,8 @@ object CliParserOptions {
 }
 
 object ToolFormPluginLoader {
-  def loadPlugins: Seq[ToolFormPlugin] =
-    ServiceLoader.load(classOf[ToolFormPlugin]).asScala.toSeq
+  def loadPlugins: Seq[ToolFormCommandPlugin] =
+    ServiceLoader.load(classOf[ToolFormCommandPlugin]).asScala.toSeq
 }
 
 /**

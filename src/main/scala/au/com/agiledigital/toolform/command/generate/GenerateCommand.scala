@@ -1,11 +1,11 @@
-package au.com.agiledigital.toolform.tasks.generate
+package au.com.agiledigital.toolform.command.generate
 
 import java.nio.file.Path
 
 import au.com.agiledigital.toolform.app.ToolFormError
-import au.com.agiledigital.toolform.plugin.ToolFormPlugin
+import au.com.agiledigital.toolform.plugin.ToolFormCommandPlugin
 import au.com.agiledigital.toolform.reader.ProjectReader
-import au.com.agiledigital.toolform.tasks.generate.docker.GenerateDockerComposeV3.runGenerateDockerComposeV3
+import au.com.agiledigital.toolform.command.generate.docker.GenerateDockerComposeV3.runGenerateDockerComposeV3
 import com.monovore.decline._
 import cats.implicits._
 
@@ -14,7 +14,7 @@ import cats.implicits._
   * You should use this class as it will automatically delegate to the relevant subtask according to the configuration
   * parsed on the command line.
   */
-class GenerateTask() extends ToolFormPlugin {
+class GenerateCommand() extends ToolFormCommandPlugin {
 
   def command: Opts[Either[ToolFormError, String]] =
     Opts.subcommand("generate", "generates config files for container orchestration.") {

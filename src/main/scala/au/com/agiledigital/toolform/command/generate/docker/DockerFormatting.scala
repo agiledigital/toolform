@@ -1,4 +1,4 @@
-package au.com.agiledigital.toolform.tasks.generate.docker
+package au.com.agiledigital.toolform.command.generate.docker
 
 import au.com.agiledigital.toolform.model.{Component, SubEdgeType}
 

@@ -3,7 +3,7 @@ package au.com.agiledigital.toolform.app
 import java.io.File
 
 import au.com.agiledigital.toolform.app.ToolFormAppSimulator.simulateAppForTest
-import au.com.agiledigital.toolform.plugin.InspectPlugin
+import au.com.agiledigital.toolform.command.inspect.InspectCommand
 import au.com.agiledigital.toolform.version.BuildInfo
 import org.scalatest._
 import com.monovore.decline._
@@ -69,7 +69,7 @@ class ToolFormAppTest extends FlatSpec with Matchers {
   "plugin loader" should "load the inspect plugin" in {
     val plugins = ToolFormPluginLoader.loadPlugins
     plugins.size should be > 1
-    plugins.head shouldBe a[InspectPlugin]
+    plugins.head shouldBe a[InspectCommand]
   }
 }
 

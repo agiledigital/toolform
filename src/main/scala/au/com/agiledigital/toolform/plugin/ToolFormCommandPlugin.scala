@@ -10,6 +10,6 @@ import com.monovore.decline._
   * META-INF/services/au.com.agiledigital.toolform.plugin.ToolFormPlugin
   * on the runtime classpath.
   */
-trait ToolFormPlugin {
+trait ToolFormCommandPlugin {
   def command: Opts[Either[ToolFormError, String]]
 }

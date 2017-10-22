@@ -1,11 +1,11 @@
-package au.com.agiledigital.toolform.tasks.generate.docker
+package au.com.agiledigital.toolform.command.generate.docker
 
 import java.io.{File, StringWriter}
 
 import au.com.agiledigital.toolform.app.ToolFormAppSimulator
 import au.com.agiledigital.toolform.model.{Component, Resource, Service}
-import au.com.agiledigital.toolform.tasks.generate.WriterContext
-import au.com.agiledigital.toolform.tasks.generate.docker.GenerateDockerComposeV3._
+import au.com.agiledigital.toolform.command.generate.WriterContext
+import au.com.agiledigital.toolform.command.generate.docker.GenerateDockerComposeV3._
 import org.scalatest.{FlatSpec, Matchers, PrivateMethodTester}
 
 import scala.compat.Platform.EOL

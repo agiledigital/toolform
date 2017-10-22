@@ -1,17 +1,17 @@
-package au.com.agiledigital.toolform.plugin
+package au.com.agiledigital.toolform.command.inspect
 
 import java.nio.file.Path
 
 import au.com.agiledigital.toolform.app.ToolFormError
 import au.com.agiledigital.toolform.model.Project
+import au.com.agiledigital.toolform.plugin.ToolFormCommandPlugin
 import au.com.agiledigital.toolform.reader.ProjectReader
-
 import com.monovore.decline._
 
 /**
   * Prints a summary of a project definition.
   */
-final class InspectPlugin extends ToolFormPlugin {
+final class InspectCommand extends ToolFormCommandPlugin {
 
   override val command: Opts[Either[ToolFormError, String]] =
     Opts

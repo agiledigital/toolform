@@ -1,12 +1,12 @@
-package au.com.agiledigital.toolform.tasks.generate.docker
+package au.com.agiledigital.toolform.command.generate.docker
 
 import java.io.{BufferedWriter, File, FileWriter}
 
 import au.com.agiledigital.toolform.app.ToolFormError
 import au.com.agiledigital.toolform.model._
-import au.com.agiledigital.toolform.tasks.generate.docker.DockerFormatting._
-import au.com.agiledigital.toolform.tasks.generate.docker.SubEdgeDef.subEdgeDefsFromProject
-import au.com.agiledigital.toolform.tasks.generate.{WriterContext, YamlWriter}
+import au.com.agiledigital.toolform.command.generate.docker.DockerFormatting._
+import au.com.agiledigital.toolform.command.generate.docker.SubEdgeDef.subEdgeDefsFromProject
+import au.com.agiledigital.toolform.command.generate.{WriterContext, YamlWriter}
 import au.com.agiledigital.toolform.util.DateUtil
 import au.com.agiledigital.toolform.version.BuildInfo
 import cats.data.State
@@ -15,7 +15,7 @@ import cats.implicits._
 /**
   * Takes an abstract project definition and outputs it to a file in the Docker Compose V3 YAML format.
   *
-  * Should be run via the GenerateTask class and not directly.
+  * Should be run via the [[au.com.agiledigital.toolform.command.generate.GenerateCommand]] class and not directly.
   *
   * @see https://docs.docker.com/compose/compose-file/
   */

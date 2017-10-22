@@ -1,11 +1,11 @@
-package au.com.agiledigital.toolform.plugin
+package au.com.agiledigital.toolform.command.inspect
 
 import java.io.File
 
 import org.scalatest.Inside.inside
 import org.scalatest._
 
-class InspectPluginTest extends FlatSpec with Matchers {
+class InspectCommandTest extends FlatSpec with Matchers {
 
   val testFile: File = pathToFile("/testprojects/realworldsample/environment.conf")
   val emptyFile: File = pathToFile("/errors/empty.conf")
@@ -17,7 +17,7 @@ class InspectPluginTest extends FlatSpec with Matchers {
   }
 
   "inspect plugin" should "display an inspect summary for a valid file" in {
-    val result = new InspectPlugin().execute(testFile.toPath)
+    val result = new InspectCommand().execute(testFile.toPath)
     inside(result) {
       case Right(s) =>
         s should equal("""Project: [StruxureWare Insights Portal]
@@ -42,7 +42,7 @@ class InspectPluginTest extends FlatSpec with Matchers {
   }
 
   "error when reading project" should "display error string" in {
-    val result = new InspectPlugin().execute(emptyFile.toPath)
+    val result = new InspectCommand().execute(emptyFile.toPath)
     result.left.get.message should startWith("Failed to read project")
   }
 }
