@@ -13,7 +13,7 @@ Features
 
 Key features of Toolform include:
 
-* **Infrastructure as code**: Your source project artefacts, runtimes, topology, and services (both in-house and 3rd party) are described using a high-level configuration syntax. This allows a blueprint of your project and all of its runtime dependencies to be versioned and treated as you would any other code;
+* **Infrastructure as code**: Your project artefacts, runtimes, topology, and services (both in-house and 3rd party) are described using a high-level configuration syntax. This allows a blueprint of your project and all of its runtime dependencies to be versioned and treated as you would any other code;
 
 * **Target platform agnostic**: Whether targeting a developer's local environment, or setting up the full CI/CD pipeline from bare metal, pluggable backends process the definition to the target tool or platform; and
 
@@ -39,9 +39,9 @@ Options and flags:
 
 Subcommands:
     inspect
-        Inspect and print the content of the project file
+        inspect and print the content of the project file.
     generate
-        generates config files for container orchestration.
+        generates config files for a target backend.
 ```
 
 Inspect Command
@@ -51,7 +51,7 @@ toolform inspect --help
 
 Usage: toolform inspect --input <file>
 
-Inspect and print the content of the project file
+inspect and print the content of the project file.
 
 Options and flags:
     --help
@@ -67,17 +67,17 @@ toolform generate --help
 
 Usage: toolform generate --in-file <file> --out-file <file> --generate-docker-compose
 
-generates config files for container orchestration.
+generates config files for a target backend.
 
 Options and flags:
     --help
         Display this help text.
     --in-file <file>, -i <file>
-        the path to the project config file
-    --out-file <file>, -o <file>
-        the path to output the generated file(s)
+        the path to the input project file
+    --out-path <path>, -o <path>
+        the path to output the generated file/s. This can be a file or directory depending on which output backend used.
     --generate-docker-compose, -d
-        generate a Docker Compose v3 file as output (default)
+        use the Docker Compose v3 backend (default)
 
 ```
 
@@ -89,8 +89,50 @@ To generate docker compose output for a project, run:
 
 This will generate docker compose files into your `target-dir`.
 
-Project Conf Format
+Project Configuration
 ================================================================================
+
+A toolform project is defined in [HOCON](https://github.com/lightbend/config/blob/master/HOCON.md) syntax. The configuration is usually split into three separate files: `environment.conf`, `project.conf` and `topology.conf`. The command line tool only accepts a single file as an input but the HOCON format allows for a file to include any number of other files.
+
+environment.conf
+--------------------------------------------------------------------------------
+
+This file specifies configuration values that get [substituted](https://github.com/lightbend/config/blob/master/HOCON.md#substitutions) into the other config files using path expressions.
+HOCON also supports environment variable subsititution so you can provide a default value that can be overridden by an environment variable.
+For example, in the following code snippet  the default port of the API server is set to 8080 but it can also be overwriten by the `API_SERVER_PORT` environment variable.
+
+```
+environment.component.api_server.port = 8080
+environment.component.api_server.port = ${?API_SERVER_PORT}
+```
+
+At the end of this file you can include the other project configuration files like so
+
+```
+include "project.conf"
+include "topology.conf"
+```
+
+project.conf
+--------------------------------------------------------------------------------
+
+This file defines all the components and resources that make up a project.
+
+A component is a service that is part of the project, for example, an API server.
+A resource is a service that is usually provided by a third party, for example, a Postgres database server.
+
+topology.conf
+--------------------------------------------------------------------------------
+
+This file defines how components and resources are connected together and how services are exposed to the outside world.
+
+A link is currently only informational, and defines a link between two services.
+
+An edge is a collection of sub-edges, where each sub-edge defines how a service is exposed.
+A sub-edge could be manifested through a reverse proxy such as Nginx or could be platform specific depending on the backend.
+
+Sample Project
+--------------------------------------------------------------------------------
 
 The best place to start understanding the project definition format is to look at the example in
 src/test/resources/testprojects/realworldsample, starting with the environment.conf file.
