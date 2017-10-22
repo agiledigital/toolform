@@ -54,17 +54,17 @@ object ToolFormApp extends App {
 
       cmd("generate")
         .action((_, c) => c.copy(mode = ToolFormAppMode.Generate))
-        .text("generates config files for container orchestration.")
+        .text("generates config files for a target backend.")
         .children(
           opt[File]('i', "in-file") required () valueName "<file>" action { (x, c) =>
             c.copy(in = x)
-          } text "the path to the project file to inspect",
-          opt[File]('o', "out-file") required () valueName "<file>" action { (x, c) =>
+          } text "the path to the input project file",
+          opt[File]('o', "out-path") required () valueName "<path>" action { (x, c) =>
             c.copy(generateTaskConfiguration = c.generateTaskConfiguration.copy(out = x))
-          } text "the path to output the generated file/s",
+          } text "the path to output the generated file/s. This can be a file or directory depending on which output backend used.",
           opt[Unit]('d', "generate-docker-compose")
             .action((_, c) => c.copy(generateTaskConfiguration = c.generateTaskConfiguration.copy(generateTaskOutputType = GenerateTaskOutputType.DockerComposeV3)))
-            .text("generate a Docker Compose v3 file as output (default)")
+            .text("use the Docker Compose v3 backend (default)")
         )
     }
 

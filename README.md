@@ -39,9 +39,9 @@ Options and flags:
 
 Subcommands:
     inspect
-        Inspect and print the content of the project file
+        inspect and print the content of the project file.
     generate
-        generates config files for container orchestration.
+        generates config files for a target backend.
 ```
 
 Inspect Command
@@ -51,7 +51,7 @@ toolform inspect --help
 
 Usage: toolform inspect --input <file>
 
-Inspect and print the content of the project file
+inspect and print the content of the project file.
 
 Options and flags:
     --help
@@ -67,17 +67,17 @@ toolform generate --help
 
 Usage: toolform generate --in-file <file> --out-file <file> --generate-docker-compose
 
-generates config files for container orchestration.
+generates config files for a target backend.
 
 Options and flags:
     --help
         Display this help text.
     --in-file <file>, -i <file>
-        the path to the project config file
-    --out-file <file>, -o <file>
-        the path to output the generated file(s)
+        the path to the input project file
+    --out-path <path>, -o <path>
+        the path to output the generated file/s. This can be a file or directory depending on which output backend used.
     --generate-docker-compose, -d
-        generate a Docker Compose v3 file as output (default)
+        use the Docker Compose v3 backend (default)
 
 ```
 
