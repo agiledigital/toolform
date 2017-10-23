@@ -4,6 +4,7 @@ import java.io.File
 
 import org.scalatest.Inside.inside
 import org.scalatest._
+import org.scalatest.EitherValues._
 
 class InspectCommandTest extends FlatSpec with Matchers {
 
@@ -43,6 +44,6 @@ class InspectCommandTest extends FlatSpec with Matchers {
 
   "error when reading project" should "display error string" in {
     val result = new InspectCommand().execute(emptyFile.toPath)
-    result.left.get.message should startWith("Failed to read project")
+    result.left.value.message should startWith("Failed to read project")
   }
 }
