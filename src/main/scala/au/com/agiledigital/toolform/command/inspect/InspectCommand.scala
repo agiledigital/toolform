@@ -20,11 +20,19 @@ final class InspectCommand extends ToolFormCommandPlugin {
       }
       .map(execute)
 
-  def execute(inputFilePath: Path): Either[ToolFormError, String] =
-    for {
-      project <- ProjectReader.readProject(inputFilePath.toFile)
-      summary <- summary(project)
-    } yield summary
+  def execute(inputFilePath: Path): Either[ToolFormError, String] = {
+    val inputFile = inputFilePath.toFile
+    if (!inputFile.exists()) {
+      Left(ToolFormError(s"Input file [${inputFile}] does not exist."))
+    } else if (!inputFile.isFile) {
+      Left(ToolFormError(s"Input file [${inputFile}] is not a valid file."))
+    } else {
+      for {
+        project <- ProjectReader.readProject(inputFilePath.toFile)
+        summary <- summary(project)
+      } yield summary
+    }
+  }
 
   private def summary(project: Project): Either[ToolFormError, String] = {
     val projectComponentsSummary = project.components.values.map(c => s"${c.id} ==> '${c.name}'").mkString("\n\t\t")

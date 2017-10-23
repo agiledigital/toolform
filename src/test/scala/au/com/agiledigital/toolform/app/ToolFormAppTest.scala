@@ -43,7 +43,7 @@ class ToolFormAppTest extends FlatSpec with Matchers {
 
   "inspect file that does not exist" should "display error string" in {
     val result = simulateAppForTest(List("inspect", "-i", "bad.txt").toArray)
-    result should startWith("File [bad.txt] does not exist.")
+    result should startWith("Input file [bad.txt] does not exist.")
   }
 
   "inspect malformed file" should "display error string" in {
@@ -67,7 +67,7 @@ class ToolFormAppTest extends FlatSpec with Matchers {
   }
 
   "plugin loader" should "load the inspect plugin" in {
-    val plugins = ToolFormPluginLoader.loadPlugins
+    val plugins = ToolFormPluginLoader.plugins
     plugins.size should be > 1
     plugins.head shouldBe a[InspectCommand]
   }
@@ -76,7 +76,7 @@ class ToolFormAppTest extends FlatSpec with Matchers {
 object ToolFormAppSimulator {
   def simulateAppForTest(args: Array[String]): String = {
     val resultBuffer = new StringBuffer()
-    val parserOpts = CliParserOptions.commandLineOptions.map {
+    val parserOpts = CliParserConfiguration.commandLineOptions.map {
       case Left(ToolFormError(message)) => resultBuffer.append(message); Unit
       case Right(result)                => resultBuffer.append(result); Unit
     }

@@ -5,6 +5,7 @@ import java.io.File
 import au.com.agiledigital.toolform.model.Project
 import org.scalatest.Inside.inside
 import org.scalatest._
+import org.scalatest.EitherValues._
 
 class ProjectReaderTest extends FlatSpec with Matchers {
 
@@ -28,17 +29,17 @@ class ProjectReaderTest extends FlatSpec with Matchers {
 
   "inspect blank file" should "display error string" in {
     val result = ProjectReader.readProject(emptyFile)
-    result.left.get.message should startWith("Failed to read project")
+    result.left.value.message should startWith("Failed to read project")
   }
 
   "reading file that does not exist" should "display error string" in {
     val result = ProjectReader.readProject(new File("bad.txt"))
-    result.left.get.message should startWith("File [bad.txt] does not exist.")
+    result.left.value.message should startWith("File [bad.txt] does not exist.")
   }
 
   "inspect malformed file" should "display error string" in {
     val result = ProjectReader.readProject(malformedFile)
-    result.left.get.message should startWith("Failed to parse project configuration")
+    result.left.value.message should startWith("Failed to parse project configuration")
   }
 
   // TODO: Empty components/Resources/Links combos

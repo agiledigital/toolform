@@ -21,11 +21,23 @@ class GenerateCommand() extends ToolFormCommandPlugin {
       (Opts.option[Path]("in-file", short = "i", metavar = "file", help = "the path to the project config file") |@|
         Opts.option[Path]("out-file", short = "o", metavar = "file", help = "the path to output the generated file(s)") |@|
         Opts.flag("generate-docker-compose", short = "d", help = "generate a Docker Compose v3 file as output (default)"))
-        .map { (inputFile: Path, outputFile: Path, d: Unit) =>
-          for {
-            project <- ProjectReader.readProject(inputFile.toFile)
-            status  <- runGenerateDockerComposeV3(inputFile.toFile.getAbsolutePath, outputFile.toFile, project)
-          } yield status
+        .map { (inputFilePath: Path, outputFilePath: Path, d: Unit) =>
+          val inputFile = inputFilePath.toFile
+          val outputFile = outputFilePath.toFile
+          if (!inputFile.exists()) {
+            Left(ToolFormError(s"Input file [${inputFile}] does not exist."))
+          } else if (!inputFile.isFile) {
+            Left(ToolFormError(s"Input file [${inputFile}] is not a valid file."))
+          } else if (!outputFile.exists()) {
+            Left(ToolFormError(s"Input file [${inputFile}] does not exist."))
+          } else if (!outputFile.isFile) {
+            Left(ToolFormError(s"Input file [${inputFile}] is not a valid file."))
+          } else {
+            for {
+              project <- ProjectReader.readProject(inputFile)
+              status  <- runGenerateDockerComposeV3(inputFile.getAbsolutePath, outputFile, project)
+            } yield status
+          }
         }
     }
 }

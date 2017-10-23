@@ -6,6 +6,7 @@ import au.com.agiledigital.toolform.plugin.ToolFormCommandPlugin
 import au.com.agiledigital.toolform.version.BuildInfo
 import com.monovore.decline._
 
+
 import scala.collection.JavaConverters._
 
 /**
@@ -16,7 +17,7 @@ object ToolFormApp
       name = BuildInfo.name,
       version = BuildInfo.version,
       header = "Generates deployment configuration from a project definition.",
-      main = CliParserOptions.commandLineOptions.map {
+      main = CliParserConfiguration.commandLineOptions.map {
         case Left(error) =>
           Console.err.println(error)
           System.exit(1)
@@ -26,13 +27,33 @@ object ToolFormApp
       }
     )
 
-object CliParserOptions {
-  val commandLineOptions: Opts[Either[ToolFormError, String]] =
-    ToolFormPluginLoader.loadPlugins.map(_.command).reduce(_ orElse _)
+/**
+  * Builds command line parser options that include all available
+  * toolform commands.  The options are in monovore/decline style, accessed
+  * via the [[Opts]] trait and runnable by wrapping in a [[Command]] or
+  * [[CommandApp]].
+  */
+object CliParserConfiguration {
+
+  /**
+    * Command line parser options.
+    * @return Opts style command line parser options for use in a decline
+    *         parser/app runner.
+    */
+  def commandLineOptions: Opts[Either[ToolFormError, String]] =
+    ToolFormPluginLoader.plugins.map(_.command).reduce(_ orElse _)
 }
 
+/**
+  * Discovers and loads all available [[ToolFormCommandPlugin]]s.
+  */
 object ToolFormPluginLoader {
-  def loadPlugins: Seq[ToolFormCommandPlugin] =
+
+  /**
+    * Available command plugins loaded from the runtime environment.
+    * @return Collection of command plugins.
+    */
+  def plugins: Seq[ToolFormCommandPlugin] =
     ServiceLoader.load(classOf[ToolFormCommandPlugin]).asScala.toSeq
 }
 
