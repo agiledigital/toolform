@@ -6,7 +6,7 @@ import au.com.agiledigital.toolform.plugin.ToolFormCommandPlugin
 import au.com.agiledigital.toolform.version.BuildInfo
 import com.monovore.decline._
 
-
+import scala.collection.immutable.Seq
 import scala.collection.JavaConverters._
 
 /**
@@ -53,8 +53,11 @@ object ToolFormPluginLoader {
     * Available command plugins loaded from the runtime environment.
     * @return Collection of command plugins.
     */
-  def plugins: Seq[ToolFormCommandPlugin] =
-    ServiceLoader.load(classOf[ToolFormCommandPlugin]).asScala.toSeq
+  def plugins: Seq[ToolFormCommandPlugin] = {
+    val serviceLoaderIterator = ServiceLoader.load(classOf[ToolFormCommandPlugin]).iterator()
+    val scalaIterator: Iterator[ToolFormCommandPlugin] = serviceLoaderIterator.asScala
+    scalaIterator.toIndexedSeq
+  }
 }
 
 /**
