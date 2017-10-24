@@ -1,4 +1,4 @@
-package au.com.agiledigital.toolform.tasks.generate
+package au.com.agiledigital.toolform.command.generate
 
 import cats.data._
 
