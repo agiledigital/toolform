@@ -28,10 +28,8 @@ class GenerateCommand() extends ToolFormCommandPlugin {
             Left(ToolFormError(s"Input file [${inputFile}] does not exist."))
           } else if (!inputFile.isFile) {
             Left(ToolFormError(s"Input file [${inputFile}] is not a valid file."))
-          } else if (!outputFile.exists()) {
-            Left(ToolFormError(s"Output file [${outputFile}] does not exist."))
-          } else if (!outputFile.isFile) {
-            Left(ToolFormError(s"Output file [${outputFile}] is not a valid file."))
+          } else if (!outputFile.getParentFile.exists()) {
+            Left(ToolFormError(s"Output directory [${outputFile.getParentFile}] does not exist."))
           } else {
             for {
               project <- ProjectReader.readProject(inputFile)

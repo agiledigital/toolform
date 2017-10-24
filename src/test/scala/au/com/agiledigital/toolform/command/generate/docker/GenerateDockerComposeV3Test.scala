@@ -53,6 +53,12 @@ class GenerateDockerComposeV3Test extends FlatSpec with Matchers with PrivateMet
     }
   }
 
+  "generate docker output with invalid out dir" should "fail with error" in {
+    val inputFile: File = pathToFile("/testprojects/realworldsample/environment.conf")
+    val result          = ToolFormAppSimulator.simulateAppForTest(List("generate", "-i", inputFile.getAbsolutePath, "-o", "/tmp/foo/bar/baz/generate-docker-test.out", "-d").toArray)
+    result should startWith("Output directory [/tmp/foo/bar/baz] does not exist")
+  }
+
   "writePorts" should "write ports if exposedPorts is defined" in {
     val testService = new Service {
       def environment = Map()
