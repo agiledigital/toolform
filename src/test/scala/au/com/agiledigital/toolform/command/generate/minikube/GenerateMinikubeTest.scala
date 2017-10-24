@@ -13,7 +13,7 @@ class GenerateMinikubeTest extends FlatSpec with Matchers with PrivateMethodTest
   private val rootTestFolder: File = pathToFile("/testprojects/minikube")
 
   private def pathToFile(pathToFile: String): File = {
-    val url = getClass.getResource(pathToFile)
+    val url  = getClass.getResource(pathToFile)
     val file = new File(url.toURI)
     file
   }
@@ -37,14 +37,14 @@ class GenerateMinikubeTest extends FlatSpec with Matchers with PrivateMethodTest
 
   for (folder <- testFolders) {
     "runGenerateMinikube" should s"generate valid Kubernetes (Minikube flavour) specs for scenario: ${folder.getName}" in {
-      val inputFile = new File(s"${folder.getAbsolutePath}/environment.conf")
+      val inputFile    = new File(s"${folder.getAbsolutePath}/environment.conf")
       val expectedFile = new File(s"${folder.getAbsolutePath}/expected.yaml")
-      val outputFile = File.createTempFile(getClass.getName, ".yaml")
+      val outputFile   = File.createTempFile(getClass.getName, ".yaml")
       outputFile.deleteOnExit()
       val result = new GenerateMinikubeCommand().execute(inputFile.toPath, outputFile.toPath)
       result match {
         case Right(_) =>
-          val actual = readFileIgnoringComments(outputFile)
+          val actual   = readFileIgnoringComments(outputFile)
           val expected = readFileIgnoringComments(expectedFile)
           actual should equal(expected)
         case Left(error) => fail(error.message)
@@ -54,7 +54,7 @@ class GenerateMinikubeTest extends FlatSpec with Matchers with PrivateMethodTest
 
   "generate minikube output with invalid out dir" should "fail with error" in {
     val inputFile: File = pathToFile("/testprojects/minikube/realworldsample/environment.conf")
-    val result = ToolFormAppSimulator.simulateAppForTest(List("generate", "minikube", "-i", inputFile.getAbsolutePath, "-o", "/tmp/foo/bar/baz/generate-docker-test.out").toArray)
+    val result          = ToolFormAppSimulator.simulateAppForTest(List("generate", "minikube", "-i", inputFile.getAbsolutePath, "-o", "/tmp/foo/bar/baz/generate-docker-test.out").toArray)
     result should startWith("Output directory [/tmp/foo/bar/baz] does not exist")
   }
 }

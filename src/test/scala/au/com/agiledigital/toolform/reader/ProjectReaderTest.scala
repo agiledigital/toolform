@@ -9,12 +9,12 @@ import org.scalatest._
 
 class ProjectReaderTest extends FlatSpec with Matchers {
 
-  val testFile = pathToFile("/testprojects/inspect/realworldsample/environment.conf")
-  val emptyFile = pathToFile("/errors/empty.conf")
+  val testFile      = pathToFile("/testprojects/inspect/realworldsample/environment.conf")
+  val emptyFile     = pathToFile("/errors/empty.conf")
   val malformedFile = pathToFile("/errors/malformed.conf")
 
   def pathToFile(pathToFile: String): File = {
-    val url = getClass.getResource(pathToFile)
+    val url  = getClass.getResource(pathToFile)
     val file = new File(url.toURI)
     file
   }

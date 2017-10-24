@@ -166,16 +166,6 @@ class GenerateDockerComposeV3CommandTest extends FlatSpec with Matchers with Pri
     testWriter.toString should equal("")
   }
 
-  "writeEdges" should "not write anything if an empty list of edges is provided" in {
-    val testEdges   = List[SubEdgeDef]()
-    val testWriter  = new StringWriter()
-    val testContext = WriterContext(testWriter)
-
-    writeEdges("", testEdges).run(testContext).value
-
-    testWriter.toString should equal("")
-  }
-
   "writeResources" should "not write anything if an empty list of resources is provided" in {
     val testResources = List[Resource]()
     val testWriter    = new StringWriter()

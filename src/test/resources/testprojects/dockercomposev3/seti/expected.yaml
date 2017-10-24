@@ -3,11 +3,6 @@
 # Date: 20/10/2017
 version: '3'
 services:
-  d61plus-seti-main-nifi-console-nginx:
-    image: d61plus_seti_main_nifi_console_nginx
-    restart: always
-    ports:
-    - "80/tcp"
   nifi-loader:
     image: d61plus_seti/nifi_loader
     restart: always

@@ -8,11 +8,11 @@ import org.scalatest._
 
 class InspectCommandTest extends FlatSpec with Matchers {
 
-  val testFile: File = pathToFile("/testprojects/inspect/realworldsample/environment.conf")
+  val testFile: File  = pathToFile("/testprojects/inspect/realworldsample/environment.conf")
   val emptyFile: File = pathToFile("/errors/empty.conf")
 
   def pathToFile(pathToFile: String): File = {
-    val url = getClass.getResource(pathToFile)
+    val url  = getClass.getResource(pathToFile)
     val file = new File(url.toURI)
     file
   }

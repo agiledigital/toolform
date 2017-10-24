@@ -23,9 +23,9 @@ object ServiceWriter extends KubernetesWriter {
   }
 
   private def writePortEntry(portMapping: PortMapping): Result[Unit] = {
-    val port       = portMapping.port
-    val targetPort = portMapping.containerPort
-    val protocol   = portMapping.protocol.toString.toUpperCase
+    val port = portMapping.port
+    val targetPort = portMapping.targetPort
+    val protocol = portMapping.protocol.toString.toUpperCase
     for {
       _ <- write(s"-")
       _ <- indented {
@@ -68,7 +68,7 @@ object ServiceWriter extends KubernetesWriter {
     */
   def writeService(service: ToolFormService): Result[Unit] = {
     val serviceName = determineServiceName(service)
-    val nodeType    = if (service.externalPorts.nonEmpty) "NodePort" else "ClusterIP"
+    val nodeType = if (service.externalPorts.nonEmpty) "NodePort" else "ClusterIP"
 
     for {
       _ <- write("---")

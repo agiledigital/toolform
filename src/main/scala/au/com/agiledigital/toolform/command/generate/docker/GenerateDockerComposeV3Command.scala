@@ -7,7 +7,6 @@ import au.com.agiledigital.toolform.app.ToolFormError
 import au.com.agiledigital.toolform.command.generate.Formatting._
 import au.com.agiledigital.toolform.command.generate.docker.DockerFormatting._
 import au.com.agiledigital.toolform.command.generate.docker.GenerateDockerComposeV3Command.runGenerateDockerComposeV3
-import au.com.agiledigital.toolform.command.generate.docker.SubEdgeDef.subEdgeDefsFromProject
 import au.com.agiledigital.toolform.command.generate.{WriterContext, YamlWriter}
 import au.com.agiledigital.toolform.model._
 import au.com.agiledigital.toolform.plugin.ToolFormGenerateCommandPlugin
@@ -70,7 +69,6 @@ object GenerateDockerComposeV3Command extends YamlWriter {
         _ <- write("services:")
         _ <- indented {
           for {
-            _ <- writeEdges(project.id, subEdgeDefsFromProject(project).toList)
             _ <- writeComponents(project.id, project.sortedComponents.values.toList)
             _ <- writeResources(project.sortedResources.values.toList)
           } yield ()
@@ -87,34 +85,15 @@ object GenerateDockerComposeV3Command extends YamlWriter {
     }
   }
 
-  def writeEdges(projectId: String, subEdgeDefs: List[SubEdgeDef]): Result[Unit] =
-    subEdgeDefs.traverse_((subEdgeDef) => writeSubEdge(projectId, subEdgeDef))
-
   def writeComponents(projectId: String, components: List[Component]): Result[Unit] =
     components.traverse_((component) => writeComponent(projectId, component))
 
   def writeResources(resources: List[Resource]): Result[Unit] =
     resources.traverse_(writeResource)
 
-  def writeSubEdge(projectId: String, subEdgeDef: SubEdgeDef): Result[Unit] = {
-    val serviceName = subEdgeServiceName(projectId, subEdgeDef)
-    val imageName = subEdgeImageName(projectId, subEdgeDef)
-    for {
-      _ <- write(s"$serviceName:")
-      _ <- indented {
-        for {
-          _ <- write(s"image: $imageName")
-          _ <- write(s"restart: always")
-          _ <- write(s"ports:")
-          _ <- write(formatPort(subEdgePortDefinition(subEdgeDef)))
-        } yield ()
-      }
-    } yield ()
-  }
-
   def writeComponent(projectId: String, component: Component): Result[Unit] = {
     val serviceName = componentServiceName(component)
-    val imageName = componentImageName(projectId, component)
+    val imageName   = componentImageName(projectId, component)
     for {
       _ <- write(s"$serviceName:")
       _ <- indented {

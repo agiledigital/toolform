@@ -33,7 +33,7 @@ object GenerateCommand {
     * @return Collection of command plugins.
     */
   def plugins: Seq[ToolFormGenerateCommandPlugin] = {
-    val serviceLoaderIterator = ServiceLoader.load(classOf[ToolFormGenerateCommandPlugin]).iterator()
+    val serviceLoaderIterator                                  = ServiceLoader.load(classOf[ToolFormGenerateCommandPlugin]).iterator()
     val scalaIterator: Iterator[ToolFormGenerateCommandPlugin] = serviceLoaderIterator.asScala
     scalaIterator.toIndexedSeq
   }
