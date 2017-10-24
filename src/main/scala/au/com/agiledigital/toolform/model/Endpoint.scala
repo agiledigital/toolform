@@ -35,7 +35,7 @@ import scala.reflect.ClassTag
   *
   * Will create two endpoints named 'public-api' and 'public' it will use the target and port-mapping properties to map to a service.
   *
-  * @param endpointType   the type of the subedge.
+  * @param endpointType   the type of the endpoint.
   * @param target         the ID of the [[ToolFormService]] that this endpoint will connect to.
   * @param portMapping    the mapping of ports from the endpoint to the target service.
   * @param tlsConfig      An object describing the behaviour of TLS on the endpoint.

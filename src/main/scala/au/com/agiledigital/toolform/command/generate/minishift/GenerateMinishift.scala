@@ -7,6 +7,7 @@ import au.com.agiledigital.toolform.app.ToolFormError
 import au.com.agiledigital.toolform.command.generate.minikube.DeploymentWriter.writeDeployment
 import au.com.agiledigital.toolform.command.generate.minikube.ServiceWriter.writeService
 import au.com.agiledigital.toolform.command.generate.minishift.GenerateMinishift.runGenerateMinishift
+import au.com.agiledigital.toolform.command.generate.minishift.RouterWriter.writeRouter
 import au.com.agiledigital.toolform.command.generate.{WriterContext, YamlWriter}
 import au.com.agiledigital.toolform.model._
 import au.com.agiledigital.toolform.plugin.ToolFormGenerateCommandPlugin
@@ -74,6 +75,7 @@ object GenerateMinishift extends YamlWriter {
         _ <- project.resources.values.filter(shouldWriteService).toList.traverse_(writeService)
         _ <- project.components.values.toList.traverse_((component) => writeDeployment(project.id, component))
         _ <- project.resources.values.toList.traverse_((resource) => writeDeployment(project.id, resource))
+        _ <- project.topology.endpoints.toList.traverse_ { case (endpointId, endpoint) => writeRouter(endpointId, endpoint) }
       } yield ()
 
       val context = WriterContext(writer)

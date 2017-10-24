@@ -1,2 +1,3 @@
 au.com.agiledigital.toolform.command.generate.minikube.GenerateMinikubeCommand
 au.com.agiledigital.toolform.command.generate.docker.GenerateDockerComposeV3Command
+au.com.agiledigital.toolform.command.generate.minishift.GenerateMinishift

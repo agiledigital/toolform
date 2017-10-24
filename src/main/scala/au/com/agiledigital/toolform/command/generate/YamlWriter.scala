@@ -15,6 +15,14 @@ trait YamlWriter {
     (context, ())
   }
 
+  /**
+    * A function that prints a message and then just passes state through without modifying it
+    */
+  protected def trace(message: String): State[WriterContext, Unit] = State[WriterContext, Unit] { context =>
+    println(message)
+    (context, ())
+  }
+
   private val indentSize = 2
 
   protected def write(text: String): Result[Unit] = State[WriterContext, Unit] { context =>

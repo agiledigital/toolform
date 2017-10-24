@@ -7,6 +7,7 @@ import au.com.agiledigital.toolform.model.Project
 import com.typesafe.config.ConfigFactory
 import pureconfig._
 import pureconfig.error.{ConfigReaderFailures, KeyNotFound}
+import pureconfig.module.enumeratum._
 
 import scala.util.{Failure, Success, Try}
 
