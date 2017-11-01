@@ -1,10 +1,10 @@
 package au.com.agiledigital.toolform.model
 
-import au.com.agiledigital.toolform.model.ReferenceType.ReferenceType
+import enumeratum.{Enum, EnumEntry}
 import pureconfig.ConfigConvert
 
 import scala.collection.SortedMap
-import scala.collection.immutable.TreeMap
+import scala.collection.immutable.{IndexedSeq, TreeMap}
 
 /**
   * Configuration for a project.
@@ -47,8 +47,8 @@ final case class Topology(links: Seq[Link], edges: Map[String, Edge]) {
   */
 final case class Reference(refType: ReferenceType, refId: String) {
   def resolve(project: Project): Option[ProjectElement] = refType match {
-    case ReferenceType.components => project.components.get(refId)
-    case ReferenceType.resources  => project.resources.get(refId)
+    case ReferenceType.Components => project.components.get(refId)
+    case ReferenceType.Resources  => project.resources.get(refId)
     case _                        => None
   }
   override def toString: String = s"$refType.$refId"
@@ -62,7 +62,7 @@ object Reference {
         if (referenceParts.length == 2) {
           val refType = referenceParts(0)
           val refId   = referenceParts(1)
-          Some(Reference(ReferenceType.withName(refType), refId))
+          Some(Reference(ReferenceType.withNameInsensitive(refType), refId))
         } else
           throw new IllegalArgumentException(s"Failed to parse reference [$s] - it was not of format [type.id]")
       },
@@ -73,14 +73,14 @@ object Reference {
 /**
   * Kinds of references that may be used in project config.
   */
-// TODO: Cannot convert to Enumeratum because of a bug which causes the following compiler errors:
-// [error] knownDirectSubclasses of ReferenceType observed before subclass components registered
-// [error] knownDirectSubclasses of ReferenceType observed before subclass resources registered
-// It seems to be a compiler bug but I don't know why it is only happening here.
-// See: https://github.com/lloydmeta/enumeratum/issues/90#issuecomment-295875285
-object ReferenceType extends Enumeration {
-  type ReferenceType = Value
-  val components, resources = Value
+sealed trait ReferenceType extends EnumEntry
+
+object ReferenceType extends Enum[ReferenceType] {
+  val values: IndexedSeq[ReferenceType] = findValues
+
+  case object Components extends ReferenceType
+  case object Resources  extends ReferenceType
+
 }
 
 /**

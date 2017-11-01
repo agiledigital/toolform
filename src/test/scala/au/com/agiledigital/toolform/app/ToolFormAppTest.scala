@@ -10,12 +10,12 @@ import com.monovore.decline._
 
 class ToolFormAppTest extends FlatSpec with Matchers {
 
-  private val testFile: File = pathToFile("/testprojects/realworldsample/environment.conf")
-  private val emptyFile: File = pathToFile("/errors/empty.conf")
+  private val testFile: File      = pathToFile("/testprojects/inspect/realworldsample/environment.conf")
+  private val emptyFile: File     = pathToFile("/errors/empty.conf")
   private val malformedFile: File = pathToFile("/errors/malformed.conf")
 
   private def pathToFile(pathToFile: String): File = {
-    val url = getClass.getResource(pathToFile)
+    val url  = getClass.getResource(pathToFile)
     val file = new File(url.toURI)
     file
   }

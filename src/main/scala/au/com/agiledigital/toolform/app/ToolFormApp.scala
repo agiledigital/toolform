@@ -54,7 +54,7 @@ object ToolFormPluginLoader {
     * @return Collection of command plugins.
     */
   def plugins: Seq[ToolFormCommandPlugin] = {
-    val serviceLoaderIterator = ServiceLoader.load(classOf[ToolFormCommandPlugin]).iterator()
+    val serviceLoaderIterator                          = ServiceLoader.load(classOf[ToolFormCommandPlugin]).iterator()
     val scalaIterator: Iterator[ToolFormCommandPlugin] = serviceLoaderIterator.asScala
     scalaIterator.toIndexedSeq
   }

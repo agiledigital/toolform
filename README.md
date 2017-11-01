@@ -23,7 +23,7 @@ Usage
 ================================================================================
 
 ```
-toolfrom --help
+toolform --help
 
 Usage:
     toolform inspect
@@ -41,7 +41,7 @@ Subcommands:
     inspect
         Inspect and print the content of the project file
     generate
-        generates config files for container orchestration.
+        Generate config files targeting a particular platform
 ```
 
 Inspect Command
@@ -65,9 +65,30 @@ Generate Command
 ```
 toolform generate --help
 
-Usage: toolform generate --in-file <file> --out-file <file> --generate-docker-compose
+Usage:
+    toolform generate minikube
+    toolform generate dockercompose
 
-generates config files for container orchestration.
+Generate config files targeting a particular platform
+
+Options and flags:
+    --help
+        Display this help text.
+
+Subcommands:
+    minikube
+        generates config files for Kubernetes (Minikube) container orchestration
+    dockercompose
+        generates config files for container orchestration
+
+```
+
+```
+toolform generate minikube --help
+
+Usage: toolform generate minikube --in-file <file> --out-file <file>
+
+generates config files for Kubernetes (Minikube) container orchestration
 
 Options and flags:
     --help
@@ -76,22 +97,36 @@ Options and flags:
         the path to the project config file
     --out-file <file>, -o <file>
         the path to output the generated file(s)
-    --generate-docker-compose, -d
-        generate a Docker Compose v3 file as output (default)
 
+```
+
+```
+toolform generate dockercompose --help
+
+Usage: toolform generate dockercompose --in-file <file> --out-file <file>
+
+generates config files for container orchestration
+
+Options and flags:
+    --help
+        Display this help text.
+    --in-file <file>, -i <file>
+        the path to the project config file
+    --out-file <file>, -o <file>
+        the path to output the generated file(s)
 ```
 
 Example Usage
 --------------------------------------------------------------------------------
 
 To generate docker compose output for a project, run:
-`toolform generate -i your-project.conf -o ./target-dir -d`
+`toolform generate dockercompose -i your-project.conf -o ./target-dir/target-file.yaml`
 
-This will generate docker compose files into your `target-dir`.
+This will generate a docker compose file at the specified path.
 
 Project Conf Format
 ================================================================================
 
 The best place to start understanding the project definition format is to look at the example in
-src/test/resources/testprojects/realworldsample, starting with the environment.conf file.
+src/test/resources/testprojects/inspect/realworldsample, starting with the environment.conf file.
 

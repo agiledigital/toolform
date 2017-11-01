@@ -2,13 +2,13 @@ package au.com.agiledigital.toolform.command.inspect
 
 import java.io.File
 
+import org.scalatest.EitherValues._
 import org.scalatest.Inside.inside
 import org.scalatest._
-import org.scalatest.EitherValues._
 
 class InspectCommandTest extends FlatSpec with Matchers {
 
-  val testFile: File = pathToFile("/testprojects/realworldsample/environment.conf")
+  val testFile: File = pathToFile("/testprojects/inspect/realworldsample/environment.conf")
   val emptyFile: File = pathToFile("/errors/empty.conf")
 
   def pathToFile(pathToFile: String): File = {

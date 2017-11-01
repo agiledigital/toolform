@@ -1,41 +1,40 @@
 package au.com.agiledigital.toolform.command.generate
 
-import java.nio.file.Path
+import java.util.ServiceLoader
 
 import au.com.agiledigital.toolform.app.ToolFormError
-import au.com.agiledigital.toolform.plugin.ToolFormCommandPlugin
-import au.com.agiledigital.toolform.reader.ProjectReader
-import au.com.agiledigital.toolform.command.generate.docker.GenerateDockerComposeV3.runGenerateDockerComposeV3
+import au.com.agiledigital.toolform.plugin.{ToolFormCommandPlugin, ToolFormGenerateCommandPlugin}
 import com.monovore.decline._
-import cats.implicits._
+
+import scala.collection.JavaConverters._
+import scala.collection.immutable.Seq
 
 /**
-  * The primary class for generating config files.
-  * You should use this class as it will automatically delegate to the relevant subtask according to the configuration
-  * parsed on the command line.
+  * Exposes [[ToolFormGenerateCommandPlugin]]s under the generate sub command.
   */
-class GenerateCommand() extends ToolFormCommandPlugin {
+class GenerateCommand extends ToolFormCommandPlugin {
 
-  def command: Opts[Either[ToolFormError, String]] =
-    Opts.subcommand("generate", "generates config files for container orchestration.") {
-      (Opts.option[Path]("in-file", short = "i", metavar = "file", help = "the path to the project config file") |@|
-        Opts.option[Path]("out-file", short = "o", metavar = "file", help = "the path to output the generated file(s)") |@|
-        Opts.flag("generate-docker-compose", short = "d", help = "generate a Docker Compose v3 file as output (default)"))
-        .map { (inputFilePath: Path, outputFilePath: Path, d: Unit) =>
-          val inputFile = inputFilePath.toFile
-          val outputFile = outputFilePath.toFile
-          if (!inputFile.exists()) {
-            Left(ToolFormError(s"Input file [${inputFile}] does not exist."))
-          } else if (!inputFile.isFile) {
-            Left(ToolFormError(s"Input file [${inputFile}] is not a valid file."))
-          } else if (!outputFile.getParentFile.exists()) {
-            Left(ToolFormError(s"Output directory [${outputFile.getParentFile}] does not exist."))
-          } else {
-            for {
-              project <- ProjectReader.readProject(inputFile)
-              status  <- runGenerateDockerComposeV3(inputFile.getAbsolutePath, outputFile, project)
-            } yield status
-          }
-        }
-    }
+  override val command: Opts[Either[ToolFormError, String]] = {
+    Opts
+      .subcommand("generate", "Generate config files targeting a particular platform") {
+        GenerateCommand.plugins.map(_.command).reduce(_ orElse _)
+      }
+  }
+}
+
+/**
+  * Discovers and loads all available [[ToolFormGenerateCommandPlugin]]s.
+  */
+object GenerateCommand {
+
+  /**
+    * Available command plugins loaded from the runtime environment.
+    *
+    * @return Collection of command plugins.
+    */
+  def plugins: Seq[ToolFormGenerateCommandPlugin] = {
+    val serviceLoaderIterator = ServiceLoader.load(classOf[ToolFormGenerateCommandPlugin]).iterator()
+    val scalaIterator: Iterator[ToolFormGenerateCommandPlugin] = serviceLoaderIterator.asScala
+    scalaIterator.toIndexedSeq
+  }
 }
