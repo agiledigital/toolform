@@ -74,7 +74,7 @@ class GenerateMinikubeCommand() extends ToolFormGenerateCommandPlugin with YamlW
       // Final state needs to be read for anything to happen because of lazy evaluation
       val _ = writeFile.run(context).value
 
-      Right("Completed Successfully")
+      Right(s"Wrote configuration to [$outFile].\nRun with `kubectl apply -f '$outFile'`")
     } finally {
       writer.close()
     }

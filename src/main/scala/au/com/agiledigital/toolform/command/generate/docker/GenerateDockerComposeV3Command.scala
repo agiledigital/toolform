@@ -75,7 +75,7 @@ class GenerateDockerComposeV3Command extends ToolFormGenerateCommandPlugin with 
       // Final state needs to be read for anything to happen because of lazy evaluation
       val _ = writeFile.run(context).value
 
-      Right("Completed Successfully")
+      Right(s"Wrote configuration to [$outFile].\nRun with `docker-compose up -f '$outFile'`")
     } finally {
       writer.close()
     }
