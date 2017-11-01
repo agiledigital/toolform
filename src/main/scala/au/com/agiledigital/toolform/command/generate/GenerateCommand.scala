@@ -16,7 +16,7 @@ class GenerateCommand extends ToolFormCommandPlugin {
 
   override val command: Opts[Either[ToolFormError, String]] = {
     Opts
-      .subcommand("generate", "Generate config files targeting a particular platform.") {
+      .subcommand("generate", "Generate config files targeting a particular platform") {
         GenerateCommand.plugins.map(_.command).reduce(_ orElse _)
       }
   }

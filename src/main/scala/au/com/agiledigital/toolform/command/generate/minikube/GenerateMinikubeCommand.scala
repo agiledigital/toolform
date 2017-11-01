@@ -29,7 +29,7 @@ class GenerateMinikubeCommand extends ToolFormGenerateCommandPlugin {
     * The primary class for generating Kubernetes (Minikube) config files.
     */
   def command: Opts[Either[ToolFormError, String]] =
-    Opts.subcommand("minikube", "generates config files for Kubernetes (Minikube) container orchestration.") {
+    Opts.subcommand("minikube", "generates config files for Kubernetes (Minikube) container orchestration") {
       (Opts.option[Path]("in-file", short = "i", metavar = "file", help = "the path to the project config file") |@|
         Opts.option[Path]("out-file", short = "o", metavar = "file", help = "the path to output the generated file(s)"))
         .map(execute)
