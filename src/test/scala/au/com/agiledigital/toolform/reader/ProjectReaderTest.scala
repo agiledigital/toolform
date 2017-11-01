@@ -3,13 +3,13 @@ package au.com.agiledigital.toolform.reader
 import java.io.File
 
 import au.com.agiledigital.toolform.model.Project
+import org.scalatest.EitherValues._
 import org.scalatest.Inside.inside
 import org.scalatest._
-import org.scalatest.EitherValues._
 
 class ProjectReaderTest extends FlatSpec with Matchers {
 
-  val testFile = pathToFile("/testprojects/realworldsample/environment.conf")
+  val testFile = pathToFile("/testprojects/inspect/realworldsample/environment.conf")
   val emptyFile = pathToFile("/errors/empty.conf")
   val malformedFile = pathToFile("/errors/malformed.conf")
 

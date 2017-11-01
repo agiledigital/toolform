@@ -3,9 +3,9 @@ package au.com.agiledigital.toolform.command.generate.docker
 import java.io.{File, StringWriter}
 
 import au.com.agiledigital.toolform.app.ToolFormAppSimulator
-import au.com.agiledigital.toolform.model.{Component, Resource, Service}
 import au.com.agiledigital.toolform.command.generate.WriterContext
 import au.com.agiledigital.toolform.command.generate.docker.GenerateDockerComposeV3Command._
+import au.com.agiledigital.toolform.model._
 import org.scalatest.{FlatSpec, Matchers, PrivateMethodTester}
 
 import scala.compat.Platform.EOL
@@ -44,17 +44,17 @@ class GenerateDockerComposeV3CommandTest extends FlatSpec with Matchers with Pri
       val expectedFile = new File(s"${folder.getAbsolutePath}/expected.yaml")
       val outputFile   = File.createTempFile(getClass.getName, ".yaml")
       outputFile.deleteOnExit()
-      val output = ToolFormAppSimulator.simulateAppForTest(List("generate", "-i", inputFile.getAbsolutePath, "-o", outputFile.getAbsolutePath, "-d").toArray)
+      val output = new GenerateDockerComposeV3Command().execute(inputFile.toPath, outputFile.toPath)
       println(s"runDockerComposeV3 --> Output: $output")
-      val actual = readFileIgnoringComments(outputFile)
+      val actual   = readFileIgnoringComments(outputFile)
       val expected = readFileIgnoringComments(expectedFile)
       actual should equal(expected)
     }
   }
 
   "generate docker output with invalid out dir" should "fail with error" in {
-    val inputFile: File = pathToFile("/testprojects/realworldsample/environment.conf")
-    val result          = ToolFormAppSimulator.simulateAppForTest(List("generate", "-i", inputFile.getAbsolutePath, "-o", "/tmp/foo/bar/baz/generate-docker-test.out", "-d").toArray)
+    val inputFile: File = pathToFile("/testprojects/dockercomposev3/realworldsample/environment.conf")
+    val result          = ToolFormAppSimulator.simulateAppForTest(List("generate", "dockercompose", "-i", inputFile.getAbsolutePath, "-o", "/tmp/foo/bar/baz/generate-docker-test.out").toArray)
     result should startWith("Output directory [/tmp/foo/bar/baz] does not exist")
   }
 
