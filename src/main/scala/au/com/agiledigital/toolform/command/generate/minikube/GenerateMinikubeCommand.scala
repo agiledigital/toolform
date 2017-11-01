@@ -8,7 +8,7 @@ import au.com.agiledigital.toolform.command.generate.minikube.DeploymentWriter.w
 import au.com.agiledigital.toolform.command.generate.minikube.ServiceWriter.writeService
 import au.com.agiledigital.toolform.command.generate.{WriterContext, YamlWriter}
 import au.com.agiledigital.toolform.model._
-import au.com.agiledigital.toolform.plugin.ToolFormCommandPlugin
+import au.com.agiledigital.toolform.plugin.ToolFormGenerateCommandPlugin
 import au.com.agiledigital.toolform.reader.ProjectReader
 import au.com.agiledigital.toolform.util.DateUtil
 import au.com.agiledigital.toolform.version.BuildInfo
@@ -22,33 +22,31 @@ import com.monovore.decline.Opts
   *
   * @see https://kubernetes.io/docs/api-reference/v1.8/
   */
-class GenerateMinikubeCommand() extends ToolFormCommandPlugin with YamlWriter {
+class GenerateMinikubeCommand() extends ToolFormGenerateCommandPlugin with YamlWriter {
 
   /**
     * The primary class for generating Kubernetes (Minikube) config files.
     */
   def command: Opts[Either[ToolFormError, String]] =
-    Opts.subcommand("generate", "generates config files for container orchestration.") {
-      Opts.subcommand("minikube", "generates config files for Kubernetes (Minikube) container orchestration.") {
-        (Opts.option[Path]("in-file", short = "i", metavar = "file", help = "the path to the project config file") |@|
-          Opts.option[Path]("out-file", short = "o", metavar = "file", help = "the path to output the generated file(s)"))
-          .map { (inputFilePath: Path, outputFilePath: Path) =>
-            val inputFile  = inputFilePath.toFile
-            val outputFile = outputFilePath.toFile
-            if (!inputFile.exists()) {
-              Left(ToolFormError(s"Input file [${inputFile}] does not exist."))
-            } else if (!inputFile.isFile) {
-              Left(ToolFormError(s"Input file [${inputFile}] is not a valid file."))
-            } else if (!outputFile.getParentFile.exists()) {
-              Left(ToolFormError(s"Output directory [${outputFile.getParentFile}] does not exist."))
-            } else {
-              for {
-                project <- ProjectReader.readProject(inputFile)
-                status  <- runGenerateMinikube(inputFile.getAbsolutePath, outputFile, project)
-              } yield status
-            }
+    Opts.subcommand("minikube", "generates config files for Kubernetes (Minikube) container orchestration.") {
+      (Opts.option[Path]("in-file", short = "i", metavar = "file", help = "the path to the project config file") |@|
+        Opts.option[Path]("out-file", short = "o", metavar = "file", help = "the path to output the generated file(s)"))
+        .map { (inputFilePath: Path, outputFilePath: Path) =>
+          val inputFile = inputFilePath.toFile
+          val outputFile = outputFilePath.toFile
+          if (!inputFile.exists()) {
+            Left(ToolFormError(s"Input file [${inputFile}] does not exist."))
+          } else if (!inputFile.isFile) {
+            Left(ToolFormError(s"Input file [${inputFile}] is not a valid file."))
+          } else if (!outputFile.getParentFile.exists()) {
+            Left(ToolFormError(s"Output directory [${outputFile.getParentFile}] does not exist."))
+          } else {
+            for {
+              project <- ProjectReader.readProject(inputFile)
+              status  <- runGenerateMinikube(inputFile.getAbsolutePath, outputFile, project)
+            } yield status
           }
-      }
+        }
     }
 
   /**

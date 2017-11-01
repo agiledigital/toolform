@@ -4,12 +4,12 @@ import au.com.agiledigital.toolform.app.ToolFormError
 import com.monovore.decline._
 
 /**
-  * Extension point to add new commands to toolform.
+  * Extension point to add new generate commands to toolform.
   * Uses Java SPI - See [[java.util.ServiceLoader]] for details.
   * Implement the trait and register the new implementation in
-  * META-INF/services/au.com.agiledigital.toolform.plugin.ToolFormCommandPlugin
+  * META-INF/services/au.com.agiledigital.toolform.plugin.ToolFormGenerateCommandPlugin
   * on the runtime classpath.
   */
-trait ToolFormCommandPlugin {
+trait ToolFormGenerateCommandPlugin {
   def command: Opts[Either[ToolFormError, String]]
 }

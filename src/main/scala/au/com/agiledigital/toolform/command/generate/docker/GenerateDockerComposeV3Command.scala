@@ -14,37 +14,35 @@ import au.com.agiledigital.toolform.version.BuildInfo
 import cats.implicits._
 import com.monovore.decline.Opts
 import au.com.agiledigital.toolform.command.generate.docker.SubEdgeDef.subEdgeDefsFromProject
-import au.com.agiledigital.toolform.plugin.ToolFormCommandPlugin
+import au.com.agiledigital.toolform.plugin.ToolFormGenerateCommandPlugin
 
 /**
   * Takes an abstract project definition and outputs it to a file in the Docker Compose V3 YAML format.
   *
   * @see https://docs.docker.com/compose/compose-file/
   */
-class GenerateDockerComposeV3Command extends ToolFormCommandPlugin with YamlWriter {
+class GenerateDockerComposeV3Command extends ToolFormGenerateCommandPlugin with YamlWriter {
 
   def command: Opts[Either[ToolFormError, String]] =
-    Opts.subcommand("generate", "generates config files for container orchestration.") {
-      Opts.subcommand("dockercompose", "generates config files for container orchestration.") {
-        (Opts.option[Path]("in-file", short = "i", metavar = "file", help = "the path to the project config file") |@|
-          Opts.option[Path]("out-file", short = "o", metavar = "file", help = "the path to output the generated file(s)"))
-          .map { (inputFilePath: Path, outputFilePath: Path) =>
-            val inputFile = inputFilePath.toFile
-            val outputFile = outputFilePath.toFile
-            if (!inputFile.exists()) {
-              Left(ToolFormError(s"Input file [${inputFile}] does not exist."))
-            } else if (!inputFile.isFile) {
-              Left(ToolFormError(s"Input file [${inputFile}] is not a valid file."))
-            } else if (!outputFile.getParentFile.exists()) {
-              Left(ToolFormError(s"Output directory [${outputFile.getParentFile}] does not exist."))
-            } else {
-              for {
-                project <- ProjectReader.readProject(inputFile)
-                status  <- runGenerateDockerComposeV3(inputFile.getAbsolutePath, outputFile, project)
-              } yield status
-            }
+    Opts.subcommand("dockercompose", "generates config files for container orchestration.") {
+      (Opts.option[Path]("in-file", short = "i", metavar = "file", help = "the path to the project config file") |@|
+        Opts.option[Path]("out-file", short = "o", metavar = "file", help = "the path to output the generated file(s)"))
+        .map { (inputFilePath: Path, outputFilePath: Path) =>
+          val inputFile = inputFilePath.toFile
+          val outputFile = outputFilePath.toFile
+          if (!inputFile.exists()) {
+            Left(ToolFormError(s"Input file [${inputFile}] does not exist."))
+          } else if (!inputFile.isFile) {
+            Left(ToolFormError(s"Input file [${inputFile}] is not a valid file."))
+          } else if (!outputFile.getParentFile.exists()) {
+            Left(ToolFormError(s"Output directory [${outputFile.getParentFile}] does not exist."))
+          } else {
+            for {
+              project <- ProjectReader.readProject(inputFile)
+              status  <- runGenerateDockerComposeV3(inputFile.getAbsolutePath, outputFile, project)
+            } yield status
           }
-      }
+        }
     }
 
   /**
