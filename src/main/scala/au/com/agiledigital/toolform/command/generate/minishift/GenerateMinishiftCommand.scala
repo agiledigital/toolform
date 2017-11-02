@@ -6,7 +6,7 @@ import java.nio.file.Path
 import au.com.agiledigital.toolform.app.ToolFormError
 import au.com.agiledigital.toolform.command.generate.minikube.DeploymentWriter.writeDeployment
 import au.com.agiledigital.toolform.command.generate.minikube.ServiceWriter.writeService
-import au.com.agiledigital.toolform.command.generate.minishift.GenerateMinishift.runGenerateMinishift
+import au.com.agiledigital.toolform.command.generate.minishift.GenerateMinishiftCommand.runGenerateMinishift
 import au.com.agiledigital.toolform.command.generate.minishift.RouterWriter.writeRouter
 import au.com.agiledigital.toolform.command.generate.{WriterContext, YamlWriter}
 import au.com.agiledigital.toolform.model._
@@ -24,7 +24,7 @@ import com.monovore.decline.Opts
   *
   * @see https://kubernetes.io/docs/api-reference/v1.8/
   */
-class GenerateMinishift extends ToolFormGenerateCommandPlugin {
+class GenerateMinishiftCommand extends ToolFormGenerateCommandPlugin {
 
   /**
     * The primary class for generating Kubernetes (Minishift) config files.
@@ -54,7 +54,7 @@ class GenerateMinishift extends ToolFormGenerateCommandPlugin {
   }
 }
 
-object GenerateMinishift extends YamlWriter {
+object GenerateMinishiftCommand extends YamlWriter {
 
   /**
     * The main entry point into the Kubernetes (Minishift) file generation.

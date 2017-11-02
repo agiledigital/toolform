@@ -7,7 +7,7 @@ import org.scalatest.{FlatSpec, Matchers, PrivateMethodTester}
 import scala.compat.Platform.EOL
 import scala.io.Source
 
-class GenerateMinishiftTest extends FlatSpec with Matchers with PrivateMethodTester {
+class GenerateMinishiftCommandTest extends FlatSpec with Matchers with PrivateMethodTester {
 
   private val rootTestFolder: File = pathToFile("/testprojects/minishift")
 
@@ -40,7 +40,7 @@ class GenerateMinishiftTest extends FlatSpec with Matchers with PrivateMethodTes
       val expectedFile = new File(s"${folder.getAbsolutePath}/expected.yaml")
       val outputFile   = File.createTempFile(getClass.getName, ".yaml")
       outputFile.deleteOnExit()
-      val result = new GenerateMinishift().execute(inputFile.toPath, outputFile.toPath)
+      val result = new GenerateMinishiftCommand().execute(inputFile.toPath, outputFile.toPath)
       result match {
         case Right(_) =>
           val actual   = readFileIgnoringComments(outputFile)
