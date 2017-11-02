@@ -44,7 +44,7 @@ object RouterWriter extends KubernetesWriter {
     * @param endpoint   the endpoint object that will be used to create the route spec.
     * @return           a state monad encapsulating the context of the writing process after the method has completed.
     */
-  def writeRouter(endpointId: String, endpoint: Endpoint): Result[Unit] = {
+  def writeRouter(endpointId: String, endpoint: Endpoint): Result[Unit] =
     for {
       _ <- write("---")
       _ <- write("apiVersion: v1")
@@ -63,5 +63,4 @@ object RouterWriter extends KubernetesWriter {
             } yield ()
           }
     } yield ()
-  }
 }
