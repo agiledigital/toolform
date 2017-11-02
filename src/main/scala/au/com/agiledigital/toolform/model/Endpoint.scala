@@ -53,11 +53,6 @@ object Endpoint {
   implicit val fieldMapping: ProductHint[Endpoint] =
     ProductHint[Endpoint](ConfigFieldMapping(CamelCase, KebabCase).withOverrides("endpointType" -> "type"))
 
-  // TODO: This was taken from the pureconfig.modules.enumeratum library since I could not
-  // work out how to import the implicit methods.
-  implicit def enumeratumConfigConvert[A <: EnumEntry](implicit enum: Enum[A], ct: ClassTag[A]): ConfigConvert[A] =
-    viaNonEmptyStringOpt[A](enum.withNameOption, _.entryName)
-
   /**
     * An enumeration representing the types an endpoint can be.
     */
