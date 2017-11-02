@@ -16,16 +16,18 @@ assemblyOption in assembly ~= {
   _.copy(cacheUnzip = true)
 }
 
+val pureconfigVersion = "0.8.0"
+
 //Define dependencies.
 libraryDependencies ++= Seq(
   "org.scalatest"         %% "scalatest"             % "3.0.1" % "test",
   "org.scalacheck"        %% "scalacheck"            % "1.13.4" % "test",
   "com.typesafe"          % "config"                 % "1.3.1",
-  "com.github.pureconfig" %% "pureconfig"            % "0.8.0",
+  "com.github.pureconfig" %% "pureconfig"            % pureconfigVersion,
+  "com.github.pureconfig" %% "pureconfig-enumeratum" % pureconfigVersion,
   "com.monovore"          %% "decline"               % "0.3.0",
   "com.beachape"          %% "enumeratum"            % "1.5.12",
   "org.typelevel"         %% "cats-core"             % "0.9.0",
-  "com.github.pureconfig" %% "pureconfig-enumeratum" % "0.8.0"
 )
 
 // For Settings/Task reference, see http://www.scala-sbt.org/release/sxr/sbt/Keys.scala.html
