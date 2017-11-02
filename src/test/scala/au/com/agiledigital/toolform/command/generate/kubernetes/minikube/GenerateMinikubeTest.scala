@@ -1,4 +1,4 @@
-package au.com.agiledigital.toolform.command.generate.minikube
+package au.com.agiledigital.toolform.command.generate.kubernetes.minikube
 
 import java.io.File
 

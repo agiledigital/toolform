@@ -1,13 +1,12 @@
-package au.com.agiledigital.toolform.command.generate.minishift
+package au.com.agiledigital.toolform.command.generate.kubernetes.minikube
 
 import java.io.{BufferedWriter, File, FileWriter}
 import java.nio.file.Path
 
 import au.com.agiledigital.toolform.app.ToolFormError
-import au.com.agiledigital.toolform.command.generate.minikube.DeploymentWriter.writeDeployment
-import au.com.agiledigital.toolform.command.generate.minikube.ServiceWriter.writeService
-import au.com.agiledigital.toolform.command.generate.minishift.GenerateMinishiftCommand.runGenerateMinishift
-import au.com.agiledigital.toolform.command.generate.minishift.RouterWriter.writeRouter
+import au.com.agiledigital.toolform.command.generate.kubernetes.DeploymentWriter.writeDeployment
+import au.com.agiledigital.toolform.command.generate.kubernetes.minikube.GenerateMinikubeCommand.runGenerateMinikube
+import au.com.agiledigital.toolform.command.generate.kubernetes.ServiceWriter.writeService
 import au.com.agiledigital.toolform.command.generate.{WriterContext, YamlWriter}
 import au.com.agiledigital.toolform.model._
 import au.com.agiledigital.toolform.plugin.ToolFormGenerateCommandPlugin
@@ -24,13 +23,13 @@ import com.monovore.decline.Opts
   *
   * @see https://kubernetes.io/docs/api-reference/v1.8/
   */
-class GenerateMinishiftCommand extends ToolFormGenerateCommandPlugin {
+class GenerateMinikubeCommand extends ToolFormGenerateCommandPlugin {
 
   /**
-    * The primary class for generating Kubernetes (Minishift) config files.
+    * The primary class for generating Kubernetes (Minikube) config files.
     */
   def command: Opts[Either[ToolFormError, String]] =
-    Opts.subcommand("minishift", "generates config files for Kubernetes (Minishift) container orchestration") {
+    Opts.subcommand("minikube", "generates config files for Kubernetes (Minikube) container orchestration") {
       (Opts.option[Path]("in-file", short = "i", metavar = "file", help = "the path to the project config file") |@|
         Opts.option[Path]("out-file", short = "o", metavar = "file", help = "the path to output the generated file(s)"))
         .map(execute)
@@ -48,23 +47,23 @@ class GenerateMinishiftCommand extends ToolFormGenerateCommandPlugin {
     } else {
       for {
         project <- ProjectReader.readProject(inputFile)
-        status  <- runGenerateMinishift(inputFile.getAbsolutePath, outputFile, project)
+        status  <- runGenerateMinikube(inputFile.getAbsolutePath, outputFile, project)
       } yield status
     }
   }
 }
 
-object GenerateMinishiftCommand extends YamlWriter {
+object GenerateMinikubeCommand extends YamlWriter {
 
   /**
-    * The main entry point into the Kubernetes (Minishift) file generation.
+    * The main entry point into the Kubernetes (Minikube) file generation.
     *
     * @param sourceFilePath project config input file path
     * @param project        the abstract project definition parsed by ToolFormApp.
     * @return on success it returns a status message to print to the screen, otherwise it will return an
     *         error object describing what went wrong.
     */
-  def runGenerateMinishift(sourceFilePath: String, outFile: File, project: Project): Either[ToolFormError, String] = {
+  def runGenerateMinikube(sourceFilePath: String, outFile: File, project: Project): Either[ToolFormError, String] = {
     val writer = new BufferedWriter(new FileWriter(outFile, false))
     try {
       val writeFile = for {
@@ -75,7 +74,6 @@ object GenerateMinishiftCommand extends YamlWriter {
         _ <- project.resources.values.filter(shouldWriteService).toList.traverse_(writeService)
         _ <- project.components.values.toList.traverse_((component) => writeDeployment(project.id, component))
         _ <- project.resources.values.toList.traverse_((resource) => writeDeployment(project.id, resource))
-        _ <- project.topology.endpoints.toList.traverse_ { case (endpointId, endpoint) => writeRouter(endpointId, endpoint) }
       } yield ()
 
       val context = WriterContext(writer)

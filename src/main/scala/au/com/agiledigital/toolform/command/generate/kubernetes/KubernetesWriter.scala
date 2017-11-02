@@ -1,4 +1,4 @@
-package au.com.agiledigital.toolform.command.generate.minikube
+package au.com.agiledigital.toolform.command.generate.kubernetes
 
 import au.com.agiledigital.toolform.command.generate.Formatting.{componentImageName, componentServiceName}
 import au.com.agiledigital.toolform.command.generate.YamlWriter

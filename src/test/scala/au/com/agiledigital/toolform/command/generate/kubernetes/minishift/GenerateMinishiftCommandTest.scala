@@ -1,4 +1,4 @@
-package au.com.agiledigital.toolform.command.generate.minishift
+package au.com.agiledigital.toolform.command.generate.kubernetes.minishift
 
 import java.io.File
 

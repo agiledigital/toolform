@@ -1,6 +1,6 @@
-package au.com.agiledigital.toolform.command.generate.minishift
+package au.com.agiledigital.toolform.command.generate.kubernetes.minishift
 
-import au.com.agiledigital.toolform.command.generate.minikube.KubernetesWriter
+import au.com.agiledigital.toolform.command.generate.kubernetes.KubernetesWriter
 import au.com.agiledigital.toolform.model.{Endpoint, TlsConfig}
 
 object RouterWriter extends KubernetesWriter {
