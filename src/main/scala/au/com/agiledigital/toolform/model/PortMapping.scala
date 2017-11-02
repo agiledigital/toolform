@@ -46,9 +46,9 @@ object PortMapping {
   def parsePortMappingFromConfigString(value: String): Either[String, PortMapping] =
     value match {
       case PortMappingRegex(portString, maybeContainerPortString, maybeProtocolString) if StringUtil.isInt(portString) =>
-        val port = portString.toInt
+        val port       = portString.toInt
         val targetPort = Option(maybeContainerPortString).flatMap(StringUtil.toIntOpt).getOrElse(port)
-        val protocol = Option(maybeProtocolString).map(PortProtocolType.withNameInsensitive).getOrElse(PortProtocolType.Tcp)
+        val protocol   = Option(maybeProtocolString).map(PortProtocolType.withNameInsensitive).getOrElse(PortProtocolType.Tcp)
         Right(PortMapping(port, targetPort, protocol))
       case _ => Left(s"Port value [$value] should be in the format <port>[:containerPort][/udp|/tcp]")
     }

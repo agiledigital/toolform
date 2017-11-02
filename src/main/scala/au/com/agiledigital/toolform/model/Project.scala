@@ -25,7 +25,7 @@ final case class Project(id: String,
                          componentGroups: Option[Seq[ComponentGroup]]) {
 
   val sortedComponents: SortedMap[String, Component] = TreeMap(components.toArray: _*)
-  val sortedResources: SortedMap[String, Resource] = TreeMap(resources.toArray: _*)
+  val sortedResources: SortedMap[String, Resource]   = TreeMap(resources.toArray: _*)
 }
 
 /**
@@ -108,7 +108,7 @@ final case class Link(from: Reference, to: Reference) {
       new IllegalArgumentException(s"""Could not resolve link to path [$ref]. Available components [${project.components.keys.mkString(",")}]""")
 
     val maybeFrom = from.resolve(project)
-    val maybeTo = to.resolve(project)
+    val maybeTo   = to.resolve(project)
     (maybeFrom, maybeTo) match {
       case (None, _) => throw invalidPathError(from)
       case (_, None) => throw invalidPathError(to)

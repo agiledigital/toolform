@@ -9,25 +9,25 @@ object RouterWriter extends KubernetesWriter {
     for {
       _ <- write("to:")
       _ <- indented {
-        for {
-          _ <- write("kind: Service")
-          _ <- write(s"name: ${endpoint.target}")
-        } yield ()
-      }
+            for {
+              _ <- write("kind: Service")
+              _ <- write(s"name: ${endpoint.target}")
+            } yield ()
+          }
     } yield ()
 
   private def writeTlsConfig(tlsConfig: TlsConfig): Result[Unit] =
     if (tlsConfig.enabled) {
-      val tlsTerminationType = tlsConfig.tlsTerminationType.toString
+      val tlsTerminationType            = tlsConfig.tlsTerminationType.toString
       val insecureEdgeTerminationPolicy = tlsConfig.tlsInsecureEdgePolicy.toString.toLowerCase
       for {
         _ <- write("tls:")
         _ <- indented {
-          for {
-            _ <- write(s"termination: $tlsTerminationType")
-            _ <- write(s"insecureEdgeTerminationPolicy: $insecureEdgeTerminationPolicy")
-          } yield ()
-        }
+              for {
+                _ <- write(s"termination: $tlsTerminationType")
+                _ <- write(s"insecureEdgeTerminationPolicy: $insecureEdgeTerminationPolicy")
+              } yield ()
+            }
       } yield ()
     } else {
       identity
@@ -52,17 +52,17 @@ object RouterWriter extends KubernetesWriter {
       _ <- write("kind: Route")
       _ <- write("metadata:")
       _ <- indented {
-        for {
-          _ <- write(s"name: $endpointId")
-        } yield ()
-      }
+            for {
+              _ <- write(s"name: $endpointId")
+            } yield ()
+          }
       _ <- write("spec:")
       _ <- indented {
-        for {
-          _ <- writeToBlock(endpoint)
-          _ <- writeTlsConfig(endpoint.tlsConfig)
-        } yield ()
-      }
+            for {
+              _ <- writeToBlock(endpoint)
+              _ <- writeTlsConfig(endpoint.tlsConfig)
+            } yield ()
+          }
     } yield ()
   }
 }

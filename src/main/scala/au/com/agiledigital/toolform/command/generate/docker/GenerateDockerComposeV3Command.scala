@@ -68,11 +68,11 @@ object GenerateDockerComposeV3Command extends YamlWriter {
         _ <- write("version: '3'")
         _ <- write("services:")
         _ <- indented {
-          for {
-            _ <- writeComponents(project.id, project.sortedComponents.values.toList)
-            _ <- writeResources(project.sortedResources.values.toList)
-          } yield ()
-        }
+              for {
+                _ <- writeComponents(project.id, project.sortedComponents.values.toList)
+                _ <- writeResources(project.sortedResources.values.toList)
+              } yield ()
+            }
       } yield ()
 
       val context = WriterContext(writer)
@@ -97,14 +97,14 @@ object GenerateDockerComposeV3Command extends YamlWriter {
     for {
       _ <- write(s"$serviceName:")
       _ <- indented {
-        for {
-          _ <- write(s"image: $imageName")
-          _ <- write(s"restart: always")
-          _ <- writeComponentLabels(component)
-          _ <- writeEnvironmentVariables(component)
-          _ <- writePorts(component)
-        } yield ()
-      }
+            for {
+              _ <- write(s"image: $imageName")
+              _ <- write(s"restart: always")
+              _ <- writeComponentLabels(component)
+              _ <- writeEnvironmentVariables(component)
+              _ <- writePorts(component)
+            } yield ()
+          }
     } yield ()
   }
 
@@ -112,24 +112,24 @@ object GenerateDockerComposeV3Command extends YamlWriter {
     for {
       _ <- write("labels:")
       _ <- indented {
-        for {
-          _ <- write(s"source.path: \042${component.path}\042")
-          _ <- write("project.artefact: \"true\"")
-        } yield ()
-      }
+            for {
+              _ <- write(s"source.path: \042${component.path}\042")
+              _ <- write("project.artefact: \"true\"")
+            } yield ()
+          }
     } yield ()
 
   def writeResource(resource: Resource): Result[Unit] =
     for {
       _ <- write(s"${resource.id}:")
       _ <- indented {
-        for {
-          _ <- write(s"image: ${resource.image}")
-          _ <- write(s"restart: always")
-          _ <- writeEnvironmentVariables(resource)
-          _ <- writePorts(resource)
-        } yield ()
-      }
+            for {
+              _ <- write(s"image: ${resource.image}")
+              _ <- write(s"restart: always")
+              _ <- writeEnvironmentVariables(resource)
+              _ <- writePorts(resource)
+            } yield ()
+          }
     } yield ()
 
   def writeEnvironmentVariables(service: ToolFormService): Result[Unit] =
@@ -137,8 +137,8 @@ object GenerateDockerComposeV3Command extends YamlWriter {
       for {
         _ <- write("environment:")
         _ <- service.environment.toList
-          .map((entry) => formatEnvironment(entry))
-          .traverse_(write)
+              .map((entry) => formatEnvironment(entry))
+              .traverse_(write)
       } yield ()
     } else {
       identity
@@ -149,8 +149,8 @@ object GenerateDockerComposeV3Command extends YamlWriter {
       for {
         _ <- write("ports:")
         _ <- service.externalPorts
-          .map((port) => formatPort(port))
-          .traverse_(write)
+              .map((port) => formatPort(port))
+              .traverse_(write)
       } yield ()
     } else {
       identity

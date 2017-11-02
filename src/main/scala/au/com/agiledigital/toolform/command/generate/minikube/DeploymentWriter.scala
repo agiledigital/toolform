@@ -10,15 +10,15 @@ object DeploymentWriter extends KubernetesWriter {
     for {
       _ <- write("metadata:")
       _ <- indented {
-        for {
-          _ <- write("labels:")
-          _ <- indented {
             for {
-              _ <- write(selectorEntry)
+              _ <- write("labels:")
+              _ <- indented {
+                    for {
+                      _ <- write(selectorEntry)
+                    } yield ()
+                  }
             } yield ()
           }
-        } yield ()
-      }
     } yield ()
   }
 
@@ -27,11 +27,11 @@ object DeploymentWriter extends KubernetesWriter {
     for {
       _ <- write("-")
       _ <- indented {
-        for {
-          _ <- write(s"name: $name")
-          _ <- write(s"value: $value")
-        } yield ()
-      }
+            for {
+              _ <- write(s"name: $name")
+              _ <- write(s"value: $value")
+            } yield ()
+          }
     } yield ()
   }
 
@@ -40,11 +40,11 @@ object DeploymentWriter extends KubernetesWriter {
       for {
         _ <- write("env:")
         _ <- indented {
-          for {
-            _ <- service.environment.toList
-              .traverse_((entry) => writeEnvironmentVariable(entry))
-          } yield ()
-        }
+              for {
+                _ <- service.environment.toList
+                      .traverse_((entry) => writeEnvironmentVariable(entry))
+              } yield ()
+            }
       } yield ()
     } else {
       identity
@@ -55,17 +55,17 @@ object DeploymentWriter extends KubernetesWriter {
       for {
         _ <- write("ports:")
         _ <- indented {
-          for {
-            _ <- containerPorts.traverse_(containerPort => write(s"- containerPort: $containerPort"))
-          } yield ()
-        }
+              for {
+                _ <- containerPorts.traverse_(containerPort => write(s"- containerPort: $containerPort"))
+              } yield ()
+            }
       } yield ()
     } else {
       identity
     }
 
   private def writeContainer(projectId: String, service: ToolFormService): Result[Unit] = {
-    val imageName = determineImageName(projectId, service)
+    val imageName   = determineImageName(projectId, service)
     val serviceName = determineServiceName(service)
     val containerPorts = (service.externalPorts ++ service.exposedPorts)
       .map((portMapping) => portMapping.targetPort)
@@ -74,14 +74,14 @@ object DeploymentWriter extends KubernetesWriter {
       _ <- write("containers:")
       _ <- write("-")
       _ <- indented {
-        for {
-          _ <- write(s"image: $imageName")
-          _ <- write(s"name: $serviceName")
-          _ <- write("imagePullPolicy: IfNotPresent") // Makes locally built images work
-          _ <- writeEnvironmentVariables(service)
-          _ <- writeContainerPorts(containerPorts)
-        } yield ()
-      }
+            for {
+              _ <- write(s"image: $imageName")
+              _ <- write(s"name: $serviceName")
+              _ <- write("imagePullPolicy: IfNotPresent") // Makes locally built images work
+              _ <- writeEnvironmentVariables(service)
+              _ <- writeContainerPorts(containerPorts)
+            } yield ()
+          }
     } yield ()
   }
 
@@ -107,29 +107,29 @@ object DeploymentWriter extends KubernetesWriter {
       _ <- write("kind: Deployment")
       _ <- write("metadata:")
       _ <- indented {
-        for {
-          _ <- writeAnnotations(service)
-          _ <- write(s"name: $serviceName")
-        } yield ()
-      }
-      _ <- write("spec:")
-      _ <- indented {
-        for {
-          _ <- write(s"replicas: 1")
-          _ <- write(s"template:")
-          _ <- indented {
             for {
-              _ <- writeTemplateMetadata(service)
-              _ <- write(s"spec:")
-              _ <- indented {
-                for {
-                  _ <- writeContainer(projectId, service)
-                } yield ()
-              }
+              _ <- writeAnnotations(service)
+              _ <- write(s"name: $serviceName")
             } yield ()
           }
-        } yield ()
-      }
+      _ <- write("spec:")
+      _ <- indented {
+            for {
+              _ <- write(s"replicas: 1")
+              _ <- write(s"template:")
+              _ <- indented {
+                    for {
+                      _ <- writeTemplateMetadata(service)
+                      _ <- write(s"spec:")
+                      _ <- indented {
+                            for {
+                              _ <- writeContainer(projectId, service)
+                            } yield ()
+                          }
+                    } yield ()
+                  }
+            } yield ()
+          }
     } yield ()
   }
 }

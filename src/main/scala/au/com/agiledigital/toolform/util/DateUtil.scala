@@ -13,7 +13,7 @@ object DateUtil {
     * @return a formatted date string.
     */
   def formattedDateString: String = {
-    val cal = Calendar.getInstance
+    val cal      = Calendar.getInstance
     val dateOnly = new SimpleDateFormat("dd/MM/yyyy")
     dateOnly.format(cal.getTime)
   }

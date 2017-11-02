@@ -12,7 +12,7 @@ class GenerateMinishiftTest extends FlatSpec with Matchers with PrivateMethodTes
   private val rootTestFolder: File = pathToFile("/testprojects/minishift")
 
   private def pathToFile(pathToFile: String): File = {
-    val url = getClass.getResource(pathToFile)
+    val url  = getClass.getResource(pathToFile)
     val file = new File(url.toURI)
     file
   }
@@ -36,14 +36,14 @@ class GenerateMinishiftTest extends FlatSpec with Matchers with PrivateMethodTes
 
   for (folder <- testFolders) {
     "runGenerateMinishift" should s"generate valid Kubernetes (Minishift flavour) specs for scenario: ${folder.getName}" in {
-      val inputFile = new File(s"${folder.getAbsolutePath}/environment.conf")
+      val inputFile    = new File(s"${folder.getAbsolutePath}/environment.conf")
       val expectedFile = new File(s"${folder.getAbsolutePath}/expected.yaml")
-      val outputFile = File.createTempFile(getClass.getName, ".yaml")
+      val outputFile   = File.createTempFile(getClass.getName, ".yaml")
       outputFile.deleteOnExit()
       val result = new GenerateMinishift().execute(inputFile.toPath, outputFile.toPath)
       result match {
         case Right(_) =>
-          val actual = readFileIgnoringComments(outputFile)
+          val actual   = readFileIgnoringComments(outputFile)
           val expected = readFileIgnoringComments(expectedFile)
           actual should equal(expected)
         case Left(error) => fail(error.message)

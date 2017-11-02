@@ -15,27 +15,27 @@ object ServiceWriter extends KubernetesWriter {
     for {
       _ <- write("selector:")
       _ <- indented {
-        for {
-          _ <- write(selectorEntry)
-        } yield ()
-      }
+            for {
+              _ <- write(selectorEntry)
+            } yield ()
+          }
     } yield ()
   }
 
   private def writePortEntry(portMapping: PortMapping): Result[Unit] = {
-    val port = portMapping.port
+    val port       = portMapping.port
     val targetPort = portMapping.targetPort
-    val protocol = portMapping.protocol.toString.toUpperCase
+    val protocol   = portMapping.protocol.toString.toUpperCase
     for {
       _ <- write(s"-")
       _ <- indented {
-        for {
-          _ <- write(s"name: \042port-$port\042")
-          _ <- write(s"port: $port")
-          _ <- write(s"targetPort: $targetPort")
-          _ <- write(s"protocol: $protocol")
-        } yield ()
-      }
+            for {
+              _ <- write(s"name: \042port-$port\042")
+              _ <- write(s"port: $port")
+              _ <- write(s"targetPort: $targetPort")
+              _ <- write(s"protocol: $protocol")
+            } yield ()
+          }
     } yield ()
   }
 
@@ -68,7 +68,7 @@ object ServiceWriter extends KubernetesWriter {
     */
   def writeService(service: ToolFormService): Result[Unit] = {
     val serviceName = determineServiceName(service)
-    val nodeType = if (service.externalPorts.nonEmpty) "NodePort" else "ClusterIP"
+    val nodeType    = if (service.externalPorts.nonEmpty) "NodePort" else "ClusterIP"
 
     for {
       _ <- write("---")
@@ -76,19 +76,19 @@ object ServiceWriter extends KubernetesWriter {
       _ <- write("kind: Service")
       _ <- write("metadata:")
       _ <- indented {
-        for {
-          _ <- writeAnnotations(service)
-          _ <- write(s"name: $serviceName")
-        } yield ()
-      }
+            for {
+              _ <- writeAnnotations(service)
+              _ <- write(s"name: $serviceName")
+            } yield ()
+          }
       _ <- write("spec:")
       _ <- indented {
-        for {
-          _ <- write(s"type: $nodeType")
-          _ <- writeSelector(service)
-          _ <- writePorts(service)
-        } yield ()
-      }
+            for {
+              _ <- write(s"type: $nodeType")
+              _ <- writeSelector(service)
+              _ <- writePorts(service)
+            } yield ()
+          }
     } yield ()
   }
 }
