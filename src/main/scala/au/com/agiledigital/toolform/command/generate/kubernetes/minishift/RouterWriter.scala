@@ -45,7 +45,6 @@ object RouterWriter extends KubernetesWriter {
     * @return           a state monad encapsulating the context of the writing process after the method has completed.
     */
   def writeRouter(endpointId: String, endpoint: Endpoint): Result[Unit] = {
-    println(s"endpointId $endpointId")
     for {
       _ <- write("---")
       _ <- write("apiVersion: v1")
