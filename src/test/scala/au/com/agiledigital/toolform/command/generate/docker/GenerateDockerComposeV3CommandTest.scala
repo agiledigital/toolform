@@ -44,11 +44,14 @@ class GenerateDockerComposeV3CommandTest extends FlatSpec with Matchers with Pri
       val expectedFile = new File(s"${folder.getAbsolutePath}/expected.yaml")
       val outputFile   = File.createTempFile(getClass.getName, ".yaml")
       outputFile.deleteOnExit()
-      val output = new GenerateDockerComposeV3Command().execute(inputFile.toPath, outputFile.toPath)
-      println(s"runDockerComposeV3 --> Output: $output")
-      val actual   = readFileIgnoringComments(outputFile)
-      val expected = readFileIgnoringComments(expectedFile)
-      actual should equal(expected)
+      val result = new GenerateDockerComposeV3Command().execute(inputFile.toPath, outputFile.toPath)
+      result match {
+        case Right(_) =>
+          val actual   = readFileIgnoringComments(outputFile)
+          val expected = readFileIgnoringComments(expectedFile)
+          actual should equal(expected)
+        case Left(errors) => fail(errors.toList.mkString(", "))
+      }
     }
   }
 

@@ -5,6 +5,7 @@ import java.io.File
 import au.com.agiledigital.toolform.app.ToolFormAppSimulator.simulateAppForTest
 import au.com.agiledigital.toolform.command.inspect.InspectCommand
 import au.com.agiledigital.toolform.version.BuildInfo
+import cats.data.NonEmptyList
 import org.scalatest._
 import com.monovore.decline._
 
@@ -23,14 +24,14 @@ class ToolFormAppTest extends FlatSpec with Matchers {
     val result = simulateAppForTest(List("inspect", "-i", testFile.getAbsolutePath).toArray)
     result should equal("""Project: [StruxureWare Insights Portal]
                          |	Components:
+                         |		client/public ==> 'SE Public Web Application'
                          |		public-api ==> 'HTTP Public API'
                          |		se_swip_elastic-search ==> 'SE Elastic Search'
                          |		se-swip-influx-db ==> 'SE Influx DB'
-                         |		client/public ==> 'SE Public Web Application'
                          |	Resources:
-                         |		se-swip-mail-relay
                          |		se-swip-carbon
                          |		se-swip-db
+                         |		se-swip-mail-relay
                          |	Links:
                          |		se_swip_elastic-search -> public-api
                          |		se-swip-mail-relay -> public-api
@@ -76,8 +77,8 @@ object ToolFormAppSimulator {
   def simulateAppForTest(args: Array[String]): String = {
     val resultBuffer = new StringBuffer()
     val parserOpts = CliParserConfiguration.commandLineOptions.map {
-      case Left(ToolFormError(message)) => resultBuffer.append(message); Unit
-      case Right(result)                => resultBuffer.append(result); Unit
+      case Left((errors)) => resultBuffer.append(errors.toList.map({ _.message }).mkString(", ")); Unit
+      case Right(result)  => resultBuffer.append(result); Unit
     }
     val showVersion = Opts
       .flag("version", "Print the version number and exit.", visibility = Visibility.Partial)

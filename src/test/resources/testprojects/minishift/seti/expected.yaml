@@ -10,7 +10,7 @@ metadata:
     project.artefact: "true"
   name: nifi-seed
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     component: nifi-seed
   ports:

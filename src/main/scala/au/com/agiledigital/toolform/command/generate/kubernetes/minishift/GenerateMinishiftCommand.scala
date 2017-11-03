@@ -14,6 +14,7 @@ import au.com.agiledigital.toolform.plugin.ToolFormGenerateCommandPlugin
 import au.com.agiledigital.toolform.reader.ProjectReader
 import au.com.agiledigital.toolform.util.DateUtil
 import au.com.agiledigital.toolform.version.BuildInfo
+import cats.data.NonEmptyList
 import cats.implicits._
 import com.monovore.decline.Opts
 
@@ -29,22 +30,22 @@ class GenerateMinishiftCommand extends ToolFormGenerateCommandPlugin {
   /**
     * The primary class for generating Kubernetes (Minishift) config files.
     */
-  def command: Opts[Either[ToolFormError, String]] =
+  def command: Opts[Either[NonEmptyList[ToolFormError], String]] =
     Opts.subcommand("minishift", "generates config files for Kubernetes (Minishift) container orchestration") {
       (Opts.option[Path]("in-file", short = "i", metavar = "file", help = "the path to the project config file") |@|
         Opts.option[Path]("out-file", short = "o", metavar = "file", help = "the path to output the generated file(s)"))
         .map(execute)
     }
 
-  def execute(inputFilePath: Path, outputFilePath: Path): Either[ToolFormError, String] = {
+  def execute(inputFilePath: Path, outputFilePath: Path): Either[NonEmptyList[ToolFormError], String] = {
     val inputFile  = inputFilePath.toFile
     val outputFile = outputFilePath.toFile
     if (!inputFile.exists()) {
-      Left(ToolFormError(s"Input file [${inputFile}] does not exist."))
+      Left(NonEmptyList.of(ToolFormError(s"Input file [${inputFile}] does not exist.")))
     } else if (!inputFile.isFile) {
-      Left(ToolFormError(s"Input file [${inputFile}] is not a valid file."))
+      Left(NonEmptyList.of(ToolFormError(s"Input file [${inputFile}] is not a valid file.")))
     } else if (!outputFile.getParentFile.exists()) {
-      Left(ToolFormError(s"Output directory [${outputFile.getParentFile}] does not exist."))
+      Left(NonEmptyList.of(ToolFormError(s"Output directory [${outputFile.getParentFile}] does not exist.")))
     } else {
       for {
         project <- ProjectReader.readProject(inputFile)
@@ -64,7 +65,7 @@ object GenerateMinishiftCommand extends YamlWriter {
     * @return on success it returns a status message to print to the screen, otherwise it will return an
     *         error object describing what went wrong.
     */
-  def runGenerateMinishift(sourceFilePath: String, outFile: File, project: Project): Either[ToolFormError, String] = {
+  def runGenerateMinishift(sourceFilePath: String, outFile: File, project: Project): Either[NonEmptyList[ToolFormError], String] = {
     val writer = new BufferedWriter(new FileWriter(outFile, false))
     try {
       val writeFile = for {

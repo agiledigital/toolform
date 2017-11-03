@@ -47,7 +47,7 @@ class GenerateMinikubeTest extends FlatSpec with Matchers with PrivateMethodTest
           val actual   = readFileIgnoringComments(outputFile)
           val expected = readFileIgnoringComments(expectedFile)
           actual should equal(expected)
-        case Left(error) => fail(error.message)
+        case Left(errors) => fail(errors.toList.mkString(", "))
       }
     }
   }

@@ -39,8 +39,7 @@ object ServiceWriter extends KubernetesWriter {
     } yield ()
   }
 
-  private def writePorts(service: ToolFormService): Result[Unit] = {
-    val allPorts = service.externalPorts ++ service.exposedPorts
+  private def writePorts(allPorts: List[PortMapping]): Result[Unit] =
     if (allPorts.nonEmpty) {
       for {
         _ <- write("ports:")
@@ -49,7 +48,6 @@ object ServiceWriter extends KubernetesWriter {
     } else {
       write("clusterIP: \"None\"")
     }
-  }
 
   /**
     * Writes a Kubernetes "service" specification based on the provided toolform service.
@@ -68,6 +66,7 @@ object ServiceWriter extends KubernetesWriter {
     */
   def writeService(service: ToolFormService): Result[Unit] = {
     val serviceName = determineServiceName(service)
+    val allPorts    = service.externalPorts ++ service.exposedPorts
     val nodeType    = if (service.externalPorts.nonEmpty) "NodePort" else "ClusterIP"
 
     for {
@@ -86,7 +85,7 @@ object ServiceWriter extends KubernetesWriter {
             for {
               _ <- write(s"type: $nodeType")
               _ <- writeSelector(service)
-              _ <- writePorts(service)
+              _ <- writePorts(allPorts)
             } yield ()
           }
     } yield ()

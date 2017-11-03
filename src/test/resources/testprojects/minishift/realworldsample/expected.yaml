@@ -274,15 +274,6 @@ spec:
 apiVersion: v1
 kind: Route
 metadata:
-  name: se_swip_elastic_search
-spec:
-  to:
-    kind: Service
-    name: se_swip_elastic_search
----
-apiVersion: v1
-kind: Route
-metadata:
   name: public
 spec:
   to:
@@ -297,3 +288,12 @@ spec:
   to:
     kind: Service
     name: public_api
+---
+apiVersion: v1
+kind: Route
+metadata:
+  name: se_swip_elastic_search
+spec:
+  to:
+    kind: Service
+    name: se_swip_elastic_search

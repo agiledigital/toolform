@@ -1,6 +1,7 @@
 package au.com.agiledigital.toolform.plugin
 
 import au.com.agiledigital.toolform.app.ToolFormError
+import cats.data.NonEmptyList
 import com.monovore.decline._
 
 /**
@@ -11,5 +12,5 @@ import com.monovore.decline._
   * on the runtime classpath.
   */
 trait ToolFormCommandPlugin {
-  def command: Opts[Either[ToolFormError, String]]
+  def command: Opts[Either[NonEmptyList[ToolFormError], String]]
 }

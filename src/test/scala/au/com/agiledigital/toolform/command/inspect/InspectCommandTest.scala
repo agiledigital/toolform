@@ -23,14 +23,14 @@ class InspectCommandTest extends FlatSpec with Matchers {
       case Right(s) =>
         s should equal("""Project: [StruxureWare Insights Portal]
                          |	Components:
+                         |		client/public ==> 'SE Public Web Application'
                          |		public-api ==> 'HTTP Public API'
                          |		se_swip_elastic-search ==> 'SE Elastic Search'
                          |		se-swip-influx-db ==> 'SE Influx DB'
-                         |		client/public ==> 'SE Public Web Application'
                          |	Resources:
-                         |		se-swip-mail-relay
                          |		se-swip-carbon
                          |		se-swip-db
+                         |		se-swip-mail-relay
                          |	Links:
                          |		se_swip_elastic-search -> public-api
                          |		se-swip-mail-relay -> public-api
@@ -38,12 +38,14 @@ class InspectCommandTest extends FlatSpec with Matchers {
                          |		se-swip-db -> public-api
                          |		se-swip-influx-db -> public-api
                          |""".stripMargin)
-      case Left(error) => fail(error.message)
+      case Left(errors) => fail(errors.toList.mkString(", "))
     }
   }
 
   "error when reading project" should "display error string" in {
     val result = new InspectCommand().execute(emptyFile.toPath)
-    result.left.value.message should startWith("Failed to read project")
+    val errors = result.left.value.toList
+    errors should have length 1
+    errors.head.message should startWith("Failed to read project")
   }
 }
