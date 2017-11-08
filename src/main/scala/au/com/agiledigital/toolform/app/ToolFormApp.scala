@@ -20,7 +20,8 @@ object ToolFormApp
       header = "Generates deployment configuration from a project definition.",
       main = CliParserConfiguration.commandLineOptions.map {
         case Left(errors) =>
-          errors.toList.foreach(System.err.println)
+          System.err.println("Failed due to the following errors:")
+          errors.toList.map({ _.message }).foreach(System.err.println)
           System.exit(1)
         case Right(output) =>
           println(output)
