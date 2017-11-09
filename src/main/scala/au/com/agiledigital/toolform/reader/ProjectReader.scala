@@ -65,7 +65,7 @@ object ProjectReader {
     targetComponent match {
       case Some(component) =>
         val targetPort        = endpoint.portMapping.targetPort
-        val targetPortIsValid = component.exposedPorts.map({ _.port }).contains(targetPort)
+        val targetPortIsValid = component.exposedPorts.map({ _.port }).exists(_ === targetPort)
         if (targetPortIsValid) {
           valid(endpoint)
         } else {
