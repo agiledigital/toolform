@@ -41,7 +41,7 @@ object ProjectReader {
 
           for {
             collectedReadErrors    <- resultOrCollectReadErrors(projectResult)
-            validatedProjectResult <- validateProjectResult(collectedReadErrors)
+            validatedProjectResult <- validatedProject(collectedReadErrors)
           } yield validatedProjectResult
 
         case Failure(e) =>
@@ -49,18 +49,18 @@ object ProjectReader {
       }
     }
 
-  private def validateProjectResult(project: Project): Either[NonEmptyList[ToolFormError], Project] =
+  private def validatedProject(project: Project): Either[NonEmptyList[ToolFormError], Project] =
     project.topology.endpoints.toList
       .traverseU {
         case (endpointId, endpoint) =>
-          validateEndpointAgainstComponents(endpointId, endpoint, project.components)
+          validatedEndpoint(endpointId, endpoint, project.components)
       }
       .map { _ =>
         project
       }
       .toEither
 
-  private def validateEndpointAgainstComponents(endpointId: String, endpoint: Endpoint, components: Map[String, Component]): Validated[NonEmptyList[ToolFormError], Endpoint] = {
+  private def validatedEndpoint(endpointId: String, endpoint: Endpoint, components: Map[String, Component]): Validated[NonEmptyList[ToolFormError], Endpoint] = {
     val targetComponent = components.get(endpoint.target)
     targetComponent match {
       case Some(component) =>
