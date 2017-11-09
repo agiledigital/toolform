@@ -51,10 +51,10 @@ object ProjectReader {
 
   private def validateProjectResult(project: Project): Either[NonEmptyList[ToolFormError], Project] =
     project.topology.endpoints.toList
-      .traverseU({
+      .traverseU {
         case (endpointId, endpoint) =>
           validateEndpointAgainstComponents(endpointId, endpoint, project.components)
-      })
+      }
       .map { _ =>
         project
       }
