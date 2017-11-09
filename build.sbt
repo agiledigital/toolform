@@ -27,7 +27,7 @@ libraryDependencies ++= Seq(
   "com.github.pureconfig" %% "pureconfig-enumeratum" % pureconfigVersion,
   "com.monovore"          %% "decline"               % "0.3.0",
   "com.beachape"          %% "enumeratum"            % "1.5.12",
-  "org.typelevel"         %% "cats-core"             % "0.9.0",
+  "org.typelevel"         %% "cats-core"             % "0.9.0"
 )
 
 // For Settings/Task reference, see http://www.scala-sbt.org/release/sxr/sbt/Keys.scala.html
