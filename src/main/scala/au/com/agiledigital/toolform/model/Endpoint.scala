@@ -3,11 +3,9 @@ package au.com.agiledigital.toolform.model
 import au.com.agiledigital.toolform.model.Endpoint.EndpointType
 import enumeratum.EnumEntry._
 import enumeratum.{Enum, EnumEntry}
-import pureconfig.ConfigConvert.viaNonEmptyStringOpt
 import pureconfig._
 
 import scala.collection.immutable.IndexedSeq
-import scala.reflect.ClassTag
 
 /**
   * An Endpoint makes some of the project Components and Resources available externally.

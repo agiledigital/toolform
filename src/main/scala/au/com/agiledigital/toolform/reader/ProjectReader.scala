@@ -3,20 +3,16 @@ package au.com.agiledigital.toolform.reader
 import java.io.File
 
 import au.com.agiledigital.toolform.app.ToolFormError
-import au.com.agiledigital.toolform.command.generate.kubernetes.minishift.RouterWriter.writeRouter
 import au.com.agiledigital.toolform.model.{Component, Endpoint, Project}
-import cats.Foldable
 import cats.data.Validated
 import cats.data.Validated.{invalid, valid}
-import cats.syntax.traverse
 import com.typesafe.config.ConfigFactory
 import pureconfig._
-import pureconfig.error.{ConfigReaderFailure, ConfigReaderFailures, KeyNotFound}
+import pureconfig.error.{ConfigReaderFailures, KeyNotFound}
 import pureconfig.module.enumeratum._
 import cats.implicits._
 import cats.data.NonEmptyList
 
-import scala.collection.immutable
 import scala.util.{Failure, Success, Try}
 
 /**
