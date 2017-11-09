@@ -69,9 +69,9 @@ object ProjectReader {
         if (targetPortIsValid) {
           valid(endpoint)
         } else {
-          invalid(NonEmptyList.of(ToolFormError(s"Endpoint [${endpointId}] targets invalid port [${targetPort}] on component id [${endpoint.target}]")))
+          invalid(NonEmptyList.of(ToolFormError(s"Endpoint [$endpointId] targets invalid port [$targetPort] on component id [${endpoint.target}]")))
         }
-      case _ => invalid(NonEmptyList.of(ToolFormError(s"Endpoint [${endpointId}] targets invalid component id [${endpoint.target}]")))
+      case _ => invalid(NonEmptyList.of(ToolFormError(s"Endpoint [$endpointId] targets invalid component id [${endpoint.target}]")))
     }
   }
 
