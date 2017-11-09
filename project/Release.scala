@@ -1,7 +1,6 @@
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 
-
 import sbt.Keys.baseDirectory
 import sbt._
 import sbtrelease.ReleasePlugin.autoImport._
@@ -23,8 +22,7 @@ object Release {
   }
 
   val updateLaunchers = ReleaseStep { state =>
-
-    val baseDir = Project.extract(state).get(baseDirectory.in(ThisBuild))
+    val baseDir    = Project.extract(state).get(baseDirectory.in(ThisBuild))
     val scriptsDir = baseDir / "scripts"
     val scriptFiles = Seq(
       (scriptsDir / "generate-launcher.sh") -> (baseDir / "toolform")
@@ -41,7 +39,6 @@ object Release {
   }
 
   val updateScripts = ReleaseStep { state =>
-
     val (releaseVer, _) = state.get(ReleaseKeys.versions).getOrElse {
       sys.error(s"${ReleaseKeys.versions.label} key not set")
     }
@@ -66,9 +63,9 @@ object Release {
     val content = Source.fromFile(file)(Codec.UTF8).mkString
 
     updateVersionPattern.findAllIn(content).toVector match {
-      case Seq() => sys.error(s"Found no matches in $file")
+      case Seq()  => sys.error(s"Found no matches in $file")
       case Seq(_) =>
-      case _ => sys.error(s"Found too many matches in $file")
+      case _      => sys.error(s"Found too many matches in $file")
     }
 
     val newContent = updateVersionPattern.replaceAllIn(content, "VERSION=" + newVersion)
@@ -77,7 +74,6 @@ object Release {
 
   val commitUpdates = ReleaseStep(
     action = { state =>
-
       val (releaseVer, _) = state.get(ReleaseKeys.versions).getOrElse {
         sys.error(s"${ReleaseKeys.versions.label} key not set")
       }
@@ -87,7 +83,6 @@ object Release {
       state
     },
     check = { state =>
-
       val vcs = state.vcs
 
       if (vcs.hasModifiedFiles)

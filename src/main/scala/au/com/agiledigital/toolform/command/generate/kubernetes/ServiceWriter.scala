@@ -1,4 +1,4 @@
-package au.com.agiledigital.toolform.command.generate.minikube
+package au.com.agiledigital.toolform.command.generate.kubernetes
 
 import au.com.agiledigital.toolform.model.{PortMapping, ToolFormService}
 import cats.implicits._
@@ -15,32 +15,31 @@ object ServiceWriter extends KubernetesWriter {
     for {
       _ <- write("selector:")
       _ <- indented {
-        for {
-          _ <- write(selectorEntry)
-        } yield ()
-      }
+            for {
+              _ <- write(selectorEntry)
+            } yield ()
+          }
     } yield ()
   }
 
   private def writePortEntry(portMapping: PortMapping): Result[Unit] = {
     val port       = portMapping.port
-    val targetPort = portMapping.containerPort
+    val targetPort = portMapping.targetPort
     val protocol   = portMapping.protocol.toString.toUpperCase
     for {
       _ <- write(s"-")
       _ <- indented {
-        for {
-          _ <- write(s"name: \042port-$port\042")
-          _ <- write(s"port: $port")
-          _ <- write(s"targetPort: $targetPort")
-          _ <- write(s"protocol: $protocol")
-        } yield ()
-      }
+            for {
+              _ <- write(s"name: \042port-$port\042")
+              _ <- write(s"port: $port")
+              _ <- write(s"targetPort: $targetPort")
+              _ <- write(s"protocol: $protocol")
+            } yield ()
+          }
     } yield ()
   }
 
-  private def writePorts(service: ToolFormService): Result[Unit] = {
-    val allPorts = service.externalPorts ++ service.exposedPorts
+  private def writePorts(allPorts: List[PortMapping]): Result[Unit] =
     if (allPorts.nonEmpty) {
       for {
         _ <- write("ports:")
@@ -49,7 +48,6 @@ object ServiceWriter extends KubernetesWriter {
     } else {
       write("clusterIP: \"None\"")
     }
-  }
 
   /**
     * Writes a Kubernetes "service" specification based on the provided toolform service.
@@ -68,6 +66,7 @@ object ServiceWriter extends KubernetesWriter {
     */
   def writeService(service: ToolFormService): Result[Unit] = {
     val serviceName = determineServiceName(service)
+    val allPorts    = service.externalPorts ++ service.exposedPorts
     val nodeType    = if (service.externalPorts.nonEmpty) "NodePort" else "ClusterIP"
 
     for {
@@ -76,19 +75,19 @@ object ServiceWriter extends KubernetesWriter {
       _ <- write("kind: Service")
       _ <- write("metadata:")
       _ <- indented {
-        for {
-          _ <- writeAnnotations(service)
-          _ <- write(s"name: $serviceName")
-        } yield ()
-      }
+            for {
+              _ <- writeAnnotations(service)
+              _ <- write(s"name: $serviceName")
+            } yield ()
+          }
       _ <- write("spec:")
       _ <- indented {
-        for {
-          _ <- write(s"type: $nodeType")
-          _ <- writeSelector(service)
-          _ <- writePorts(service)
-        } yield ()
-      }
+            for {
+              _ <- write(s"type: $nodeType")
+              _ <- writeSelector(service)
+              _ <- writePorts(allPorts)
+            } yield ()
+          }
     } yield ()
   }
 }

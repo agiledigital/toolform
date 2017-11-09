@@ -44,11 +44,14 @@ class GenerateDockerComposeV3CommandTest extends FlatSpec with Matchers with Pri
       val expectedFile = new File(s"${folder.getAbsolutePath}/expected.yaml")
       val outputFile   = File.createTempFile(getClass.getName, ".yaml")
       outputFile.deleteOnExit()
-      val output = new GenerateDockerComposeV3Command().execute(inputFile.toPath, outputFile.toPath)
-      println(s"runDockerComposeV3 --> Output: $output")
-      val actual   = readFileIgnoringComments(outputFile)
-      val expected = readFileIgnoringComments(expectedFile)
-      actual should equal(expected)
+      val result = new GenerateDockerComposeV3Command().execute(inputFile.toPath, outputFile.toPath)
+      result match {
+        case Right(_) =>
+          val actual   = readFileIgnoringComments(outputFile)
+          val expected = readFileIgnoringComments(expectedFile)
+          actual should equal(expected)
+        case Left(errors) => fail(errors.toList.mkString(", "))
+      }
     }
   }
 
@@ -162,16 +165,6 @@ class GenerateDockerComposeV3CommandTest extends FlatSpec with Matchers with Pri
     val testContext = WriterContext(testWriter)
 
     writeEnvironmentVariables(testService).run(testContext).value
-
-    testWriter.toString should equal("")
-  }
-
-  "writeEdges" should "not write anything if an empty list of edges is provided" in {
-    val testEdges   = List[SubEdgeDef]()
-    val testWriter  = new StringWriter()
-    val testContext = WriterContext(testWriter)
-
-    writeEdges("", testEdges).run(testContext).value
 
     testWriter.toString should equal("")
   }

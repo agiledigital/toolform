@@ -7,13 +7,13 @@ import au.com.agiledigital.toolform.app.ToolFormError
 import au.com.agiledigital.toolform.command.generate.Formatting._
 import au.com.agiledigital.toolform.command.generate.docker.DockerFormatting._
 import au.com.agiledigital.toolform.command.generate.docker.GenerateDockerComposeV3Command.runGenerateDockerComposeV3
-import au.com.agiledigital.toolform.command.generate.docker.SubEdgeDef.subEdgeDefsFromProject
 import au.com.agiledigital.toolform.command.generate.{WriterContext, YamlWriter}
 import au.com.agiledigital.toolform.model._
 import au.com.agiledigital.toolform.plugin.ToolFormGenerateCommandPlugin
 import au.com.agiledigital.toolform.reader.ProjectReader
 import au.com.agiledigital.toolform.util.DateUtil
 import au.com.agiledigital.toolform.version.BuildInfo
+import cats.data.NonEmptyList
 import cats.implicits._
 import com.monovore.decline.Opts
 
@@ -24,22 +24,22 @@ import com.monovore.decline.Opts
   */
 class GenerateDockerComposeV3Command extends ToolFormGenerateCommandPlugin {
 
-  def command: Opts[Either[ToolFormError, String]] =
+  def command: Opts[Either[NonEmptyList[ToolFormError], String]] =
     Opts.subcommand("dockercompose", "generates config files for container orchestration") {
       (Opts.option[Path]("in-file", short = "i", metavar = "file", help = "the path to the project config file") |@|
         Opts.option[Path]("out-file", short = "o", metavar = "file", help = "the path to output the generated file(s)"))
         .map(execute)
     }
 
-  def execute(inputFilePath: Path, outputFilePath: Path): Either[ToolFormError, String] = {
+  def execute(inputFilePath: Path, outputFilePath: Path): Either[NonEmptyList[ToolFormError], String] = {
     val inputFile  = inputFilePath.toFile
     val outputFile = outputFilePath.toFile
     if (!inputFile.exists()) {
-      Left(ToolFormError(s"Input file [${inputFile}] does not exist."))
+      Left(NonEmptyList.of(ToolFormError(s"Input file [${inputFile}] does not exist.")))
     } else if (!inputFile.isFile) {
-      Left(ToolFormError(s"Input file [${inputFile}] is not a valid file."))
+      Left(NonEmptyList.of(ToolFormError(s"Input file [${inputFile}] is not a valid file.")))
     } else if (!outputFile.getParentFile.exists()) {
-      Left(ToolFormError(s"Output directory [${outputFile.getParentFile}] does not exist."))
+      Left(NonEmptyList.of(ToolFormError(s"Output directory [${outputFile.getParentFile}] does not exist.")))
     } else {
       for {
         project <- ProjectReader.readProject(inputFile)
@@ -59,7 +59,7 @@ object GenerateDockerComposeV3Command extends YamlWriter {
     * @return                       on success it returns a status message to print to the screen, otherwise it will return an
     *                               error object describing what went wrong.
     */
-  def runGenerateDockerComposeV3(sourceFilePath: String, outFile: File, project: Project): Either[ToolFormError, String] = {
+  def runGenerateDockerComposeV3(sourceFilePath: String, outFile: File, project: Project): Either[NonEmptyList[ToolFormError], String] = {
     val writer = new BufferedWriter(new FileWriter(outFile, false))
     try {
       val writeFile = for {
@@ -69,12 +69,11 @@ object GenerateDockerComposeV3Command extends YamlWriter {
         _ <- write("version: '3'")
         _ <- write("services:")
         _ <- indented {
-          for {
-            _ <- writeEdges(project.id, subEdgeDefsFromProject(project).toList)
-            _ <- writeComponents(project.id, project.sortedComponents.values.toList)
-            _ <- writeResources(project.sortedResources.values.toList)
-          } yield ()
-        }
+              for {
+                _ <- writeComponents(project.id, project.sortedComponents.values.toList)
+                _ <- writeResources(project.sortedResources.values.toList)
+              } yield ()
+            }
       } yield ()
 
       val context = WriterContext(writer)
@@ -87,45 +86,26 @@ object GenerateDockerComposeV3Command extends YamlWriter {
     }
   }
 
-  def writeEdges(projectId: String, subEdgeDefs: List[SubEdgeDef]): Result[Unit] =
-    subEdgeDefs.traverse_((subEdgeDef) => writeSubEdge(projectId, subEdgeDef))
-
   def writeComponents(projectId: String, components: List[Component]): Result[Unit] =
     components.traverse_((component) => writeComponent(projectId, component))
 
   def writeResources(resources: List[Resource]): Result[Unit] =
     resources.traverse_(writeResource)
 
-  def writeSubEdge(projectId: String, subEdgeDef: SubEdgeDef): Result[Unit] = {
-    val serviceName = subEdgeServiceName(projectId, subEdgeDef)
-    val imageName = subEdgeImageName(projectId, subEdgeDef)
-    for {
-      _ <- write(s"$serviceName:")
-      _ <- indented {
-        for {
-          _ <- write(s"image: $imageName")
-          _ <- write(s"restart: always")
-          _ <- write(s"ports:")
-          _ <- write(formatPort(subEdgePortDefinition(subEdgeDef)))
-        } yield ()
-      }
-    } yield ()
-  }
-
   def writeComponent(projectId: String, component: Component): Result[Unit] = {
     val serviceName = componentServiceName(component)
-    val imageName = componentImageName(projectId, component)
+    val imageName   = componentImageName(projectId, component)
     for {
       _ <- write(s"$serviceName:")
       _ <- indented {
-        for {
-          _ <- write(s"image: $imageName")
-          _ <- write(s"restart: always")
-          _ <- writeComponentLabels(component)
-          _ <- writeEnvironmentVariables(component)
-          _ <- writePorts(component)
-        } yield ()
-      }
+            for {
+              _ <- write(s"image: $imageName")
+              _ <- write(s"restart: always")
+              _ <- writeComponentLabels(component)
+              _ <- writeEnvironmentVariables(component)
+              _ <- writePorts(component)
+            } yield ()
+          }
     } yield ()
   }
 
@@ -133,24 +113,24 @@ object GenerateDockerComposeV3Command extends YamlWriter {
     for {
       _ <- write("labels:")
       _ <- indented {
-        for {
-          _ <- write(s"source.path: \042${component.path}\042")
-          _ <- write("project.artefact: \"true\"")
-        } yield ()
-      }
+            for {
+              _ <- write(s"source.path: \042${component.path}\042")
+              _ <- write("project.artefact: \"true\"")
+            } yield ()
+          }
     } yield ()
 
   def writeResource(resource: Resource): Result[Unit] =
     for {
       _ <- write(s"${resource.id}:")
       _ <- indented {
-        for {
-          _ <- write(s"image: ${resource.image}")
-          _ <- write(s"restart: always")
-          _ <- writeEnvironmentVariables(resource)
-          _ <- writePorts(resource)
-        } yield ()
-      }
+            for {
+              _ <- write(s"image: ${resource.image}")
+              _ <- write(s"restart: always")
+              _ <- writeEnvironmentVariables(resource)
+              _ <- writePorts(resource)
+            } yield ()
+          }
     } yield ()
 
   def writeEnvironmentVariables(service: ToolFormService): Result[Unit] =
@@ -158,8 +138,8 @@ object GenerateDockerComposeV3Command extends YamlWriter {
       for {
         _ <- write("environment:")
         _ <- service.environment.toList
-          .map((entry) => formatEnvironment(entry))
-          .traverse_(write)
+              .map((entry) => formatEnvironment(entry))
+              .traverse_(write)
       } yield ()
     } else {
       identity
@@ -170,8 +150,8 @@ object GenerateDockerComposeV3Command extends YamlWriter {
       for {
         _ <- write("ports:")
         _ <- service.externalPorts
-          .map((port) => formatPort(port))
-          .traverse_(write)
+              .map((port) => formatPort(port))
+              .traverse_(write)
       } yield ()
     } else {
       identity

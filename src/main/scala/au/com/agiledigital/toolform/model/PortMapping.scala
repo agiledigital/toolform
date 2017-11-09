@@ -8,15 +8,13 @@ import pureconfig._
 import scala.collection.immutable.IndexedSeq
 
 /**
-  * Defines a port mapping on a service.
+  * Defines a port mapping between two project elements.
   *
-  * This is used to abstract away all the different syntax used by various backends.
-  *
-  * @param port           the port that is exposed by the service.
-  * @param containerPort  the port that is exposed by the container.
-  * @param protocol       the protocol used by the port. This defaults to Tcp.
+  * @param port        the port that is exposed by the source.
+  * @param targetPort  the port that is exposed by the target.
+  * @param protocol    the protocol used by the port. This defaults to Tcp.
   */
-final case class PortMapping(port: Int, containerPort: Int, protocol: PortProtocolType = PortProtocolType.Tcp) {
+final case class PortMapping(port: Int, targetPort: Int, protocol: PortProtocolType = PortProtocolType.Tcp) {
 
   /**
     * Returns the formatted string representation of this object that can be parsed back in again with the
@@ -28,10 +26,10 @@ final case class PortMapping(port: Int, containerPort: Int, protocol: PortProtoc
     */
   def toPortString: String = {
     val protocolString = protocol.toString.toLowerCase
-    if (port == containerPort) {
+    if (port == targetPort) {
       s"$port/$protocolString"
     } else {
-      s"$port:$containerPort/$protocolString"
+      s"$port:$targetPort/$protocolString"
     }
   }
 }
@@ -48,10 +46,10 @@ object PortMapping {
   def parsePortMappingFromConfigString(value: String): Either[String, PortMapping] =
     value match {
       case PortMappingRegex(portString, maybeContainerPortString, maybeProtocolString) if StringUtil.isInt(portString) =>
-        val port          = portString.toInt
-        val containerPort = Option(maybeContainerPortString).flatMap(StringUtil.toIntOpt).getOrElse(port)
-        val protocol      = Option(maybeProtocolString).map(PortProtocolType.withNameInsensitive).getOrElse(PortProtocolType.Tcp)
-        Right(PortMapping(port, containerPort, protocol))
+        val port       = portString.toInt
+        val targetPort = Option(maybeContainerPortString).flatMap(StringUtil.toIntOpt).getOrElse(port)
+        val protocol   = Option(maybeProtocolString).map(PortProtocolType.withNameInsensitive).getOrElse(PortProtocolType.Tcp)
+        Right(PortMapping(port, targetPort, protocol))
       case _ => Left(s"Port value [$value] should be in the format <port>[:containerPort][/udp|/tcp]")
     }
 

@@ -31,11 +31,11 @@ final case class Project(id: String,
 /**
   * The network topology of the environment explains how elements will be related/connected.
   * @param links the links between components, other components and resources.
-  * @param edges the edges that will make the components and resources available outside the project.
+  * @param endpoints the endpoints that will make the components and resources available outside the project.
   */
-final case class Topology(links: Seq[Link], edges: Map[String, Edge]) {
+final case class Topology(links: Seq[Link], endpoints: Map[String, Endpoint]) {
 
-  val sortedEdges: SortedMap[String, Edge] = TreeMap(edges.toArray: _*)
+  val sortedEndpoints: SortedMap[String, Endpoint] = TreeMap(endpoints.toArray: _*)
 }
 
 /**

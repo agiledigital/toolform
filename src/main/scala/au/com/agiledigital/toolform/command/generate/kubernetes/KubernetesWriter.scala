@@ -1,4 +1,4 @@
-package au.com.agiledigital.toolform.command.generate.minikube
+package au.com.agiledigital.toolform.command.generate.kubernetes
 
 import au.com.agiledigital.toolform.command.generate.Formatting.{componentImageName, componentServiceName}
 import au.com.agiledigital.toolform.command.generate.YamlWriter
@@ -34,11 +34,11 @@ trait KubernetesWriter extends YamlWriter {
       for {
         _ <- write("annotations:")
         _ <- indented {
-          for {
-            _ <- write(s"source.path: \042${component.path}\042")
-            _ <- write("project.artefact: \"true\"")
-          } yield ()
-        }
+              for {
+                _ <- write(s"source.path: \042${component.path}\042")
+                _ <- write("project.artefact: \"true\"")
+              } yield ()
+            }
       } yield ()
     case _ => identity
   }

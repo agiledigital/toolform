@@ -6,6 +6,7 @@ import au.com.agiledigital.toolform.app.ToolFormError
 import au.com.agiledigital.toolform.model.Project
 import au.com.agiledigital.toolform.plugin.ToolFormCommandPlugin
 import au.com.agiledigital.toolform.reader.ProjectReader
+import cats.data.NonEmptyList
 import com.monovore.decline._
 
 /**
@@ -13,19 +14,19 @@ import com.monovore.decline._
   */
 final class InspectCommand extends ToolFormCommandPlugin {
 
-  override val command: Opts[Either[ToolFormError, String]] =
+  override val command: Opts[Either[NonEmptyList[ToolFormError], String]] =
     Opts
       .subcommand("inspect", "Inspect and print the content of the project file") {
         Opts.option[Path]("input", short = "i", metavar = "file", help = "Input file")
       }
       .map(execute)
 
-  def execute(inputFilePath: Path): Either[ToolFormError, String] = {
+  def execute(inputFilePath: Path): Either[NonEmptyList[ToolFormError], String] = {
     val inputFile = inputFilePath.toFile
     if (!inputFile.exists()) {
-      Left(ToolFormError(s"Input file [${inputFile}] does not exist."))
+      Left(NonEmptyList.of(ToolFormError(s"Input file [${inputFile}] does not exist.")))
     } else if (!inputFile.isFile) {
-      Left(ToolFormError(s"Input file [${inputFile}] is not a valid file."))
+      Left(NonEmptyList.of(ToolFormError(s"Input file [${inputFile}] is not a valid file.")))
     } else {
       for {
         project <- ProjectReader.readProject(inputFilePath.toFile)
@@ -34,9 +35,9 @@ final class InspectCommand extends ToolFormCommandPlugin {
     }
   }
 
-  private def summary(project: Project): Either[ToolFormError, String] = {
-    val projectComponentsSummary = project.components.values.map(c => s"${c.id} ==> '${c.name}'").mkString("\n\t\t")
-    val projectResourcesSummary  = project.resources.values.map(r => r.id).mkString("\n\t\t")
+  private def summary(project: Project): Either[NonEmptyList[ToolFormError], String] = {
+    val projectComponentsSummary = project.sortedComponents.values.map(c => s"${c.id} ==> '${c.name}'").mkString("\n\t\t")
+    val projectResourcesSummary  = project.sortedResources.values.map(r => r.id).mkString("\n\t\t")
     val projectLinksSummary = project.topology.links
       .map(l => {
         val resolvedLink = l.resolve(project)

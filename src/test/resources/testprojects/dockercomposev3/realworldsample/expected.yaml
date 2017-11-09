@@ -3,11 +3,6 @@
 # Date: 19/10/2017
 version: '3'
 services:
-  se-swip-main-public-api-nginx:
-    image: se_swip_main_public_api_nginx
-    restart: always
-    ports:
-    - "80/tcp"
   client-public:
     image: se_swip/client/public
     restart: always

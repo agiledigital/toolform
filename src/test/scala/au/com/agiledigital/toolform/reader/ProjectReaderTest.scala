@@ -9,12 +9,12 @@ import org.scalatest._
 
 class ProjectReaderTest extends FlatSpec with Matchers {
 
-  val testFile = pathToFile("/testprojects/inspect/realworldsample/environment.conf")
-  val emptyFile = pathToFile("/errors/empty.conf")
+  val testFile      = pathToFile("/testprojects/inspect/realworldsample/environment.conf")
+  val emptyFile     = pathToFile("/errors/empty.conf")
   val malformedFile = pathToFile("/errors/malformed.conf")
 
   def pathToFile(pathToFile: String): File = {
-    val url = getClass.getResource(pathToFile)
+    val url  = getClass.getResource(pathToFile)
     val file = new File(url.toURI)
     file
   }
@@ -23,23 +23,29 @@ class ProjectReaderTest extends FlatSpec with Matchers {
     val result = ProjectReader.readProject(testFile)
     inside(result) {
       case Right(project) => project shouldBe a[Project]
-      case Left(error)    => fail(error.message)
+      case Left(errors)   => fail(errors.toList.mkString(", "))
     }
   }
 
   "inspect blank file" should "display error string" in {
     val result = ProjectReader.readProject(emptyFile)
-    result.left.value.message should startWith("Failed to read project")
+    val errors = result.left.value.toList
+    errors should have length 1
+    errors.head.message should startWith("Failed to read project")
   }
 
   "reading file that does not exist" should "display error string" in {
     val result = ProjectReader.readProject(new File("bad.txt"))
-    result.left.value.message should startWith("File [bad.txt] does not exist.")
+    val errors = result.left.value.toList
+    errors should have length 1
+    errors.head.message should startWith("File [bad.txt] does not exist.")
   }
 
   "inspect malformed file" should "display error string" in {
     val result = ProjectReader.readProject(malformedFile)
-    result.left.value.message should startWith("Failed to parse project configuration")
+    val errors = result.left.value.toList
+    errors should have length 1
+    errors.head.message should startWith("Failed to parse project configuration")
   }
 
   // TODO: Empty components/Resources/Links combos

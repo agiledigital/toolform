@@ -4,6 +4,7 @@ import java.util.ServiceLoader
 
 import au.com.agiledigital.toolform.plugin.ToolFormCommandPlugin
 import au.com.agiledigital.toolform.version.BuildInfo
+import cats.data.NonEmptyList
 import com.monovore.decline._
 
 import scala.collection.immutable.Seq
@@ -18,8 +19,9 @@ object ToolFormApp
       version = BuildInfo.version,
       header = "Generates deployment configuration from a project definition.",
       main = CliParserConfiguration.commandLineOptions.map {
-        case Left(error) =>
-          Console.err.println(error)
+        case Left(errors) =>
+          System.err.println("Failed due to the following errors:")
+          errors.toList.map({ _.message }).foreach(System.err.println)
           System.exit(1)
         case Right(output) =>
           println(output)
@@ -40,7 +42,7 @@ object CliParserConfiguration {
     * @return Opts style command line parser options for use in a decline
     *         parser/app runner.
     */
-  def commandLineOptions: Opts[Either[ToolFormError, String]] =
+  def commandLineOptions: Opts[Either[NonEmptyList[ToolFormError], String]] =
     ToolFormPluginLoader.plugins.map(_.command).reduce(_ orElse _)
 }
 
