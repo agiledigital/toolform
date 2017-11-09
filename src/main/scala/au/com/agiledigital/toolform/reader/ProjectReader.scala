@@ -62,18 +62,16 @@ object ProjectReader {
 
   private def validatedEndpoint(endpointId: String, endpoint: Endpoint, components: Map[String, Component]): Validated[NonEmptyList[ToolFormError], Endpoint] = {
     val targetComponent = components.get(endpoint.target)
+    val targetPort      = endpoint.portMapping.targetPort
+
     targetComponent match {
-      case Some(component) =>
-        val targetPort        = endpoint.portMapping.targetPort
-        val targetPortIsValid = component.exposedPorts.map({ _.port }).exists(_ === targetPort)
-        if (targetPortIsValid) {
-          valid(endpoint)
-        } else {
-          invalid(NonEmptyList.of(ToolFormError(s"Endpoint [$endpointId] targets invalid port [$targetPort] on component id [${endpoint.target}]")))
-        }
-      case _ => invalid(NonEmptyList.of(ToolFormError(s"Endpoint [$endpointId] targets invalid component id [${endpoint.target}]")))
+      case Some(component) if portIsValid(component, targetPort) => valid(endpoint)
+      case Some(_)                                               => invalid(NonEmptyList.of(ToolFormError(s"Endpoint [$endpointId] targets invalid port [$targetPort] on component id [${endpoint.target}]")))
+      case _                                                     => invalid(NonEmptyList.of(ToolFormError(s"Endpoint [$endpointId] targets invalid component id [${endpoint.target}]")))
     }
   }
+
+  private def portIsValid(component: Component, targetPort: Int) = component.exposedPorts.map { _.port }.exists { _ === targetPort }
 
   private def resultOrCollectReadErrors(projectResult: Either[ConfigReaderFailures, Project]): Either[NonEmptyList[ToolFormError], Project] =
     projectResult.left.map(failures => {
