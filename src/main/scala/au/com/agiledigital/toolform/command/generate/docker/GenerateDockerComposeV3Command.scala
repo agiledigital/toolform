@@ -33,12 +33,13 @@ class GenerateDockerComposeV3Command extends ToolFormGenerateCommandPlugin {
 
   def execute(inputFilePath: Path, outputFilePath: Path): Either[NonEmptyList[ToolFormError], String] = {
     val inputFile  = inputFilePath.toFile
-    val outputFile = outputFilePath.toFile
+    val outputFile = outputFilePath.toFile.getAbsoluteFile
+    val parentFile = Option(outputFile.getParentFile)
     if (!inputFile.exists()) {
       Left(NonEmptyList.of(ToolFormError(s"Input file [${inputFile}] does not exist.")))
     } else if (!inputFile.isFile) {
       Left(NonEmptyList.of(ToolFormError(s"Input file [${inputFile}] is not a valid file.")))
-    } else if (!outputFile.getParentFile.exists()) {
+    } else if (!parentFile.exists(_.exists())) {
       Left(NonEmptyList.of(ToolFormError(s"Output directory [${outputFile.getParentFile}] does not exist.")))
     } else {
       for {
