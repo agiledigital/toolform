@@ -32,7 +32,7 @@ object ProjectReader {
       Left(NonEmptyList.of(ToolFormError(s"File [$projectDefinitionFile] is not a file.")))
     } else {
       // Read in the root configuration file.
-      Try(ConfigFactory.parseFile(projectDefinitionFile)) match {
+      Try(ConfigFactory.parseFile(projectDefinitionFile.getAbsoluteFile)) match {
         case Success(simpleConfig) =>
           // Resolve the configuration aka. replace variable substitutions.
           val config = simpleConfig.resolve()
