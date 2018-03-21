@@ -173,3 +173,31 @@ Sample Project
 The best place to start understanding the project definition format is to look at the example in
 src/test/resources/testprojects/realworldsample, starting with the environment.conf file.
 
+Generating a Standalone Launcher
+================================================================================
+
+A self contained executable can be generated from the Toolform maven package using [Coursier](https://github.com/coursier/coursier). This is useful to avoid managing dependencies when distributing the tool and allows you to easily install Toolform  in common locations for executables such as /usr/local/bin.
+
+The following steps outline how to generate a standalone launcher.
+
+1. Build Toolform and publish to your local repo.
+ 
+    `$ sbt publishLocal`
+
+2. [Download and install Coursier](https://github.com/coursier/coursier#command-line)
+3. Run the bootstap script located at [/scripts/generate-launcher.sh](https://github.com/agiledigital/toolform/blob/master/scripts/generate-launcher.sh).
+
+    `$ scripts/generate-launcher.sh`
+ 
+4. The toolform standalone binary should now be located in the root of your repo.
+
+    ```
+    $ ./toolform
+    Missing expected command (inspect or generate)!
+    
+    Usage:
+        toolform inspect
+        toolform generate
+    ...
+
+You can also create a standalone binary from an existing published Toolform version by modifying the [/scripts/generate-launcher.sh](https://github.com/agiledigital/toolform/blob/master/scripts/generate-launcher.sh) script to specify an already published version. Coursier will download the published maven package from Maven Central and generate the executable from that.
