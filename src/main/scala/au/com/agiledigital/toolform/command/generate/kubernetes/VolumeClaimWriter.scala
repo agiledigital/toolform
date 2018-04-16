@@ -9,22 +9,50 @@ import cats.implicits._
 object VolumeClaimWriter extends KubernetesWriter {
 
   // write the various access modes
-  def writeAccessModes(resource: Resource): Result[Unit] = {
+  def writeAccessModes(resource: Resource, serviceName: String): Result[Unit] = {
+    val acceptableModes = List("ReadWriteOnce", "ReadOnlyMany")
+
     val accessModes = resource.settings match {
-      case Some(s) => {
-        s.getStringList("accessModes")
+      case Some(aModes) => {
+        aModes.getStringList("accessModes")
       }
     }
     val modes = String.join("-", accessModes).split("-").toList
+    for (mode <- modes) {
+      if (!acceptableModes.contains(mode)) {
+        println(s"Warning: $mode access mode unsupported for resource: $serviceName")
+      }
+    }
 
     for {
-      _ <- modes.traverse_(mode => write(s"- $mode"))
+      _ <- modes.filter(mode => acceptableModes.contains(mode)).traverse_(mode => write(s"- $mode"))
     } yield ()
   }
 
   def writeVolumeClaim(projectId: String, resource: Resource): Result[Unit] = {
     val serviceName = determineServiceName(resource)
-    val storage     = "TODO: parse storage!"
+    // extract disk volume size information
+    val storage = resource.storage match {
+      case Some(strg) =>
+        strg match {
+          case "small"  => "2Gi"
+          case "medium" => "5Gi"
+          case "large"  => "10Gi"
+          case _ => {
+            if (strg.matches("([0-9]*Gi)")) {
+              // trim leading zeros
+              strg.replaceFirst("^0+(?!$)", "")
+            } else {
+              println(s"Warning: Invalid disk volume size '$strg' given for resource: $serviceName. Default size of 2Gi used.")
+              "2Gi"
+            }
+          }
+        }
+      case None => { // use default and issue warning
+        println(s"Warning: No disk volume size given for resource: $serviceName. Default size of 2Gi used.")
+        "2Gi"
+      }
+    }
 
     for {
       _ <- write("---")
@@ -51,7 +79,7 @@ object VolumeClaimWriter extends KubernetesWriter {
                     } yield ()
                   }
               _ <- write("accessModes:")
-              _ <- writeAccessModes(resource)
+              _ <- writeAccessModes(resource, serviceName)
 
             } yield ()
           }
