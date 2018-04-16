@@ -5,6 +5,7 @@ import java.nio.file.Path
 
 import au.com.agiledigital.toolform.app.ToolFormError
 import au.com.agiledigital.toolform.command.generate.kubernetes.DeploymentWriter.writeDeployment
+import au.com.agiledigital.toolform.command.generate.kubernetes.VolumeClaimWriter.writeVolumeClaim
 import au.com.agiledigital.toolform.command.generate.kubernetes.minikube.GenerateMinikubeCommand.runGenerateMinikube
 import au.com.agiledigital.toolform.command.generate.kubernetes.ServiceWriter.writeService
 import au.com.agiledigital.toolform.command.generate.{WriterContext, YamlWriter}
@@ -73,8 +74,9 @@ object GenerateMinikubeCommand extends YamlWriter {
         _ <- write(s"# Date: ${DateUtil.formattedDateString}")
         _ <- project.components.values.filter(shouldWriteService).toList.traverse_(writeService)
         _ <- project.resources.values.filter(shouldWriteService).toList.traverse_(writeService)
+        _ <- project.resources.values.filter(isdiskResourceType).toList.traverse_((resource) => writeVolumeClaim(project.id, resource))
         _ <- project.components.values.toList.traverse_((component) => writeDeployment(project.id, component))
-        _ <- project.resources.values.toList.traverse_((resource) => writeDeployment(project.id, resource))
+        _ <- project.resources.values.filter(isNotDiskResourceType).toList.traverse_((resource) => writeDeployment(project.id, resource))
       } yield ()
 
       val context = WriterContext(writer)
@@ -89,4 +91,10 @@ object GenerateMinikubeCommand extends YamlWriter {
 
   private def shouldWriteService(toolFormService: ToolFormService): Boolean =
     toolFormService.exposedPorts.nonEmpty || toolFormService.externalPorts.nonEmpty
+
+  private def isdiskResourceType(resource: Resource): Boolean =
+    resource.resourceType.nonEmpty && resource.resourceType == "disk"
+
+  private def isNotDiskResourceType(resource: Resource): Boolean =
+    !(resource.resourceType.nonEmpty) || resource.resourceType != "disk"
 }

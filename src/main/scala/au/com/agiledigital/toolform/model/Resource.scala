@@ -21,10 +21,12 @@ import com.typesafe.config.Config
 final case class Resource(id: String,
                           resourceType: String,
                           settings: Option[Config],
-                          image: String,
+                          // settings: Map[String, Seq[String]] = Map(),
+                          image: String = "NoImageName",
                           environment: Map[String, String] = Map(),
                           exposedPorts: List[PortMapping] = List(),
-                          externalPorts: List[PortMapping] = List())
+                          externalPorts: List[PortMapping] = List(),
+                          storage: String = "Nope")
     extends ToolFormService {
   val tagName: String = id
 }
