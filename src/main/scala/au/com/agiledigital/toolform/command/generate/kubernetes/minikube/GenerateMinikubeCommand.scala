@@ -74,7 +74,7 @@ object GenerateMinikubeCommand extends YamlWriter {
         _ <- write(s"# Date: ${DateUtil.formattedDateString}")
         _ <- project.components.values.filter(shouldWriteService).toList.traverse_(writeService)
         _ <- project.resources.values.filter(shouldWriteService).toList.traverse_(writeService)
-        _ <- project.resources.values.filter(isdiskResourceType).toList.traverse_((resource) => writeVolumeClaim(project.id, resource))
+        _ <- project.resources.values.filter(isdiskResourceType).toList.traverse_((resource) => writeVolumeClaim(resource))
         _ <- project.components.values.toList.traverse_((component) => writeDeployment(project.id, component))
         _ <- project.resources.values.filter(isNotDiskResourceType).toList.traverse_((resource) => writeDeployment(project.id, resource))
       } yield ()

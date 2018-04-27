@@ -64,6 +64,26 @@ object DeploymentWriter extends KubernetesWriter {
       identity
     }
 
+  // TESTING
+  // private def writeVolumeMounts(service: Resource): Result[Unit] =
+  //   if (service.settings.paths.nonEmpty) {
+  //     for {
+  //       _ <- write("volumeMounts:")
+  //       _ <- indented {
+  //             for {
+  //               _ <- service.settings.paths.traverse_(path => write(s"-mountPath: $path"))
+  //               _ <- indented {
+  //                     for {
+  //                       _ <- service.id.traverse_(name => write(s"name: $name"))
+  //                     } yield {}
+  //                   }
+  //             } yield ()
+  //           }
+  //     } yield ()
+  //   } else {
+  //     identity
+  //   }
+
   private def writeContainer(projectId: String, service: ToolFormService): Result[Unit] = {
     val imageName   = determineImageName(projectId, service)
     val serviceName = determineServiceName(service)
@@ -80,6 +100,7 @@ object DeploymentWriter extends KubernetesWriter {
               _ <- write("imagePullPolicy: IfNotPresent") // Makes locally built images work
               _ <- writeEnvironmentVariables(service)
               _ <- writeContainerPorts(containerPorts)
+              // _ <- writeVolumeMounts(service)
             } yield ()
           }
     } yield ()

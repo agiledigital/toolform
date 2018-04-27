@@ -5,16 +5,29 @@ import collection.JavaConversions._
 import collection.JavaConverters._
 import com.typesafe.config._
 import cats.implicits._
+import scala.util.{Failure, Success, Try}
 
 object VolumeClaimWriter extends KubernetesWriter {
 
   // write the various access modes
   def writeAccessModes(resource: Resource, serviceName: String): Result[Unit] = {
     val acceptableModes = List("ReadWriteOnce", "ReadOnlyMany")
-
     val accessModes = resource.settings match {
       case Some(aModes) => {
-        aModes.getStringList("accessModes")
+        Try(aModes.getStringList("accessModes")) match {
+          case Success(list) => list
+          // no accessModes specified in project.conf
+          case Failure(error) => {
+            println(s"Warning: no access modes specified for resource: $serviceName. Default of ReadWriteOnce used")
+            val res: java.util.List[String] = List("ReadWriteOnce")
+            res
+          }
+        }
+      }
+      case None => {
+        println(s"Warning: no access modes specified for resource: $serviceName. Default of ReadWriteOnce used")
+        val res: java.util.List[String] = List("ReadWriteOnce")
+        res
       }
     }
     val modes = String.join("-", accessModes).split("-").toList
@@ -29,10 +42,9 @@ object VolumeClaimWriter extends KubernetesWriter {
     } yield ()
   }
 
-  def writeVolumeClaim(projectId: String, resource: Resource): Result[Unit] = {
-    val serviceName = determineServiceName(resource)
-    // extract disk volume size information
-    val storage = resource.storage match {
+  // return the storage size of the disk resource, printing a warning and using default if no size specified
+  def getStorageSize(resource: Resource, serviceName: String): String =
+    resource.storage match {
       case Some(strg) =>
         strg match {
           case "small"  => "2Gi"
@@ -53,6 +65,20 @@ object VolumeClaimWriter extends KubernetesWriter {
         "2Gi"
       }
     }
+
+  /**
+    * Writes a Kubernetes "PersistentVolumeClaim" specification based on the provided disk resource.
+    *
+    * A PersistentVolumeClaim is a request for storage by a user
+    *
+    * @see https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+    *
+    * @param resource   the disk resource object that will be used to create the PersistentVolumeClaim.
+    * @return           a state monad encapsulating the context of the writing process after the method has completed.
+    */
+  def writeVolumeClaim(resource: Resource): Result[Unit] = {
+    val serviceName = determineServiceName(resource)
+    val storage     = getStorageSize(resource, serviceName)
 
     for {
       _ <- write("---")
