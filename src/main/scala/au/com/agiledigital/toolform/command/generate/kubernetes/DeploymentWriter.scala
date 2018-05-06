@@ -1,6 +1,10 @@
 package au.com.agiledigital.toolform.command.generate.kubernetes
 
 import au.com.agiledigital.toolform.model.ToolFormService
+import au.com.agiledigital.toolform.model.{Project, Resource, Volume}
+import scala.util.{Failure, Success, Try}
+// import scala.collection._
+import collection.JavaConversions._
 import cats.implicits._
 
 object DeploymentWriter extends KubernetesWriter {
@@ -65,27 +69,76 @@ object DeploymentWriter extends KubernetesWriter {
     }
 
   // TESTING
-  // private def writeVolumeMounts(service: Resource): Result[Unit] =
-  //   if (service.settings.paths.nonEmpty) {
-  //     for {
-  //       _ <- write("volumeMounts:")
-  //       _ <- indented {
-  //             for {
-  //               _ <- service.settings.paths.traverse_(path => write(s"-mountPath: $path"))
-  //               _ <- indented {
-  //                     for {
-  //                       _ <- service.id.traverse_(name => write(s"name: $name"))
-  //                     } yield {}
-  //                   }
-  //             } yield ()
-  //           }
-  //     } yield ()
-  //   } else {
-  //     identity
-  //   }
+  private def writeVolumeMounts(service: ToolFormService, project: Project): Result[Unit] = {
+    val componentID = service.id
+    Left("There was an error")
 
-  private def writeContainer(projectId: String, service: ToolFormService): Result[Unit] = {
-    val imageName   = determineImageName(projectId, service)
+    // look through project topology and find volume claims for current component/resource
+    val relatedVolumeIDs: Seq[String] = project.topology.volumes
+      .getOrElse(Nil)
+      .filter(volume => volume.to.refId == componentID)
+      .map(_.from.refId)
+
+    val volumesWithPaths: Option[Seq[(String, String)]] = Some(relatedVolumeIDs flatMap { volumeId =>
+      findPathsFromVolumeID(project, volumeId).map((volumeId, _))
+    }).filter(_.nonEmpty)
+
+    val maybeVolumeMounts: Option[Result[Unit]] = volumesWithPaths map { list =>
+      list.toList traverse_ {
+        case (volumeId, path) =>
+          val result: Result[Unit] = for {
+            _ <- write(s"- name: ${volumeId}")
+            _ <- write(s"  mountPath: ${path}")
+          } yield ()
+          result
+      }
+    }
+
+    maybeVolumeMounts match {
+      case Some(volumeMounts) =>
+        for {
+          _ <- write("volumeMounts:")
+          _ <- indented(volumeMounts)
+        } yield ()
+      case None => identity
+    }
+  }
+
+  private def findPathsFromVolumeID(project: Project, resourceID: String): List[String] =
+    project.resources.get(resourceID) match {
+      case Some(resource) => {
+        // returns a List(String)
+        returnVolumePath(resource, resourceID)
+      }
+      case None =>
+        println(s"Warning: '$resourceID' does not exist")
+        Nil
+    }
+
+  private def returnVolumePath(resource: Resource, id: String): List[String] = {
+    val paths = resource.settings match {
+      case Some(settings) => {
+        Try(settings.getStringList("paths")) match {
+          case Success(list) => list
+          // no paths specified in project.conf
+          case Failure(error) => {
+            println(s"Error: no path specified for resource: $id.")
+            val res: java.util.List[String] = List("error")
+            res
+          }
+        }
+      }
+      case None => {
+        println(s"Warning: no path specified for resource: $id.")
+        val res: java.util.List[String] = List("error")
+        res
+      }
+    }
+    String.join("-", paths).split("-").toList
+  }
+
+  private def writeContainer(project: Project, service: ToolFormService): Result[Unit] = {
+    val imageName   = determineImageName(project.id, service)
     val serviceName = determineServiceName(service)
     val containerPorts = (service.externalPorts ++ service.exposedPorts)
       .map((portMapping) => portMapping.targetPort)
@@ -100,7 +153,7 @@ object DeploymentWriter extends KubernetesWriter {
               _ <- write("imagePullPolicy: IfNotPresent") // Makes locally built images work
               _ <- writeEnvironmentVariables(service)
               _ <- writeContainerPorts(containerPorts)
-              // _ <- writeVolumeMounts(service)
+              _ <- writeVolumeMounts(service, project)
             } yield ()
           }
     } yield ()
@@ -115,11 +168,11 @@ object DeploymentWriter extends KubernetesWriter {
     *
     * @see https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
     *
-    * @param projectId  the ID of the project object which is used to generate certain names,
+    * @param project    the project object which is used to get deployment information,
     * @param service    the service object that will be used to create the deployment spec.
     * @return           a state monad encapsulating the context of the writing process after the method has completed.
     */
-  def writeDeployment(projectId: String, service: ToolFormService): Result[Unit] = {
+  def writeDeployment(project: Project, service: ToolFormService): Result[Unit] = {
     val serviceName = determineServiceName(service)
 
     for {
@@ -144,7 +197,7 @@ object DeploymentWriter extends KubernetesWriter {
                       _ <- write(s"spec:")
                       _ <- indented {
                             for {
-                              _ <- writeContainer(projectId, service)
+                              _ <- writeContainer(project, service)
                             } yield ()
                           }
                     } yield ()

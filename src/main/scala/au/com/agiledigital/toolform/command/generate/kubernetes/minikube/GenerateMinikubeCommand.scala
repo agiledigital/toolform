@@ -75,8 +75,8 @@ object GenerateMinikubeCommand extends YamlWriter {
         _ <- project.components.values.filter(shouldWriteService).toList.traverse_(writeService)
         _ <- project.resources.values.filter(shouldWriteService).toList.traverse_(writeService)
         _ <- project.resources.values.filter(isdiskResourceType).toList.traverse_((resource) => writeVolumeClaim(resource))
-        _ <- project.components.values.toList.traverse_((component) => writeDeployment(project.id, component))
-        _ <- project.resources.values.filter(isNotDiskResourceType).toList.traverse_((resource) => writeDeployment(project.id, resource))
+        _ <- project.components.values.toList.traverse_((component) => writeDeployment(project, component))
+        _ <- project.resources.values.filter(isNotDiskResourceType).toList.traverse_((resource) => writeDeployment(project, resource))
       } yield ()
 
       val context = WriterContext(writer)
