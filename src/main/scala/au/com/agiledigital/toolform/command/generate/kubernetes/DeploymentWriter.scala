@@ -1,7 +1,7 @@
 package au.com.agiledigital.toolform.command.generate.kubernetes
 
 import au.com.agiledigital.toolform.model.ToolFormService
-import au.com.agiledigital.toolform.model.{Project, Resource, Volume}
+import au.com.agiledigital.toolform.model.{Project, Resource}
 import scala.util.{Failure, Success, Try}
 // import scala.collection._
 import collection.JavaConversions._
@@ -68,12 +68,10 @@ object DeploymentWriter extends KubernetesWriter {
       identity
     }
 
-  // TESTING
   private def writeVolumeMounts(service: ToolFormService, project: Project): Result[Unit] = {
     val componentID = service.id
-    Left("There was an error")
 
-    // look through project topology and find volume claims for current component/resource
+    // look through project topology and find volume claims IDs for current component/resource
     val relatedVolumeIDs: Seq[String] = project.topology.volumes
       .getOrElse(Nil)
       .filter(volume => volume.to.refId == componentID)
@@ -107,7 +105,6 @@ object DeploymentWriter extends KubernetesWriter {
   private def findPathsFromVolumeID(project: Project, resourceID: String): List[String] =
     project.resources.get(resourceID) match {
       case Some(resource) => {
-        // returns a List(String)
         returnVolumePath(resource, resourceID)
       }
       case None =>
@@ -120,7 +117,6 @@ object DeploymentWriter extends KubernetesWriter {
       case Some(settings) => {
         Try(settings.getStringList("paths")) match {
           case Success(list) => list
-          // no paths specified in project.conf
           case Failure(error) => {
             println(s"Error: no path specified for resource: $id.")
             val res: java.util.List[String] = List("error")
@@ -135,6 +131,47 @@ object DeploymentWriter extends KubernetesWriter {
       }
     }
     String.join("-", paths).split("-").toList
+  }
+
+  private def writeVolume(service: ToolFormService, project: Project): Result[Unit] = {
+    val componentID = service.id
+
+    // look through project topology and find volume claims IDs for current component/resource
+    val relatedVolumeIDs1: Seq[String] = project.topology.volumes
+      .getOrElse(Nil)
+      .filter(volume => volume.to.refId == componentID)
+      .map(_.from.refId)
+      .distinct
+
+    val relatedVolumeIDs: Option[Seq[String]] = relatedVolumeIDs1 match {
+      case _ if relatedVolumeIDs1.nonEmpty => Some(relatedVolumeIDs1)
+      case _                               => None
+    }
+
+    val maybeVolumes: Option[Result[Unit]] = relatedVolumeIDs map { volumeIDs =>
+      volumeIDs.toList traverse_ {
+        case (volumeId) =>
+          val result: Result[Unit] = for {
+            _ <- write(s"- name: $volumeId")
+            _ <- write(s"  persistentVolumeClaim:")
+            _ <- indented {
+                  for {
+                    _ <- write(s"  claimName: $volumeId")
+                  } yield ()
+                }
+          } yield ()
+          result
+      }
+    }
+
+    maybeVolumes match {
+      case Some(volumes) =>
+        for {
+          _ <- write("volumes:")
+          _ <- indented(volumes)
+        } yield ()
+      case None => identity
+    }
   }
 
   private def writeContainer(project: Project, service: ToolFormService): Result[Unit] = {
@@ -156,6 +193,7 @@ object DeploymentWriter extends KubernetesWriter {
               _ <- writeVolumeMounts(service, project)
             } yield ()
           }
+      _ <- writeVolume(service, project)
     } yield ()
   }
 

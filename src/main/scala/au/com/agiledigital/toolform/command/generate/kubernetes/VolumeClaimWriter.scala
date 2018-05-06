@@ -38,7 +38,7 @@ object VolumeClaimWriter extends KubernetesWriter {
     }
 
     for {
-      _ <- modes.filter(mode => acceptableModes.contains(mode)).traverse_(mode => write(s"- $mode"))
+      _ <- modes.traverse_(mode => write(s"- $mode"))
     } yield ()
   }
 
@@ -50,15 +50,7 @@ object VolumeClaimWriter extends KubernetesWriter {
           case "small"  => "2Gi"
           case "medium" => "5Gi"
           case "large"  => "10Gi"
-          case _ => {
-            if (strg.matches("([0-9]*Gi)")) {
-              // trim leading zeros
-              strg.replaceFirst("^0+(?!$)", "")
-            } else {
-              println(s"Warning: Invalid disk volume size '$strg' given for resource: $serviceName. Default size of 2Gi used.")
-              "2Gi"
-            }
-          }
+          case _        => strg
         }
       case None => { // use default and issue warning
         println(s"Warning: No disk volume size given for resource: $serviceName. Default size of 2Gi used.")
