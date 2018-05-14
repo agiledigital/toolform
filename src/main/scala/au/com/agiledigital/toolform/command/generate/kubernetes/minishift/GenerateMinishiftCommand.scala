@@ -75,9 +75,9 @@ object GenerateMinishiftCommand extends YamlWriter {
         _ <- write(s"# Date: ${DateUtil.formattedDateString}")
         _ <- project.components.values.filter(shouldWriteService).toList.traverse_(writeService)
         _ <- project.resources.values.filter(shouldWriteService).toList.traverse_(writeService)
-        _ <- project.resources.values.filter(isdiskResourceType).toList.traverse_((resource) => writeVolumeClaim(resource))
+        _ <- project.resources.values.filter(isDiskResourceType).toList.traverse_((resource) => writeVolumeClaim(resource))
         _ <- project.components.values.toList.traverse_((component) => writeDeployment(project, component))
-        _ <- project.resources.values.filter(isNotDiskResourceType).toList.traverse_((resource) => writeDeployment(project, resource))
+        _ <- project.resources.values.filterNot(isDiskResourceType).toList.traverse_((resource) => writeDeployment(project, resource))
         _ <- project.topology.endpoints.toList.traverse_ { case (endpointId, endpoint) => writeRouter(endpointId, endpoint) }
       } yield ()
 
@@ -94,9 +94,6 @@ object GenerateMinishiftCommand extends YamlWriter {
   private def shouldWriteService(toolFormService: ToolFormService): Boolean =
     toolFormService.exposedPorts.nonEmpty || toolFormService.externalPorts.nonEmpty
 
-  private def isdiskResourceType(resource: Resource): Boolean =
+  private def isDiskResourceType(resource: Resource): Boolean =
     resource.resourceType.nonEmpty && resource.resourceType == "disk"
-
-  private def isNotDiskResourceType(resource: Resource): Boolean =
-    !(resource.resourceType.nonEmpty) || resource.resourceType != "disk"
 }

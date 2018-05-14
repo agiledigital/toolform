@@ -60,43 +60,23 @@ class GenerateMinikubeTest extends FlatSpec with Matchers with PrivateMethodTest
     result should startWith("Output directory [/tmp/foo/bar/baz] does not exist")
   }
 
-  "isdiskResourceType" should "should return true if resource is disk type" in {
+  "isDiskResourceType" should "should return true if resource is disk type" in {
     val testResource: Resource = {
       val testResource = new Resource("ID", "disk", None, storage = None)
       testResource
     }
 
-    val isdiskResourceType = PrivateMethod[GenerateMinikubeCommand]('isdiskResourceType)
-    GenerateMinikubeCommand invokePrivate isdiskResourceType(testResource) should equal(true)
+    val isDiskResourceType = PrivateMethod[GenerateMinikubeCommand]('isDiskResourceType)
+    GenerateMinikubeCommand invokePrivate isDiskResourceType(testResource) should equal(true)
   }
 
-  "isdiskResourceType" should "should return false if resource is not disk type" in {
+  "isDiskResourceType" should "should return false if resource is not disk type" in {
     val testResource: Resource = {
       val testResource = new Resource("ID", "notDisk", None, storage = None)
       testResource
     }
 
-    val isdiskResourceType = PrivateMethod[GenerateMinikubeCommand]('isdiskResourceType)
-    GenerateMinikubeCommand invokePrivate isdiskResourceType(testResource) should equal(false)
-  }
-
-  "isNotDiskResourceType" should "should return true if resource is not disk type" in {
-    val testResource: Resource = {
-      val testResource = new Resource("ID", "notDisk", None, storage = None)
-      testResource
-    }
-
-    val isNotDiskResourceType = PrivateMethod[GenerateMinikubeCommand]('isNotDiskResourceType)
-    GenerateMinikubeCommand invokePrivate isNotDiskResourceType(testResource) should equal(true)
-  }
-
-  "isNotDiskResourceType" should "should return false if resource is disk type" in {
-    val testResource: Resource = {
-      val testResource = new Resource("ID", "disk", None, storage = None)
-      testResource
-    }
-
-    val isNotDiskResourceType = PrivateMethod[GenerateMinikubeCommand]('isNotDiskResourceType)
-    GenerateMinikubeCommand invokePrivate isNotDiskResourceType(testResource) should equal(false)
+    val isDiskResourceType = PrivateMethod[GenerateMinikubeCommand]('isDiskResourceType)
+    GenerateMinikubeCommand invokePrivate isDiskResourceType(testResource) should equal(false)
   }
 }

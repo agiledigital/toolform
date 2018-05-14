@@ -137,18 +137,13 @@ object DeploymentWriter extends KubernetesWriter {
     val componentID = service.id
 
     // look through project topology and find volume claims IDs for current component/resource
-    val relatedVolumeIDs1: Seq[String] = project.topology.volumes
+    val relatedVolumeIDs: Seq[String] = project.topology.volumes
       .getOrElse(Nil)
-      .filter(volume => volume.to.refId == componentID)
+      .filter(volume => volume.resolve(project).to.id == componentID)
       .map(_.from.refId)
       .distinct
 
-    val relatedVolumeIDs: Option[Seq[String]] = relatedVolumeIDs1 match {
-      case _ if relatedVolumeIDs1.nonEmpty => Some(relatedVolumeIDs1)
-      case _                               => None
-    }
-
-    val maybeVolumes: Option[Result[Unit]] = relatedVolumeIDs map { volumeIDs =>
+    val maybeVolumes: Option[Result[Unit]] = Option(relatedVolumeIDs).filter(_.nonEmpty) map { volumeIDs =>
       volumeIDs.toList traverse_ {
         case (volumeId) =>
           val result: Result[Unit] = for {
@@ -193,7 +188,6 @@ object DeploymentWriter extends KubernetesWriter {
               _ <- writeVolumeMounts(service, project)
             } yield ()
           }
-      _ <- writeVolume(service, project)
     } yield ()
   }
 
@@ -236,6 +230,7 @@ object DeploymentWriter extends KubernetesWriter {
                       _ <- indented {
                             for {
                               _ <- writeContainer(project, service)
+                              _ <- writeVolume(service, project)
                             } yield ()
                           }
                     } yield ()
