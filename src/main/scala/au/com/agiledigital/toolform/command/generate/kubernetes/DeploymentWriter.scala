@@ -3,7 +3,6 @@ package au.com.agiledigital.toolform.command.generate.kubernetes
 import au.com.agiledigital.toolform.model.ToolFormService
 import au.com.agiledigital.toolform.model.{Project, Resource}
 import scala.util.{Failure, Success, Try}
-// import scala.collection._
 import collection.JavaConversions._
 import cats.implicits._
 

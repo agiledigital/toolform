@@ -61,20 +61,14 @@ class GenerateMinikubeTest extends FlatSpec with Matchers with PrivateMethodTest
   }
 
   "isDiskResourceType" should "should return true if resource is disk type" in {
-    val testResource: Resource = {
-      val testResource = new Resource("ID", "disk", None, storage = None)
-      testResource
-    }
+    val testResource: Resource = Resource("ID", "disk", None, storage = None)
 
     val isDiskResourceType = PrivateMethod[GenerateMinikubeCommand]('isDiskResourceType)
     GenerateMinikubeCommand invokePrivate isDiskResourceType(testResource) should equal(true)
   }
 
   "isDiskResourceType" should "should return false if resource is not disk type" in {
-    val testResource: Resource = {
-      val testResource = new Resource("ID", "notDisk", None, storage = None)
-      testResource
-    }
+    val testResource: Resource = Resource("ID", "notDisk", None, storage = None)
 
     val isDiskResourceType = PrivateMethod[GenerateMinikubeCommand]('isDiskResourceType)
     GenerateMinikubeCommand invokePrivate isDiskResourceType(testResource) should equal(false)

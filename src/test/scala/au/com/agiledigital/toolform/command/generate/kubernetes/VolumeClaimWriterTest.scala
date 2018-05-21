@@ -19,7 +19,7 @@ class VolumeClaimWriterTest extends FlatSpec with Matchers with PrivateMethodTes
                       |}""".stripMargin
 
     val settingsParam: Option[com.typesafe.config.Config] = Some(ConfigFactory.load(settings))
-    val testResource: Resource                            = new Resource("ID", "disk", settingsParam, storage = Option("2Gi"))
+    val testResource: Resource                            = Resource("ID", "disk", settingsParam, storage = Option("2Gi"))
     val serviceName                                       = "testResource"
 
     val testWriter  = new StringWriter()
@@ -39,7 +39,7 @@ class VolumeClaimWriterTest extends FlatSpec with Matchers with PrivateMethodTes
                       |}""".stripMargin
 
     val settingsParam: Option[com.typesafe.config.Config] = Some(ConfigFactory.load(settings))
-    val testResource: Resource                            = new Resource("ID", "disk", settingsParam, storage = Option("2Gi"))
+    val testResource: Resource                            = Resource("ID", "disk", settingsParam, storage = Option("2Gi"))
     val serviceName                                       = "testResource"
 
     val testWriter  = new StringWriter()
@@ -59,7 +59,7 @@ class VolumeClaimWriterTest extends FlatSpec with Matchers with PrivateMethodTes
                       |}""".stripMargin
 
     val settingsParam: Option[com.typesafe.config.Config] = Some(ConfigFactory.load(settings))
-    val testResource: Resource                            = new Resource("ID", "disk", settingsParam, storage = Option("2Gi"))
+    val testResource: Resource                            = Resource("ID", "disk", settingsParam, storage = Option("2Gi"))
     val serviceName                                       = "testResource"
 
     val testWriter  = new StringWriter()
@@ -73,7 +73,7 @@ class VolumeClaimWriterTest extends FlatSpec with Matchers with PrivateMethodTes
   }
 
   "writeAccessModes" should "not write access mode if no resource settings is defined" in {
-    val testResource: Resource = new Resource("ID", "disk", None, storage = Option("2Gi"))
+    val testResource: Resource = Resource("ID", "disk", None, storage = Option("2Gi"))
     val serviceName            = "testResource"
 
     val testWriter  = new StringWriter()
@@ -87,35 +87,35 @@ class VolumeClaimWriterTest extends FlatSpec with Matchers with PrivateMethodTes
   }
 
   "getStorageSize" should "write default 2Gi if no size defined" in {
-    val testResource: Resource = new Resource("ID", "disk", None, storage = None)
+    val testResource: Resource = Resource("ID", "disk", None, storage = None)
     val serviceName            = "testResource"
 
     getStorageSize(testResource, serviceName) should equal("2Gi")
   }
 
   "getStorageSize" should "write storage size if size is defined" in {
-    val testResource: Resource = new Resource("ID", "disk", None, storage = Option("3Gi"))
+    val testResource: Resource = Resource("ID", "disk", None, storage = Option("3Gi"))
     val serviceName            = "testResource"
 
     getStorageSize(testResource, serviceName) should equal("3Gi")
   }
 
   "getStorageSize" should "write 2Gi storage size if size is 'small'" in {
-    val testResource: Resource = new Resource("ID", "disk", None, storage = Option("small"))
+    val testResource: Resource = Resource("ID", "disk", None, storage = Option("small"))
     val serviceName            = "testResource"
 
     getStorageSize(testResource, serviceName) should equal("2Gi")
   }
 
   "getStorageSize" should "write 5Gi storage size if size is 'medium'" in {
-    val testResource: Resource = new Resource("ID", "disk", None, storage = Option("medium"))
+    val testResource: Resource = Resource("ID", "disk", None, storage = Option("medium"))
     val serviceName            = "testResource"
 
     getStorageSize(testResource, serviceName) should equal("5Gi")
   }
 
   "getStorageSize" should "write 10Gi storage size if size is 'large'" in {
-    val testResource: Resource = new Resource("ID", "disk", None, storage = Option("large"))
+    val testResource: Resource = Resource("ID", "disk", None, storage = Option("large"))
     val serviceName            = "testResource"
 
     getStorageSize(testResource, serviceName) should equal("10Gi")
