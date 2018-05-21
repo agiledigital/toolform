@@ -121,18 +121,24 @@ object GenerateDockerComposeV3Command extends YamlWriter {
           }
     } yield ()
 
-  def writeResource(resource: Resource): Result[Unit] =
+  def writeResource(resource: Resource): Result[Unit] = {
+    val imageName = resource.image match {
+      case Some(name) => name
+      case None       => throw new Exception(s"""Image name does not exist for [${resource.id}]""")
+    }
+
     for {
       _ <- write(s"${resource.id}:")
       _ <- indented {
             for {
-              _ <- write(s"image: ${resource.image}")
+              _ <- write(s"image: $imageName")
               _ <- write(s"restart: always")
               _ <- writeEnvironmentVariables(resource)
               _ <- writePorts(resource)
             } yield ()
           }
     } yield ()
+  }
 
   def writeEnvironmentVariables(service: ToolFormService): Result[Unit] =
     if (service.environment.nonEmpty) {

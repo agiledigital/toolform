@@ -19,7 +19,7 @@ package au.com.agiledigital.toolform.model
 final case class Resource(id: String,
                           resourceType: String,
                           settings: Option[ResourceSettings],
-                          image: String = "NoImageName",
+                          image: Option[String],
                           environment: Map[String, String] = Map(),
                           exposedPorts: List[PortMapping] = List(),
                           externalPorts: List[PortMapping] = List(),

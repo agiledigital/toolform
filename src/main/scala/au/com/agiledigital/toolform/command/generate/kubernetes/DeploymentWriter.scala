@@ -150,7 +150,8 @@ object DeploymentWriter extends KubernetesWriter {
   }
 
   private def writeContainer(project: Project, service: ToolFormService): Result[Unit] = {
-    val imageName   = determineImageName(project.id, service)
+    val imageName = determineImageName(project.id, service)
+
     val serviceName = determineServiceName(service)
     val containerPorts = (service.externalPorts ++ service.exposedPorts)
       .map((portMapping) => portMapping.targetPort)
