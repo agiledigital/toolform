@@ -7,20 +7,14 @@ import au.com.agiledigital.toolform.command.generate.WriterContext
 import au.com.agiledigital.toolform.model._
 import org.scalatest.{FlatSpec, Matchers, PrivateMethodTester}
 
-// import scala.io.Source
-// import collection.JavaConverters._
-import com.typesafe.config.ConfigFactory
-
 class VolumeClaimWriterTest extends FlatSpec with Matchers with PrivateMethodTester {
   "writeAccessModes" should "write access mode if a correct access mode is defined" in {
-    val settings = """"settings": {
-                      |  "accessModes": ["ReadWriteOnce"]
-                      |  "paths": ["/var/lib/mount"]
-                      |}""".stripMargin
+    val accessModes                             = List("ReadOnlyMany")
+    val paths                                   = List()
+    val settingsParam: Option[ResourceSettings] = Some(ResourceSettings(accessModes, paths))
 
-    val settingsParam: Option[com.typesafe.config.Config] = Some(ConfigFactory.load(settings))
-    val testResource: Resource                            = Resource("ID", "disk", settingsParam, storage = Option("2Gi"))
-    val serviceName                                       = "testResource"
+    val testResource: Resource = Resource("ID", "disk", settingsParam, storage = Option("2Gi"))
+    val serviceName            = "testResource"
 
     val testWriter  = new StringWriter()
     val testContext = WriterContext(testWriter)
@@ -29,51 +23,15 @@ class VolumeClaimWriterTest extends FlatSpec with Matchers with PrivateMethodTes
 
     print(testWriter.toString)
 
-    testWriter.toString should equal("- ReadWriteOnce\n")
+    testWriter.toString should equal("- ReadOnlyMany\n")
   }
 
-  "writeAccessModes" should "write default ReadWriteOnce access mode if an incorrect access mode is defined" in {
-    val settings = """"settings": {
-                      |  "accessModes": ["IncorrectAccessMode"]
-                      |  "paths": ["/var/lib/mount"]
-                      |}""".stripMargin
+  "writeAccessModes" should "write default access mode of ReadWriteOnce no access modes are defined" in {
+    val accessModes                             = List()
+    val paths                                   = List()
+    val settingsParam: Option[ResourceSettings] = Some(ResourceSettings(accessModes, paths))
 
-    val settingsParam: Option[com.typesafe.config.Config] = Some(ConfigFactory.load(settings))
-    val testResource: Resource                            = Resource("ID", "disk", settingsParam, storage = Option("2Gi"))
-    val serviceName                                       = "testResource"
-
-    val testWriter  = new StringWriter()
-    val testContext = WriterContext(testWriter)
-
-    writeAccessModes(testResource, serviceName).run(testContext).value
-
-    print(testWriter.toString)
-
-    testWriter.toString should equal("- ReadWriteOnce\n")
-  }
-
-  "writeAccessModes" should "only write correct access modes" in {
-    val settings = """"settings": {
-                      |  "accessModes": ["ReadOnlyMany", "IncorrectAccessMode", "alsoIncorrect"]
-                      |  "paths": ["/var/lib/mount"]
-                      |}""".stripMargin
-
-    val settingsParam: Option[com.typesafe.config.Config] = Some(ConfigFactory.load(settings))
-    val testResource: Resource                            = Resource("ID", "disk", settingsParam, storage = Option("2Gi"))
-    val serviceName                                       = "testResource"
-
-    val testWriter  = new StringWriter()
-    val testContext = WriterContext(testWriter)
-
-    writeAccessModes(testResource, serviceName).run(testContext).value
-
-    print(testWriter.toString)
-
-    testWriter.toString should equal("- ReadWriteOnce\n")
-  }
-
-  "writeAccessModes" should "not write access mode if no resource settings is defined" in {
-    val testResource: Resource = Resource("ID", "disk", None, storage = Option("2Gi"))
+    val testResource: Resource = Resource("ID", "disk", settingsParam, storage = Option("2Gi"))
     val serviceName            = "testResource"
 
     val testWriter  = new StringWriter()
@@ -84,6 +42,38 @@ class VolumeClaimWriterTest extends FlatSpec with Matchers with PrivateMethodTes
     print(testWriter.toString)
 
     testWriter.toString should equal("- ReadWriteOnce\n")
+  }
+
+  "writeAccessModes" should "throw an exception if an incorrect access mode is defined" in {
+    val accessModes                             = List("IncorrectAccessMode")
+    val paths                                   = List()
+    val settingsParam: Option[ResourceSettings] = Some(ResourceSettings(accessModes, paths))
+
+    val testResource: Resource = Resource("ID", "disk", settingsParam, storage = Option("2Gi"))
+    val serviceName            = "testResource"
+
+    val expectedMessage = "Unsupported access mode(s) [IncorrectAccessMode] for resource [ID]"
+    the[IllegalArgumentException] thrownBy (writeAccessModes(testResource, serviceName)) should have message expectedMessage
+  }
+
+  "writeAccessModes" should "throw an exception if multiple incorrect access mode are defined" in {
+    val accessModes                             = List("ReadOnlyMany", "IncorrectAccessMode", "alsoIncorrect")
+    val paths                                   = List()
+    val settingsParam: Option[ResourceSettings] = Some(ResourceSettings(accessModes, paths))
+
+    val testResource: Resource = Resource("ID", "disk", settingsParam, storage = Option("2Gi"))
+    val serviceName            = "testResource"
+
+    val expectedMessage = "Unsupported access mode(s) [IncorrectAccessMode,alsoIncorrect] for resource [ID]"
+    the[IllegalArgumentException] thrownBy (writeAccessModes(testResource, serviceName)) should have message expectedMessage
+  }
+
+  "writeAccessModes" should "throw an exception if no resource settings is defined" in {
+    val testResource: Resource = Resource("ID", "disk", None, storage = Option("2Gi"))
+    val serviceName            = "testResource"
+
+    val expectedMessage = "[ID] resource requires a settings object"
+    the[IllegalArgumentException] thrownBy (writeAccessModes(testResource, serviceName)) should have message expectedMessage
   }
 
   "getStorageSize" should "write default 2Gi if no size defined" in {

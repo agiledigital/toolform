@@ -1,45 +1,33 @@
 package au.com.agiledigital.toolform.command.generate.kubernetes
 
 import au.com.agiledigital.toolform.model.{Resource}
-import collection.JavaConversions._
-import collection.JavaConverters._
-import com.typesafe.config._
 import cats.implicits._
-import scala.util.{Failure, Success, Try}
 
 object VolumeClaimWriter extends KubernetesWriter {
 
   // write the various access modes
   def writeAccessModes(resource: Resource, serviceName: String): Result[Unit] = {
-    val acceptableModes = List("ReadWriteOnce", "ReadOnlyMany")
-    val accessModes = resource.settings match {
-      case Some(aModes) => {
-        Try(aModes.getStringList("accessModes")) match {
-          case Success(list) => list
-          // no accessModes specified in project.conf
-          case Failure(error) => {
-            println(s"Warning: no access modes specified for resource: $serviceName. Default of ReadWriteOnce used")
-            val res: java.util.List[String] = List("ReadWriteOnce")
-            res
-          }
-        }
-      }
-      case None => {
-        println(s"Warning: no access modes specified for resource: $serviceName. Default of ReadWriteOnce used")
-        val res: java.util.List[String] = List("ReadWriteOnce")
-        res
-      }
-    }
-    val modes = String.join("-", accessModes).split("-").toList
-    for (mode <- modes) {
-      if (!acceptableModes.contains(mode)) {
-        println(s"Warning: $mode access mode unsupported for resource: $serviceName")
-      }
+    val acceptableModes   = List("ReadWriteOnce", "ReadOnlyMany")
+    val defaultAccessMode = "ReadWriteOnce"
+
+    val modes = resource.settings match {
+      case Some(settings) => settings.accessModes
+      case None           => throw resource.noSettingsSpecified()
     }
 
-    for {
-      _ <- modes.traverse_(mode => write(s"- $mode"))
-    } yield ()
+    val unsupportedAccessModes = modes.filter(mode => !acceptableModes.contains(mode))
+    if (!unsupportedAccessModes.isEmpty)
+      throw resource.unsupportedAccessMode(unsupportedAccessModes)
+
+    if (modes.isEmpty) {
+      for {
+        _ <- write(s"- $defaultAccessMode")
+      } yield ()
+    } else {
+      for {
+        _ <- modes.traverse_(mode => write(s"- $mode"))
+      } yield ()
+    }
   }
 
   // return the storage size of the disk resource, printing a warning and using default if no size specified
@@ -98,7 +86,6 @@ object VolumeClaimWriter extends KubernetesWriter {
                   }
               _ <- write("accessModes:")
               _ <- writeAccessModes(resource, serviceName)
-
             } yield ()
           }
     } yield ()

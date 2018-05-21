@@ -1,7 +1,5 @@
 package au.com.agiledigital.toolform.model
 
-import com.typesafe.config.Config
-
 /**
   * Resources are not buildable components. They are expected to be provided externally by the environment that the
   * project is deployed into. For example, a database is a resource.
@@ -20,7 +18,7 @@ import com.typesafe.config.Config
   */
 final case class Resource(id: String,
                           resourceType: String,
-                          settings: Option[Config],
+                          settings: Option[ResourceSettings],
                           image: String = "NoImageName",
                           environment: Map[String, String] = Map(),
                           exposedPorts: List[PortMapping] = List(),
@@ -28,6 +26,12 @@ final case class Resource(id: String,
                           storage: Option[String])
     extends ToolFormService {
   val tagName: String = id
+
+  def noSettingsSpecified(): Exception =
+    new IllegalArgumentException(s"""[${this.id}] resource requires a settings object""")
+
+  def unsupportedAccessMode(modes: List[String]): Exception =
+    new IllegalArgumentException(s"""Unsupported access mode(s) [${modes.mkString(",")}] for resource [${this.id}]""")
 }
 
 /**
@@ -45,3 +49,5 @@ final case class MappedResource(path: String, tagName: String, environment: Map[
   override def id: String = path
 
 }
+
+final case class ResourceSettings(accessModes: List[String] = List(), paths: List[String] = List())

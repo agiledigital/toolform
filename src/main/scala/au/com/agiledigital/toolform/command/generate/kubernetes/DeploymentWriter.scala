@@ -1,9 +1,7 @@
 package au.com.agiledigital.toolform.command.generate.kubernetes
 
 import au.com.agiledigital.toolform.model.ToolFormService
-import au.com.agiledigital.toolform.model.{Project, Resource}
-import scala.util.{Failure, Success, Try}
-import collection.JavaConversions._
+import au.com.agiledigital.toolform.model.{Project}
 import cats.implicits._
 
 object DeploymentWriter extends KubernetesWriter {
@@ -73,11 +71,11 @@ object DeploymentWriter extends KubernetesWriter {
     // look through project topology and find volume claims IDs for current component/resource
     val relatedVolumeIDs: Seq[String] = project.topology.volumes
       .getOrElse(Nil)
-      .filter(volume => volume.to.refId == componentID)
+      .filter(volume => volume.resolve(project).to.id == componentID)
       .map(_.from.refId)
 
     val volumesWithPaths: Option[Seq[(String, String)]] = Some(relatedVolumeIDs flatMap { volumeId =>
-      findPathsFromVolumeID(project, volumeId).map((volumeId, _))
+      getVolumePathFromVolumeID(project, volumeId).map((volumeId, _))
     }).filter(_.nonEmpty)
 
     val maybeVolumeMounts: Option[Result[Unit]] = volumesWithPaths map { list =>
@@ -101,36 +99,19 @@ object DeploymentWriter extends KubernetesWriter {
     }
   }
 
-  private def findPathsFromVolumeID(project: Project, resourceID: String): List[String] =
+  private def getVolumePathFromVolumeID(project: Project, resourceID: String): List[String] =
     project.resources.get(resourceID) match {
       case Some(resource) => {
-        returnVolumePath(resource, resourceID)
-      }
-      case None =>
-        println(s"Warning: '$resourceID' does not exist")
-        Nil
-    }
-
-  private def returnVolumePath(resource: Resource, id: String): List[String] = {
-    val paths = resource.settings match {
-      case Some(settings) => {
-        Try(settings.getStringList("paths")) match {
-          case Success(list) => list
-          case Failure(error) => {
-            println(s"Error: no path specified for resource: $id.")
-            val res: java.util.List[String] = List("error")
-            res
+        resource.settings match {
+          case Some(settings) => {
+            settings.paths
           }
+          case None => throw resource.noSettingsSpecified()
         }
       }
-      case None => {
-        println(s"Warning: no path specified for resource: $id.")
-        val res: java.util.List[String] = List("error")
-        res
-      }
+      case None =>
+        Nil
     }
-    String.join("-", paths).split("-").toList
-  }
 
   private def writeVolume(service: ToolFormService, project: Project): Result[Unit] = {
     val componentID = service.id
