@@ -15,6 +15,8 @@ import au.com.agiledigital.toolform.plugin.ToolFormGenerateCommandPlugin
 import au.com.agiledigital.toolform.reader.ProjectReader
 import au.com.agiledigital.toolform.util.DateUtil
 import au.com.agiledigital.toolform.version.BuildInfo
+import cats.data.Validated.{invalid, valid}
+import cats.data.Validated
 import cats.data.NonEmptyList
 import cats.implicits._
 import com.monovore.decline.Opts
@@ -66,7 +68,13 @@ object GenerateMinishiftCommand extends YamlWriter {
     * @return on success it returns a status message to print to the screen, otherwise it will return an
     *         error object describing what went wrong.
     */
-  def runGenerateMinishift(sourceFilePath: String, outFile: File, project: Project): Either[NonEmptyList[ToolFormError], String] = {
+  def runGenerateMinishift(sourceFilePath: String, outFile: File, project: Project): Either[NonEmptyList[ToolFormError], String] =
+    for {
+      validatedResources <- project.resources.values.toList.traverseU(validateResource).toEither
+      writerStatus       <- writeAll(validatedResources, sourceFilePath, outFile, project)
+    } yield writerStatus
+
+  def writeAll(validResources: List[Resource], sourceFilePath: String, outFile: File, project: Project): Either[NonEmptyList[ToolFormError], String] = {
     val writer = new BufferedWriter(new FileWriter(outFile, false))
     try {
       val writeFile = for {
@@ -74,10 +82,10 @@ object GenerateMinishiftCommand extends YamlWriter {
         _ <- write(s"# Source file: $sourceFilePath")
         _ <- write(s"# Date: ${DateUtil.formattedDateString}")
         _ <- project.components.values.filter(shouldWriteService).toList.traverse_(writeService)
-        _ <- project.resources.values.filter(shouldWriteService).toList.traverse_(writeService)
-        _ <- project.resources.values.filter(isDiskResourceType).toList.traverse_((resource) => writeVolumeClaim(resource))
+        _ <- validResources.filter(shouldWriteService).traverse_(writeService)
+        _ <- validResources.filter(isDiskResourceType).traverse_((resource) => writeVolumeClaim(resource))
         _ <- project.components.values.toList.traverse_((component) => writeDeployment(project, component))
-        _ <- project.resources.values.filterNot(isDiskResourceType).toList.traverse_((resource) => writeDeployment(project, resource))
+        _ <- validResources.filterNot(isDiskResourceType).traverse_((resource) => writeDeployment(project, resource))
         _ <- project.topology.endpoints.toList.traverse_ { case (endpointId, endpoint) => writeRouter(endpointId, endpoint) }
       } yield ()
 
@@ -90,6 +98,12 @@ object GenerateMinishiftCommand extends YamlWriter {
       writer.close()
     }
   }
+
+  def validateResource(resource: Resource): Validated[NonEmptyList[ToolFormError], Resource] =
+    if (!isDiskResourceType(resource) && resource.image.isEmpty)
+      invalid(NonEmptyList.of(ToolFormError(s"Image name is required for: ${resource.id}")))
+    else
+      valid(resource)
 
   private def shouldWriteService(toolFormService: ToolFormService): Boolean =
     toolFormService.exposedPorts.nonEmpty || toolFormService.externalPorts.nonEmpty
