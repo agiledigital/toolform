@@ -5,7 +5,6 @@ import java.io.File
 import au.com.agiledigital.toolform.app.ToolFormAppSimulator.simulateAppForTest
 import au.com.agiledigital.toolform.command.inspect.InspectCommand
 import au.com.agiledigital.toolform.version.BuildInfo
-import cats.data.NonEmptyList
 import org.scalatest._
 import com.monovore.decline._
 

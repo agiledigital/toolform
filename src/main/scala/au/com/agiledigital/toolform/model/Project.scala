@@ -14,15 +14,8 @@ import scala.collection.immutable.{IndexedSeq, TreeMap}
   * @param components the components that will be built and combined to form the projects.
   * @param resources  the resources that must be supplied to the project to run.
   * @param topology   the network topology of the environment explains how elements will be related/connected.
-  * @param volumes    the volumes that will be mounted into components.
   */
-final case class Project(id: String,
-                         name: String,
-                         components: Map[String, Component],
-                         resources: Map[String, Resource],
-                         topology: Topology,
-                         volumes: Option[Seq[Volume]],
-                         componentGroups: Option[Seq[ComponentGroup]]) {
+final case class Project(id: String, name: String, components: Map[String, Component], resources: Map[String, Resource], topology: Topology, componentGroups: Option[Seq[ComponentGroup]]) {
 
   val sortedComponents: SortedMap[String, Component] = TreeMap(components.toArray: _*)
   val sortedResources: SortedMap[String, Resource]   = TreeMap(resources.toArray: _*)
@@ -32,8 +25,9 @@ final case class Project(id: String,
   * The network topology of the environment explains how elements will be related/connected.
   * @param links the links between components, other components and resources.
   * @param endpoints the endpoints that will make the components and resources available outside the project.
+  * @param volumes    the volumes that will be mounted into components.
   */
-final case class Topology(links: Seq[Link], endpoints: Map[String, Endpoint]) {
+final case class Topology(links: Seq[Link], endpoints: Map[String, Endpoint], volumes: Option[Seq[Volume]]) {
 
   val sortedEndpoints: SortedMap[String, Endpoint] = TreeMap(endpoints.toArray: _*)
 }
@@ -124,4 +118,18 @@ final case class Link(from: Reference, to: Reference) {
   * @param from the resource that supplies the volume.
   * @param to   the Project element that will be supplied the volume.
   */
-final case class Volume(from: Resource, to: Reference)
+final case class Volume(from: Reference, to: Reference) {
+  def resolve(project: Project): ResolvedLink = {
+    def invalidPathError(ref: Reference): Exception =
+      new IllegalArgumentException(s"""Could not resolve link to path [$ref]. Available components [${project.components.keys.mkString(",")}]""")
+
+    val maybeFrom = from.resolve(project)
+    val maybeTo   = to.resolve(project)
+    (maybeFrom, maybeTo) match {
+      case (None, _) => throw invalidPathError(from)
+      case (_, None) => throw invalidPathError(to)
+      case (Some(resolvedFrom), Some(resolvedTo)) =>
+        ResolvedLink(resolvedFrom, resolvedTo)
+    }
+  }
+}

@@ -18,7 +18,7 @@ trait KubernetesWriter extends YamlWriter {
   def determineImageName(projectId: String, service: ToolFormService): String =
     service match {
       case component: Component => componentImageName(projectId, component)
-      case resource: Resource   => resource.image
+      case resource: Resource   => resource.image.getOrElse("<missing image>")
     }
 
   def determineSelectorEntry(service: ToolFormService): String = {

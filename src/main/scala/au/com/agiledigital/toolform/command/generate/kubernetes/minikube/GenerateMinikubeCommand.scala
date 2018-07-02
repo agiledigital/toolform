@@ -5,6 +5,7 @@ import java.nio.file.Path
 
 import au.com.agiledigital.toolform.app.ToolFormError
 import au.com.agiledigital.toolform.command.generate.kubernetes.DeploymentWriter.writeDeployment
+import au.com.agiledigital.toolform.command.generate.kubernetes.VolumeClaimWriter.writeVolumeClaim
 import au.com.agiledigital.toolform.command.generate.kubernetes.minikube.GenerateMinikubeCommand.runGenerateMinikube
 import au.com.agiledigital.toolform.command.generate.kubernetes.ServiceWriter.writeService
 import au.com.agiledigital.toolform.command.generate.{WriterContext, YamlWriter}
@@ -13,6 +14,8 @@ import au.com.agiledigital.toolform.plugin.ToolFormGenerateCommandPlugin
 import au.com.agiledigital.toolform.reader.ProjectReader
 import au.com.agiledigital.toolform.util.DateUtil
 import au.com.agiledigital.toolform.version.BuildInfo
+import cats.data.Validated.{invalid, valid}
+import cats.data.Validated
 import cats.data.NonEmptyList
 import cats.implicits._
 import com.monovore.decline.Opts
@@ -64,7 +67,13 @@ object GenerateMinikubeCommand extends YamlWriter {
     * @return on success it returns a status message to print to the screen, otherwise it will return an
     *         error object describing what went wrong.
     */
-  def runGenerateMinikube(sourceFilePath: String, outFile: File, project: Project): Either[NonEmptyList[ToolFormError], String] = {
+  def runGenerateMinikube(sourceFilePath: String, outFile: File, project: Project): Either[NonEmptyList[ToolFormError], String] =
+    for {
+      validatedResources <- project.resources.values.toList.traverseU(validateResource).toEither
+      writerStatus       <- writeAll(validatedResources, sourceFilePath, outFile, project)
+    } yield writerStatus
+
+  private def writeAll(validResources: List[Resource], sourceFilePath: String, outFile: File, project: Project): Either[NonEmptyList[ToolFormError], String] = {
     val writer = new BufferedWriter(new FileWriter(outFile, false))
     try {
       val writeFile = for {
@@ -72,9 +81,10 @@ object GenerateMinikubeCommand extends YamlWriter {
         _ <- write(s"# Source file: $sourceFilePath")
         _ <- write(s"# Date: ${DateUtil.formattedDateString}")
         _ <- project.components.values.filter(shouldWriteService).toList.traverse_(writeService)
-        _ <- project.resources.values.filter(shouldWriteService).toList.traverse_(writeService)
-        _ <- project.components.values.toList.traverse_((component) => writeDeployment(project.id, component))
-        _ <- project.resources.values.toList.traverse_((resource) => writeDeployment(project.id, resource))
+        _ <- validResources.filter(shouldWriteService).traverse_(writeService)
+        _ <- validResources.filter(isDiskResourceType).traverse_((resource) => writeVolumeClaim(resource))
+        _ <- project.components.values.toList.traverse_((component) => writeDeployment(project, component))
+        _ <- validResources.filterNot(isDiskResourceType).traverse_((resource) => writeDeployment(project, resource))
       } yield ()
 
       val context = WriterContext(writer)
@@ -87,6 +97,15 @@ object GenerateMinikubeCommand extends YamlWriter {
     }
   }
 
+  def validateResource(resource: Resource): Validated[NonEmptyList[ToolFormError], Resource] =
+    if (!isDiskResourceType(resource) && resource.image.isEmpty)
+      invalid(NonEmptyList.of(ToolFormError(s"Image name is required for: ${resource.id}")))
+    else
+      valid(resource)
+
   private def shouldWriteService(toolFormService: ToolFormService): Boolean =
     toolFormService.exposedPorts.nonEmpty || toolFormService.externalPorts.nonEmpty
+
+  private def isDiskResourceType(resource: Resource): Boolean =
+    resource.resourceType.nonEmpty && resource.resourceType == "disk"
 }

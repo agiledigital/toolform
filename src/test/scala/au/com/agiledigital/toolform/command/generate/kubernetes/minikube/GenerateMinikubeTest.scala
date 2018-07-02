@@ -4,6 +4,7 @@ import java.io.File
 
 import au.com.agiledigital.toolform.app.ToolFormAppSimulator
 import org.scalatest.{FlatSpec, Matchers, PrivateMethodTester}
+import au.com.agiledigital.toolform.model._
 
 import scala.compat.Platform.EOL
 import scala.io.Source
@@ -56,5 +57,19 @@ class GenerateMinikubeTest extends FlatSpec with Matchers with PrivateMethodTest
     val inputFile: File = pathToFile("/testprojects/minikube/realworldsample/environment.conf")
     val result          = ToolFormAppSimulator.simulateAppForTest(List("generate", "minikube", "-i", inputFile.getAbsolutePath, "-o", "/tmp/foo/bar/baz/generate-docker-test.out").toArray)
     result should startWith("Output directory [/tmp/foo/bar/baz] does not exist")
+  }
+
+  "isDiskResourceType" should "should return true if resource is disk type" in {
+    val testResource: Resource = Resource("ID", "disk", None, None, storage = None)
+
+    val isDiskResourceType = PrivateMethod[GenerateMinikubeCommand]('isDiskResourceType)
+    GenerateMinikubeCommand invokePrivate isDiskResourceType(testResource) should equal(true)
+  }
+
+  "isDiskResourceType" should "should return false if resource is not disk type" in {
+    val testResource: Resource = Resource("ID", "notDisk", None, None, storage = None)
+
+    val isDiskResourceType = PrivateMethod[GenerateMinikubeCommand]('isDiskResourceType)
+    GenerateMinikubeCommand invokePrivate isDiskResourceType(testResource) should equal(false)
   }
 }

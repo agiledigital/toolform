@@ -13,6 +13,8 @@ import au.com.agiledigital.toolform.plugin.ToolFormGenerateCommandPlugin
 import au.com.agiledigital.toolform.reader.ProjectReader
 import au.com.agiledigital.toolform.util.DateUtil
 import au.com.agiledigital.toolform.version.BuildInfo
+import cats.data.Validated.{invalid, valid}
+import cats.data.Validated
 import cats.data.NonEmptyList
 import cats.implicits._
 import com.monovore.decline.Opts
@@ -60,7 +62,13 @@ object GenerateDockerComposeV3Command extends YamlWriter {
     * @return                       on success it returns a status message to print to the screen, otherwise it will return an
     *                               error object describing what went wrong.
     */
-  def runGenerateDockerComposeV3(sourceFilePath: String, outFile: File, project: Project): Either[NonEmptyList[ToolFormError], String] = {
+  def runGenerateDockerComposeV3(sourceFilePath: String, outFile: File, project: Project): Either[NonEmptyList[ToolFormError], String] =
+    for {
+      validatedResources <- project.sortedResources.values.toList.traverseU(validateResource).toEither
+      writerStatus       <- writeAll(validatedResources, sourceFilePath, outFile, project)
+    } yield writerStatus
+
+  private def writeAll(validResources: List[Resource], sourceFilePath: String, outFile: File, project: Project): Either[NonEmptyList[ToolFormError], String] = {
     val writer = new BufferedWriter(new FileWriter(outFile, false))
     try {
       val writeFile = for {
@@ -72,7 +80,7 @@ object GenerateDockerComposeV3Command extends YamlWriter {
         _ <- indented {
               for {
                 _ <- writeComponents(project.id, project.sortedComponents.values.toList)
-                _ <- writeResources(project.sortedResources.values.toList)
+                _ <- writeResources(validResources)
               } yield ()
             }
       } yield ()
@@ -121,18 +129,21 @@ object GenerateDockerComposeV3Command extends YamlWriter {
           }
     } yield ()
 
-  def writeResource(resource: Resource): Result[Unit] =
+  def writeResource(resource: Resource): Result[Unit] = {
+    val imageName = resource.image.getOrElse("<missing image>")
+
     for {
       _ <- write(s"${resource.id}:")
       _ <- indented {
             for {
-              _ <- write(s"image: ${resource.image}")
+              _ <- write(s"image: $imageName")
               _ <- write(s"restart: always")
               _ <- writeEnvironmentVariables(resource)
               _ <- writePorts(resource)
             } yield ()
           }
     } yield ()
+  }
 
   def writeEnvironmentVariables(service: ToolFormService): Result[Unit] =
     if (service.environment.nonEmpty) {
@@ -157,4 +168,10 @@ object GenerateDockerComposeV3Command extends YamlWriter {
     } else {
       identity
     }
+
+  def validateResource(resource: Resource): Validated[NonEmptyList[ToolFormError], Resource] =
+    if (resource.image.isEmpty)
+      invalid(NonEmptyList.of(ToolFormError(s"Image name is required for: ${resource.id}")))
+    else
+      valid(resource)
 }
