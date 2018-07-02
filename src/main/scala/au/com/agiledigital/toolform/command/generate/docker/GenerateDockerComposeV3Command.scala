@@ -130,7 +130,7 @@ object GenerateDockerComposeV3Command extends YamlWriter {
     } yield ()
 
   def writeResource(resource: Resource): Result[Unit] = {
-    val imageName = resource.image.get
+    val imageName = resource.image.getOrElse("<missing image>")
 
     for {
       _ <- write(s"${resource.id}:")
