@@ -44,9 +44,9 @@ class GenerateMinishiftCommand extends ToolFormGenerateCommandPlugin {
     val inputFile  = inputFilePath.toFile
     val outputFile = outputFilePath.toFile
     if (!inputFile.exists()) {
-      Left(NonEmptyList.of(ToolFormError(s"Input file [${inputFile}] does not exist.")))
+      Left(NonEmptyList.of(ToolFormError(s"Input file [$inputFile] does not exist.")))
     } else if (!inputFile.isFile) {
-      Left(NonEmptyList.of(ToolFormError(s"Input file [${inputFile}] is not a valid file.")))
+      Left(NonEmptyList.of(ToolFormError(s"Input file [$inputFile] is not a valid file.")))
     } else if (!outputFile.getParentFile.exists()) {
       Left(NonEmptyList.of(ToolFormError(s"Output directory [${outputFile.getParentFile}] does not exist.")))
     } else {

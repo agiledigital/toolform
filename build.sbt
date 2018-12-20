@@ -27,7 +27,8 @@ libraryDependencies ++= Seq(
   "com.github.pureconfig" %% "pureconfig-enumeratum" % pureconfigVersion,
   "com.monovore"          %% "decline"               % "0.3.0",
   "com.beachape"          %% "enumeratum"            % "1.5.12",
-  "org.typelevel"         %% "cats-core"             % "0.9.0"
+  "org.typelevel"         %% "cats-core"             % "0.9.0",
+  "org.scalatra.scalate"  %% "scalate-core"          % "1.9.0"
 )
 
 // For Settings/Task reference, see http://www.scala-sbt.org/release/sxr/sbt/Keys.scala.html
@@ -42,6 +43,8 @@ scalacOptions += "-Xmacro-settings:materialize-derivations"
 testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-l", "org.scalatest.tags.Slow", "-u", "target/junit-xml-reports", "-oD", "-eS")
 
 scalafmtOnCompile in ThisBuild := true
+
+trapExit := false
 
 artifact in (Compile, assembly) := {
   val art = (artifact in (Compile, assembly)).value
