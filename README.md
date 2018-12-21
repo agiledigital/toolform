@@ -68,6 +68,7 @@ toolform generate --help
 Usage:
     toolform generate minikube
     toolform generate dockercompose
+    toolform generate jenkinsfile
 
 Generate config files targeting a particular platform
 
@@ -80,6 +81,8 @@ Subcommands:
         generates config files for Kubernetes (Minikube) container orchestration
     dockercompose
         generates config files for container orchestration
+    jenkinsfile
+        generates build.Jenkinsfile and deploy.Jenkinsfile for Jenkins Pipeline
 
 ```
 
@@ -116,6 +119,24 @@ Options and flags:
         the path to output the generated file(s)
 ```
 
+```
+toolform generate jenkinsfile --help
+
+Usage: toolform generate jenkinsfile --in-file <file> --out-file <file> --template-folder-path <folder>
+
+generates Jenkins files for Jenkins to build/deploy the project
+
+Options and flags:
+    --help
+        Display this help text.
+    --in-file <file>, -i <file>
+        the path to the project config file
+    --out-file <file>, -o <file>
+        the path to output the generated file(s)
+    --template-folder-path <path>, -t <path>
+        the path to the input template file(s)
+```
+
 Example Usage
 --------------------------------------------------------------------------------
 
@@ -123,6 +144,28 @@ To generate docker compose output for a project, run:
 `toolform generate dockercompose -i your-project.conf -o ./target-dir/target-file.yaml`
 
 This will generate a docker compose file at the specified path.
+
+Jenkins Pipeline File Template
+--------------------------------------------------------------------------------
+
+To generate Jenkins Pipeline script files, templates need to be provided. It accepts only Mustache template. Current templates are provided in `/templates` folder.
+There are 2 templates `build.Jenkinsfile.mustache` and `deploy.Jenkinsfile.mustache`, each accepts different mappings. Available mappings:
+
+```
+// build.Jenkinsfile.mustache
+{{projectName}} -> name of the project, typically extracted from the project id of the component in project.conf.
+{{label}}       -> project build pod label.
+{{builds}}      -> building components of the projects that will is produced based on the component in project.conf.
+{{libraries}}   -> Jenkins libraries that is produced based on the builders used in project.conf.
+{{volumes}}     -> volumes that are required for the builders.
+{{containers}}  -> containers definitions to run the build.
+```
+
+```
+// deploy.Jenkinsfile.mustache
+{{projectName}} -> name of the project, typically extracted from the project id of the component in project.conf.
+{{components}}  -> components that will be deployed based on the deployment spec, e.g. OpenShift deploy spec.
+```
 
 Project Configuration
 ================================================================================
