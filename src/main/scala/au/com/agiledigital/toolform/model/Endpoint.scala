@@ -4,6 +4,7 @@ import au.com.agiledigital.toolform.model.Endpoint.EndpointType
 import enumeratum.EnumEntry._
 import enumeratum.{Enum, EnumEntry}
 import pureconfig._
+import pureconfig.generic.ProductHint
 
 import scala.collection.immutable.IndexedSeq
 

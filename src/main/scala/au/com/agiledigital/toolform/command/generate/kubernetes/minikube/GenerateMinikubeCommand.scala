@@ -69,7 +69,7 @@ object GenerateMinikubeCommand extends YamlWriter {
     */
   def runGenerateMinikube(sourceFilePath: String, outFile: File, project: Project): Either[NonEmptyList[ToolFormError], String] =
     for {
-      validatedResources <- project.resources.values.toList.traverseU(validateResource).toEither
+      validatedResources <- project.resources.values.toList.traverse(validateResource).toEither
       writerStatus       <- writeAll(validatedResources, sourceFilePath, outFile, project)
     } yield writerStatus
 

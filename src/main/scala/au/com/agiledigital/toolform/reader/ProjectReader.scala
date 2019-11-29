@@ -8,8 +8,9 @@ import cats.data.Validated
 import cats.data.Validated.{invalid, valid}
 import com.typesafe.config.ConfigFactory
 import pureconfig._
-import pureconfig.error.{ConfigReaderFailures, KeyNotFound}
+import pureconfig.error.{ConfigReaderFailures, ConvertFailure, KeyNotFound}
 import pureconfig.module.enumeratum._
+import pureconfig.generic.auto._
 import cats.implicits._
 import cats.data.NonEmptyList
 
@@ -37,7 +38,7 @@ object ProjectReader {
           // Resolve the configuration aka. replace variable substitutions.
           val config = simpleConfig.resolve()
 
-          val projectResult = loadConfig[Project](config)
+          val projectResult = ConfigSource.fromConfig(config).load[Project]
 
           for {
             collectedReadErrors    <- resultOrCollectReadErrors(projectResult)
@@ -51,7 +52,7 @@ object ProjectReader {
 
   private def validatedProject(project: Project): Either[NonEmptyList[ToolFormError], Project] =
     project.topology.endpoints.toList
-      .traverseU {
+      .traverse {
         case (endpointId, endpoint) =>
           validatedEndpoint(endpointId, endpoint, project.components)
       }
@@ -83,7 +84,7 @@ object ProjectReader {
           val locationDescription    = failure.location.map(_.description).getOrElse("Unknown location")
           val failureMessage: String = failure.description + " @ " + locationDescription
           failure match {
-            case KeyNotFound(key, _, _) => s"[$key] $failureMessage"
+            case ConvertFailure(KeyNotFound(key, _), _, _) => s"[$key] $failureMessage"
             case _                      => failureMessage
           }
         })

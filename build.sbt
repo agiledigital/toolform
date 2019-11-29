@@ -4,9 +4,6 @@ name := "toolform"
 
 organization := "au.com.agiledigital"
 
-//crossScalaVersions := Seq("2.13.1", "2.12.4")
-//scalaVersion := crossScalaVersions.value.head
-
 scalaVersion := "2.13.1"
 
 assemblySettings
@@ -19,18 +16,18 @@ assemblyOption in assembly ~= {
   _.copy(cacheUnzip = true)
 }
 
-val pureconfigVersion = "0.12.1" //didn't work with 0.11.1 but works with this strangely
+val pureconfigVersion = "0.12.1"
 
 //Define dependencies.
 libraryDependencies ++= Seq(
-  "org.scalatest"         %% "scalatest"             % "3.2.0-M1" % "test", //"3.0.1" % "test",
-  "org.scalacheck"        %% "scalacheck"            % "1.14.2" % "test", //"1.13.4" % "test",
+  "org.scalatest"         %% "scalatest"             % "3.2.0-M1" % "test",
+  "org.scalacheck"        %% "scalacheck"            % "1.14.2" % "test",
   "com.typesafe"          % "config"                 % "1.3.1",
   "com.github.pureconfig" %% "pureconfig"            % pureconfigVersion,
   "com.github.pureconfig" %% "pureconfig-enumeratum" % pureconfigVersion,
-  "com.monovore"          %% "decline"               % "1.0.0", //"0.3.0",
-  "com.beachape"          %% "enumeratum"            % "1.5.12",
-  "org.typelevel"         %% "cats-core"             % "0.9.0"
+  "com.monovore"          %% "decline"               % "1.0.0",
+  "com.beachape"          %% "enumeratum"            % "1.5.13",
+  "org.typelevel"         %% "cats-core"             % "2.0.0"
 )
 
 // For Settings/Task reference, see http://www.scala-sbt.org/release/sxr/sbt/Keys.scala.html

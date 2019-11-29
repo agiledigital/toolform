@@ -1,6 +1,6 @@
 package au.com.agiledigital.toolform.util
 
-import pureconfig.error.{CannotConvert, ConfigReaderFailure, ConfigValueLocation}
+import pureconfig.error.{CannotConvert, FailureReason}
 
 import scala.reflect.ClassTag
 
@@ -10,14 +10,13 @@ import scala.reflect.ClassTag
 object ConfigHelpers {
 
   /**
-    * Convert a `String => Either[String, T]` into a `String => Option[ConfigValueLocation] => Either` such that after application
+    * Convert a `String => Either[String, T]` into a `String => Either[FailureReason, T]` such that after application
     * - `Right(t)` becomes `_ => Right(t)`
-    * - `Left(message)` becomes `location => Left(CannotConvert(value, type, message, location)`
+    * - `Left(message)` becomes `message => Left(CannotConvert(value, type, message)`
     */
-  def handleErrorWithEither[T](f: String => Either[String, T])(implicit ct: ClassTag[T]): String => Option[ConfigValueLocation] => Either[ConfigReaderFailure, T] =
+  def handleErrorWithEither[T](f: String => Either[String, T])(implicit ct: ClassTag[T]): String => Either[FailureReason, T] =
     string =>
-      location =>
         f(string).left.map { message =>
-          CannotConvert(string, ct.runtimeClass.getName, message, location, "")
-    }
+          CannotConvert(string, ct.runtimeClass.getName, message)
+        }
 }
