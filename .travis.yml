@@ -7,7 +7,7 @@ cache:
 scala:
 - 2.13.1
 jdk:
-- oraclejdk11.0.4
+- oraclejdk11
 script:
 - sbt clean test
 after_success:
