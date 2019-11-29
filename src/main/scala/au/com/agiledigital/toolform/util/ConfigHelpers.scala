@@ -16,7 +16,7 @@ object ConfigHelpers {
     */
   def handleErrorWithEither[T](f: String => Either[String, T])(implicit ct: ClassTag[T]): String => Either[FailureReason, T] =
     string =>
-        f(string).left.map { message =>
-          CannotConvert(string, ct.runtimeClass.getName, message)
-        }
+      f(string).left.map { message =>
+        CannotConvert(string, ct.runtimeClass.getName, message)
+    }
 }

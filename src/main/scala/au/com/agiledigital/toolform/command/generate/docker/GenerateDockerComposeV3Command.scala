@@ -29,7 +29,7 @@ class GenerateDockerComposeV3Command extends ToolFormGenerateCommandPlugin {
   def command: Opts[Either[NonEmptyList[ToolFormError], String]] =
     Opts.subcommand("dockercompose", "generates config files for container orchestration") {
       (Opts.option[Path]("in-file", short = "i", metavar = "file", help = "the path to the project config file"),
-        Opts.option[Path]("out-file", short = "o", metavar = "file", help = "the path to output the generated file(s)"))
+       Opts.option[Path]("out-file", short = "o", metavar = "file", help = "the path to output the generated file(s)"))
         .mapN(execute)
     }
 

@@ -85,7 +85,7 @@ object ProjectReader {
           val failureMessage: String = failure.description + " @ " + locationDescription
           failure match {
             case ConvertFailure(KeyNotFound(key, _), _, _) => s"[$key] $failureMessage"
-            case _                      => failureMessage
+            case _                                         => failureMessage
           }
         })
         .mkString(":\n")
