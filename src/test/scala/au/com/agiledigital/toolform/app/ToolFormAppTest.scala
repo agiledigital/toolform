@@ -76,8 +76,8 @@ object ToolFormAppSimulator {
   def simulateAppForTest(args: Array[String]): String = {
     val resultBuffer = new StringBuffer()
     val parserOpts = CliParserConfiguration.commandLineOptions.map {
-      case Left((errors)) => resultBuffer.append(errors.toList.map({ _.message }).mkString(", ")); Unit
-      case Right(result)  => resultBuffer.append(result); Unit
+      case Left((errors)) => resultBuffer.append(errors.toList.map({ _.message }).mkString(", ")); ()
+      case Right(result)  => resultBuffer.append(result); ()
     }
     val showVersion = Opts
       .flag("version", "Print the version number and exit.", visibility = Visibility.Partial)

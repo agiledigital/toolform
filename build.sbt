@@ -20,7 +20,7 @@ val pureconfigVersion = "0.12.1"
 
 //Define dependencies.
 libraryDependencies ++= Seq(
-  "org.scalatest"         %% "scalatest"             % "3.2.0-M1" % "test",
+  "org.scalatest"         %% "scalatest"             % "3.0.8" % "test",
   "org.scalacheck"        %% "scalacheck"            % "1.14.2" % "test",
   "com.typesafe"          % "config"                 % "1.3.1",
   "com.github.pureconfig" %% "pureconfig"            % pureconfigVersion,
