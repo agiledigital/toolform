@@ -11,6 +11,6 @@ object DockerFormatting {
 
   def formatPort(port: PortMapping): String = {
     val portString = port.toPortString
-    s"""- "$portString" """
+    s"""- "$portString""""
   }
 }
