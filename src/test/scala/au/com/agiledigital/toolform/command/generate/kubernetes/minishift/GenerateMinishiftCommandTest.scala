@@ -4,7 +4,6 @@ import java.io.File
 
 import org.scalatest.{FlatSpec, Matchers, PrivateMethodTester}
 
-import scala.compat.Platform.EOL
 import scala.io.Source
 
 class GenerateMinishiftCommandTest extends FlatSpec with Matchers with PrivateMethodTester {
@@ -28,7 +27,7 @@ class GenerateMinishiftCommandTest extends FlatSpec with Matchers with PrivateMe
       .fromFile(file.getAbsolutePath)
       .getLines()
       .filterNot(line => line.startsWith("#"))
-      .mkString(EOL)
+      .mkString(java.lang.System.lineSeparator())
 
   private val testFolders = rootTestFolder
     .listFiles()

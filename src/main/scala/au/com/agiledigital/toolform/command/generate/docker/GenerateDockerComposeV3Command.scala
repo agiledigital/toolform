@@ -123,7 +123,7 @@ object GenerateDockerComposeV3Command extends YamlWriter {
       _ <- write("labels:")
       _ <- indented {
             for {
-              _ <- write(s"source.path: \\042${component.path}\\042")
+              _ <- write(s"""source.path: "${component.path}"""")
               _ <- write("project.artefact: \"true\"")
             } yield ()
           }
