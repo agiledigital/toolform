@@ -35,9 +35,9 @@ class GenerateMinishiftCommand extends ToolFormGenerateCommandPlugin {
     */
   def command: Opts[Either[NonEmptyList[ToolFormError], String]] =
     Opts.subcommand("minishift", "generates config files for Kubernetes (Minishift) container orchestration") {
-      (Opts.option[Path]("in-file", short = "i", metavar = "file", help = "the path to the project config file") |@|
-        Opts.option[Path]("out-file", short = "o", metavar = "file", help = "the path to output the generated file(s)"))
-        .map(execute)
+      (Opts.option[Path]("in-file", short = "i", metavar = "file", help = "the path to the project config file"),
+       Opts.option[Path]("out-file", short = "o", metavar = "file", help = "the path to output the generated file(s)"))
+        .mapN(execute)
     }
 
   def execute(inputFilePath: Path, outputFilePath: Path): Either[NonEmptyList[ToolFormError], String] = {
@@ -70,7 +70,7 @@ object GenerateMinishiftCommand extends YamlWriter {
     */
   def runGenerateMinishift(sourceFilePath: String, outFile: File, project: Project): Either[NonEmptyList[ToolFormError], String] =
     for {
-      validatedResources <- project.resources.values.toList.traverseU(validateResource).toEither
+      validatedResources <- project.resources.values.toList.traverse(validateResource).toEither
       writerStatus       <- writeAll(validatedResources, sourceFilePath, outFile, project)
     } yield writerStatus
 

@@ -7,8 +7,6 @@ import au.com.agiledigital.toolform.command.generate.WriterContext
 import au.com.agiledigital.toolform.command.generate.docker.GenerateDockerComposeV3Command._
 import au.com.agiledigital.toolform.model._
 import org.scalatest.{FlatSpec, Matchers, PrivateMethodTester}
-
-import scala.compat.Platform.EOL
 import scala.io.Source
 
 class GenerateDockerComposeV3CommandTest extends FlatSpec with Matchers with PrivateMethodTester {
@@ -32,7 +30,7 @@ class GenerateDockerComposeV3CommandTest extends FlatSpec with Matchers with Pri
       .fromFile(file.getAbsolutePath)
       .getLines()
       .filterNot(line => line.startsWith("#"))
-      .mkString(EOL)
+      .mkString(java.lang.System.lineSeparator())
 
   private val testFolders = rootTestFolder
     .listFiles()

@@ -5,9 +5,9 @@ cache:
   - $HOME/.ivy2/cache
   - $HOME/.sbt/boot/scala-$TRAVIS_SCALA_VERSION
 scala:
-- 2.12.3
+- 2.13.1
 jdk:
-- oraclejdk8
+- oraclejdk11
 script:
 - sbt clean test
 after_success:

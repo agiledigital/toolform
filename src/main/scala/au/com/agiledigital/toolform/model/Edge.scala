@@ -1,7 +1,8 @@
 package au.com.agiledigital.toolform.model
 
 import enumeratum.{Enum, EnumEntry}
-import pureconfig.{CamelCase, ConfigFieldMapping, KebabCase, ProductHint}
+import pureconfig.{CamelCase, ConfigFieldMapping, KebabCase}
+import pureconfig.generic.ProductHint
 
 import scala.collection.SortedMap
 import scala.collection.immutable.{IndexedSeq, TreeMap}
@@ -58,7 +59,7 @@ final case class Edge(subEdges: Map[String, SubEdge]) extends ProjectElement {
     */
   override def id: String = "TODO: edge id" // name + "_nginx"
 
-  val sortedSubEdges: SortedMap[String, SubEdge] = TreeMap(subEdges.toArray: _*)
+  val sortedSubEdges: SortedMap[String, SubEdge] = TreeMap(subEdges.toIndexedSeq: _*)
 }
 
 /**

@@ -30,7 +30,7 @@ object ServiceWriter extends KubernetesWriter {
       _ <- write(s"-")
       _ <- indented {
             for {
-              _ <- write(s"name: \042port-$port\042")
+              _ <- write(s"""name: "port-$port"""")
               _ <- write(s"port: $port")
               _ <- write(s"targetPort: $targetPort")
               _ <- write(s"protocol: $protocol")

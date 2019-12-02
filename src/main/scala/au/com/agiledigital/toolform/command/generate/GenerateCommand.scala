@@ -7,7 +7,7 @@ import au.com.agiledigital.toolform.plugin.{ToolFormCommandPlugin, ToolFormGener
 import cats.data.NonEmptyList
 import com.monovore.decline._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.immutable.Seq
 
 /**

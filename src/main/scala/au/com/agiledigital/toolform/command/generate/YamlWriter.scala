@@ -2,8 +2,6 @@ package au.com.agiledigital.toolform.command.generate
 
 import cats.data._
 
-import scala.compat.Platform.EOL
-
 trait YamlWriter {
 
   type Result[A] = State[WriterContext, A]
@@ -22,7 +20,7 @@ trait YamlWriter {
       val indentRange = 0 until context.indentLevel * this.indentSize
       indentRange.foreach(_ => context.writer.write(" "))
       context.writer.write(text)
-      context.writer.write(EOL)
+      context.writer.write(java.lang.System.lineSeparator())
       (context, ())
     }
   }
