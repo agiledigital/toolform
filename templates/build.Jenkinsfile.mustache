@@ -50,7 +50,7 @@ def containers = [
 
 def buildNumber = env.BUILD_NUMBER;
 
-podTemplate(label: "{{label}}", cloud: 'openshift', containers: containers, volumes: volumeClaims) {
+podTemplate(label: "{{label}}", cloud: 'openshift', containers: containers, volumes: volumeClaims, runAsUser: '1000') {
   node("{{label}}") {
 
     final builds = [:]
