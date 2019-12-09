@@ -69,6 +69,7 @@ Usage:
     toolform generate minikube
     toolform generate dockercompose
     toolform generate jenkinsfile
+    toolform generate jenkinsconfigfiles
 
 Generate config files targeting a particular platform
 
@@ -83,6 +84,8 @@ Subcommands:
         generates config files for container orchestration
     jenkinsfile
         generates build.Jenkinsfile and deploy.Jenkinsfile for Jenkins Pipeline
+    jenkinsconfigfiles
+        generates config map and patch file for Jenkins
 
 ```
 
@@ -136,6 +139,27 @@ Options and flags:
     --template-folder-path <path>, -t <path>
         the path to the input template file(s)
 ```
+
+````
+toolform generate jenkinsconfigfiles --help
+Usage: toolform generate jenkinsconfigfiles --name <name> --namespace <namespace> --instance <instance> --volume <volume> --repo <repo>
+
+Generate config files and deploy them on jenkins
+
+Options and flags:
+    --help
+        Display this help text.
+    --name <name>, -n <name>
+        the name of the config map
+    --namespace <namespace>, -n <namespace>, -s <namespace>
+        the namespace in kubernetes
+    --instance <instance>, -i <instance>
+        the instance in kubernetes
+    --volume <volume>, -v <volume>
+        the name of the volume it will mount on
+    --repo <repo>, -r <repo>
+        the name of the repo that contains the code
+````
 
 Example Usage
 --------------------------------------------------------------------------------

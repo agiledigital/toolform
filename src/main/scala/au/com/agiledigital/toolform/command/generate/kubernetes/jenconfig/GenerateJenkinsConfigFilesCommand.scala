@@ -45,14 +45,14 @@ object GenerateJenkinsConfigFilesCommand {
 
   def runGenerateConfigFiles(name: String, namespace: String, instance: String, volume: String, repo: String): Either[NonEmptyList[ToolFormError], String] =
     for {
-      configFileStatus   <- writeConfigFile(name, namespace, instance)
+      configFileStatus   <- writeConfigFile(name, namespace, instance, repo)
       dispatchFileStatus <- writeDispatchFile(name, namespace, repo, volume)
     } yield s"$configFileStatus\n$dispatchFileStatus"
 
-  def writeConfigFile(name: String, namespace: String, instance: String): Either[NonEmptyList[ToolFormError], String] = {
+  def writeConfigFile(name: String, namespace: String, instance: String, repo: String): Either[NonEmptyList[ToolFormError], String] = {
     val configFile         = "configMaps/config_map.yml"
     val configFileTemplate = "configMaps/config_map.yml.mustache"
-    val templateMapping    = Map("name" -> s"$name", "namespace" -> s"$namespace", "instance" -> s"$instance")
+    val templateMapping    = Map("name" -> name, "namespace" -> namespace, "instance" -> instance, "repo" -> repo)
 
     val writer = new BufferedWriter(new FileWriter(configFile, false))
 
@@ -72,7 +72,7 @@ object GenerateJenkinsConfigFilesCommand {
   def writeDispatchFile(name: String, namespace: String, repo: String, volume: String): Either[NonEmptyList[ToolFormError], String] = {
     val dispatchFile         = "configMaps/dep_patch.yml"
     val dispatchFileTemplate = "configMaps/dep_patch.yml.mustache"
-    val templateMapping      = Map("name" -> s"$name", "namespace" -> s"$namespace", "repo" -> s"$repo", "volume" -> s"$volume")
+    val templateMapping      = Map("name" -> name, "namespace" -> namespace, "repo" -> repo, "volume" -> volume)
 
     val writer = new BufferedWriter(new FileWriter(dispatchFile, false))
     val buildDispatchFile = engine.layout(
