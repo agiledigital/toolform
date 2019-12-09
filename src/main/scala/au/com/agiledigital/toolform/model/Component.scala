@@ -1,7 +1,8 @@
 package au.com.agiledigital.toolform.model
 
 import com.typesafe.config.Config
-import pureconfig.{CamelCase, ConfigFieldMapping, KebabCase, ProductHint}
+import pureconfig.{CamelCase, ConfigFieldMapping, KebabCase}
+import pureconfig.generic.ProductHint
 
 /**
   * A Component is a project element that is built the project. It can be converted into a Docker image and composed

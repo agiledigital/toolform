@@ -8,7 +8,7 @@ import cats.data.NonEmptyList
 import com.monovore.decline._
 
 import scala.collection.immutable.Seq
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
   * A tool to generate CI/CD pipelines from a project definition.

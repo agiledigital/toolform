@@ -1,0 +1,20 @@
+spec:
+  template:
+    spec:
+      serviceAccountName: namespaceOfPod
+      initContainers:
+        - name: copy-default-config
+          volumeMounts:
+            - mountPath: /var/jenkins_jobs/jobs/repoInGit
+              name: nameOfTheVolume
+      volumes:
+      - name: csc-shouv-jenkins-job-test-jenkins-volume
+        configMap:
+          name: nameOftheConfigMap
+          items:
+          - key: config.xml
+            path: config.xml
+          - key: build-config.xml
+            path: jobs/Build/config.xml
+          - key: build-state.xml
+            path: jobs/Build/state.xml

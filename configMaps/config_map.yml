@@ -1,0 +1,160 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nameOftheConfigMap
+  namespace: namespaceOfPod
+  labels:
+    "app.kubernetes.io/name": "jenkins"
+    "app.kubernetes.io/instance": instanceName
+    "app.kubernetes.io/component": "jenkins-master"
+data:
+  config.xml: |-
+    <?xml version='1.1' encoding='UTF-8'?>
+    <com.cloudbees.hudson.plugins.folder.Folder plugin="cloudbees-folder@6.9">
+      <description></description>
+      <displayName>test_jenkins</displayName>
+      <properties>
+        <org.csanchez.jenkins.plugins.kubernetes.KubernetesFolderProperty plugin="kubernetes@1.18.2">
+          <permittedClouds/>
+        </org.csanchez.jenkins.plugins.kubernetes.KubernetesFolderProperty>
+        <org.jenkinsci.plugins.pipeline.modeldefinition.config.FolderConfig plugin="pipeline-model-definition@1.4.0">
+          <dockerLabel></dockerLabel>
+          <registry plugin="docker-commons@1.15"/>
+        </org.jenkinsci.plugins.pipeline.modeldefinition.config.FolderConfig>
+      </properties>
+      <folderViews class="com.cloudbees.hudson.plugins.folder.views.DefaultFolderViewHolder">
+        <views>
+          <hudson.model.AllView>
+            <owner class="com.cloudbees.hudson.plugins.folder.Folder" reference="../../../.."/>
+            <name>All</name>
+            <filterExecutors>false</filterExecutors>
+            <filterQueue>false</filterQueue>
+            <properties class="hudson.model.View$PropertyList"/>
+          </hudson.model.AllView>
+        </views>
+        <tabBar class="hudson.views.DefaultViewsTabBar"/>
+      </folderViews>
+      <healthMetrics>
+        <com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric>
+          <nonRecursive>false</nonRecursive>
+        </com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric>
+      </healthMetrics>
+      <icon class="com.cloudbees.hudson.plugins.folder.icons.StockFolderIcon"/>
+    </com.cloudbees.hudson.plugins.folder.Folder>
+  build-config.xml: |-
+    <?xml version='1.1' encoding='UTF-8'?>
+    <org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject plugin="workflow-multibranch@2.21">
+        <actions/>
+        <description></description>
+        <displayName>Build</displayName>
+        <properties>
+            <com.cloudbees.hudson.plugins.folder.properties.FolderCredentialsProvider_-FolderCredentialsProperty plugin="cloudbees-folder@6.9">
+                <domainCredentialsMap class="hudson.util.CopyOnWriteMap$Hash">
+                    <entry>
+                        <com.cloudbees.plugins.credentials.domains.Domain plugin="credentials@2.3.0">
+                            <specifications/>
+                        </com.cloudbees.plugins.credentials.domains.Domain>
+                        <java.util.concurrent.CopyOnWriteArrayList>
+                            <com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey plugin="ssh-credentials@1.18">
+                                <id>2807ef67-e19e-4932-ac45-e440393ba999</id>
+                                <description></description>
+                                <username>sarker1999</username>
+                                <privateKeySource class="com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey$DirectEntryPrivateKeySource">
+                                    <privateKey>{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}</privateKey>
+                                </privateKeySource>
+                            </com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey>
+                        </java.util.concurrent.CopyOnWriteArrayList>
+                    </entry>
+                </domainCredentialsMap>
+            </com.cloudbees.hudson.plugins.folder.properties.FolderCredentialsProvider_-FolderCredentialsProperty>
+            <org.jenkinsci.plugins.pipeline.modeldefinition.config.FolderConfig plugin="pipeline-model-definition@1.5.0">
+                <dockerLabel></dockerLabel>
+                <registry plugin="docker-commons@1.15"/>
+            </org.jenkinsci.plugins.pipeline.modeldefinition.config.FolderConfig>
+        </properties>
+        <folderViews class="jenkins.branch.MultiBranchProjectViewHolder" plugin="branch-api@2.5.4">
+            <owner class="org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject" reference="../.."/>
+        </folderViews>
+        <healthMetrics>
+            <com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric plugin="cloudbees-folder@6.9">
+                <nonRecursive>false</nonRecursive>
+            </com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric>
+        </healthMetrics>
+        <icon class="jenkins.branch.MetadataActionFolderIcon" plugin="branch-api@2.5.4">
+            <owner class="org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject" reference="../.."/>
+        </icon>
+        <orphanedItemStrategy class="com.cloudbees.hudson.plugins.folder.computed.DefaultOrphanedItemStrategy" plugin="cloudbees-folder@6.9">
+            <pruneDeadBranches>false</pruneDeadBranches>
+            <daysToKeep>-1</daysToKeep>
+            <numToKeep>-1</numToKeep>
+        </orphanedItemStrategy>
+        <triggers>
+            <com.cloudbees.hudson.plugins.folder.computed.PeriodicFolderTrigger plugin="cloudbees-folder@6.9">
+                <spec>* * * * *</spec>
+                <interval>300000</interval>
+            </com.cloudbees.hudson.plugins.folder.computed.PeriodicFolderTrigger>
+        </triggers>
+        <disabled>false</disabled>
+        <sources class="jenkins.branch.MultiBranchProject$BranchSourceList" plugin="branch-api@2.5.4">
+            <data>
+                <jenkins.branch.BranchSource>
+                    <source class="org.jenkinsci.plugins.github_branch_source.GitHubSCMSource" plugin="github-branch-source@2.5.8">
+                        <id>04b09ade-5c6c-49da-ad96-7574232de7a8</id>
+                        <apiUri>https://api.github.com</apiUri>
+                        <credentialsId>75808696-27bd-4c1a-8114-081d1f419932</credentialsId>
+                        <repoOwner>sarker1999</repoOwner>
+                        <repository>test_jenkins</repository>
+                        <repositoryUrl>https://github.com/sarker1999/test_jenkins.git</repositoryUrl>
+                        <traits>
+                            <org.jenkinsci.plugins.github__branch__source.BranchDiscoveryTrait>
+                                <strategyId>1</strategyId>
+                            </org.jenkinsci.plugins.github__branch__source.BranchDiscoveryTrait>
+                            <org.jenkinsci.plugins.github__branch__source.OriginPullRequestDiscoveryTrait>
+                                <strategyId>1</strategyId>
+                            </org.jenkinsci.plugins.github__branch__source.OriginPullRequestDiscoveryTrait>
+                            <org.jenkinsci.plugins.github__branch__source.ForkPullRequestDiscoveryTrait>
+                                <strategyId>1</strategyId>
+                                <trust class="org.jenkinsci.plugins.github_branch_source.ForkPullRequestDiscoveryTrait$TrustPermission"/>
+                            </org.jenkinsci.plugins.github__branch__source.ForkPullRequestDiscoveryTrait>
+                        </traits>
+                    </source>
+                    <strategy class="jenkins.branch.DefaultBranchPropertyStrategy">
+                        <properties class="empty-list"/>
+                    </strategy>
+                </jenkins.branch.BranchSource>
+            </data>
+            <owner class="org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject" reference="../.."/>
+        </sources>
+        <factory class="org.jenkinsci.plugins.workflow.multibranch.WorkflowBranchProjectFactory">
+            <owner class="org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject" reference="../.."/>
+            <scriptPath>.agile-cicd/build.Jenkinsfile</scriptPath>
+        </factory>
+    </org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject>
+  build-state.xml: |-
+    <?xml version='1.1' encoding='UTF-8'?>
+    <jenkins.branch.MultiBranchProject_-State plugin="branch-api@2.5.4">
+      <sourceActions>
+        <entry>
+          <string>9c19f900-3f7b-4f13-818d-7e0088101389</string>
+          <list>
+            <com.cloudbees.jenkins.plugins.bitbucket.BitbucketRepoMetadataAction plugin="cloudbees-bitbucket-branch-source@2.6.0">
+              <scm>git</scm>
+            </com.cloudbees.jenkins.plugins.bitbucket.BitbucketRepoMetadataAction>
+            <com.cloudbees.jenkins.plugins.bitbucket.BitbucketDefaultBranch plugin="cloudbees-bitbucket-branch-source@2.6.0">
+              <repoOwner>CSC</repoOwner>
+              <repository>test_jenkins</repository>
+              <defaultBranch>develop</defaultBranch>
+            </com.cloudbees.jenkins.plugins.bitbucket.BitbucketDefaultBranch>
+            <com.cloudbees.jenkins.plugins.bitbucket.BitbucketLink plugin="cloudbees-bitbucket-branch-source@2.6.0">
+              <iconClassName>icon-bitbucket-repo</iconClassName>
+              <url>https://stash.agiledigital.com.au/projects/CSC/repos/test_jenkins</url>
+            </com.cloudbees.jenkins.plugins.bitbucket.BitbucketLink>
+            <jenkins.scm.api.metadata.ObjectMetadataAction plugin="scm-api@2.6.3">
+              <objectDisplayName>test_jenkins</objectDisplayName>
+              <objectUrl>https://stash.agiledigital.com.au/projects/CSC/repos/test_jenkins</objectUrl>
+            </jenkins.scm.api.metadata.ObjectMetadataAction>
+          </list>
+        </entry>
+      </sourceActions>
+    </jenkins.branch.MultiBranchProject_-State>

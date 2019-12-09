@@ -6,7 +6,6 @@ import au.com.agiledigital.toolform.app.ToolFormAppSimulator
 import org.scalatest.{FlatSpec, Matchers, PrivateMethodTester}
 import au.com.agiledigital.toolform.model._
 
-import scala.compat.Platform.EOL
 import scala.io.Source
 
 class GenerateMinikubeTest extends FlatSpec with Matchers with PrivateMethodTester {
@@ -30,7 +29,7 @@ class GenerateMinikubeTest extends FlatSpec with Matchers with PrivateMethodTest
       .fromFile(file.getAbsolutePath)
       .getLines()
       .filterNot(line => line.startsWith("#"))
-      .mkString(EOL)
+      .mkString(java.lang.System.lineSeparator())
 
   private val testFolders = rootTestFolder
     .listFiles()
@@ -62,14 +61,14 @@ class GenerateMinikubeTest extends FlatSpec with Matchers with PrivateMethodTest
   "isDiskResourceType" should "should return true if resource is disk type" in {
     val testResource: Resource = Resource("ID", "disk", None, None, storage = None)
 
-    val isDiskResourceType = PrivateMethod[GenerateMinikubeCommand]('isDiskResourceType)
+    val isDiskResourceType = PrivateMethod[GenerateMinikubeCommand](Symbol("isDiskResourceType"))
     GenerateMinikubeCommand invokePrivate isDiskResourceType(testResource) should equal(true)
   }
 
   "isDiskResourceType" should "should return false if resource is not disk type" in {
     val testResource: Resource = Resource("ID", "notDisk", None, None, storage = None)
 
-    val isDiskResourceType = PrivateMethod[GenerateMinikubeCommand]('isDiskResourceType)
+    val isDiskResourceType = PrivateMethod[GenerateMinikubeCommand](Symbol("isDiskResourceType"))
     GenerateMinikubeCommand invokePrivate isDiskResourceType(testResource) should equal(false)
   }
 }

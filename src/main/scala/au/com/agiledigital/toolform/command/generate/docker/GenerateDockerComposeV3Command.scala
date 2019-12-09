@@ -28,9 +28,9 @@ class GenerateDockerComposeV3Command extends ToolFormGenerateCommandPlugin {
 
   def command: Opts[Either[NonEmptyList[ToolFormError], String]] =
     Opts.subcommand("dockercompose", "generates config files for container orchestration") {
-      (Opts.option[Path]("in-file", short = "i", metavar = "file", help = "the path to the project config file") |@|
-        Opts.option[Path]("out-file", short = "o", metavar = "file", help = "the path to output the generated file(s)"))
-        .map(execute)
+      (Opts.option[Path]("in-file", short = "i", metavar = "file", help = "the path to the project config file"),
+       Opts.option[Path]("out-file", short = "o", metavar = "file", help = "the path to output the generated file(s)"))
+        .mapN(execute)
     }
 
   def execute(inputFilePath: Path, outputFilePath: Path): Either[NonEmptyList[ToolFormError], String] = {
@@ -64,7 +64,7 @@ object GenerateDockerComposeV3Command extends YamlWriter {
     */
   def runGenerateDockerComposeV3(sourceFilePath: String, outFile: File, project: Project): Either[NonEmptyList[ToolFormError], String] =
     for {
-      validatedResources <- project.sortedResources.values.toList.traverseU(validateResource).toEither
+      validatedResources <- project.sortedResources.values.toList.traverse(validateResource).toEither
       writerStatus       <- writeAll(validatedResources, sourceFilePath, outFile, project)
     } yield writerStatus
 
@@ -123,7 +123,7 @@ object GenerateDockerComposeV3Command extends YamlWriter {
       _ <- write("labels:")
       _ <- indented {
             for {
-              _ <- write(s"source.path: \042${component.path}\042")
+              _ <- write(s"""source.path: "${component.path}"""")
               _ <- write("project.artefact: \"true\"")
             } yield ()
           }

@@ -17,8 +17,8 @@ import scala.collection.immutable.{IndexedSeq, TreeMap}
   */
 final case class Project(id: String, name: String, components: Map[String, Component], resources: Map[String, Resource], topology: Topology, componentGroups: Option[Seq[ComponentGroup]]) {
 
-  val sortedComponents: SortedMap[String, Component] = TreeMap(components.toArray: _*)
-  val sortedResources: SortedMap[String, Resource]   = TreeMap(resources.toArray: _*)
+  val sortedComponents: SortedMap[String, Component] = TreeMap(components.toIndexedSeq: _*)
+  val sortedResources: SortedMap[String, Resource]   = TreeMap(resources.toIndexedSeq: _*)
 }
 
 /**
@@ -29,7 +29,7 @@ final case class Project(id: String, name: String, components: Map[String, Compo
   */
 final case class Topology(links: Seq[Link], endpoints: Map[String, Endpoint], volumes: Option[Seq[Volume]]) {
 
-  val sortedEndpoints: SortedMap[String, Endpoint] = TreeMap(endpoints.toArray: _*)
+  val sortedEndpoints: SortedMap[String, Endpoint] = TreeMap(endpoints.toIndexedSeq: _*)
 }
 
 /**
