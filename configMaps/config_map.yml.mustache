@@ -6,148 +6,71 @@ metadata:
   namespace: {{namespace}}
   labels:
     "app.kubernetes.io/name": "jenkins"
-    "app.kubernetes.io/instance": {{instance}}
     "app.kubernetes.io/component": "jenkins-master"
 data:
-  config.xml: |-
+  apply_config.sh: |-
+    mkdir -p /usr/share/jenkins/ref/secrets/;
+    # creates the job directory
+    mkdir -p /var/jenkins_home/jobs/{{job_name}};
+    echo "false" > /usr/share/jenkins/ref/secrets/slave-to-master-security-kill-switch;
+    # yes n | cp -i /var/jenkins_config/config.xml /var/jenkins_home;
+    yes n | cp -i /var/jenkins_config/jenkins.CLI.xml /var/jenkins_home;
+    yes n | cp -i /var/jenkins_config/jenkins.model.JenkinsLocationConfiguration.xml /var/jenkins_home;
+    # Install missing plugins
+    cp /var/jenkins_config/plugins.txt /var/jenkins_home;
+    rm -rf /usr/share/jenkins/ref/plugins/*.lock
+    /usr/local/bin/install-plugins.sh `echo $(cat /var/jenkins_home/plugins.txt)`;
+    # Copy plugins to shared volume
+    yes n | cp -i /usr/share/jenkins/ref/plugins/* /var/jenkins_plugins/;
+    # copy the configuration file for the job
+    yes n | cp -i /var/jenkins_config/job-config.xml /var/jenkins_home/jobs/{{job_name}}/config.xml;
+
+  job-config.xml: |-
     <?xml version='1.1' encoding='UTF-8'?>
-    <com.cloudbees.hudson.plugins.folder.Folder plugin="cloudbees-folder@6.9">
+    <flow-definition plugin="workflow-job@2.36">
       <description></description>
-      <displayName>{{repo}}</displayName>
-      <properties>
-        <org.csanchez.jenkins.plugins.kubernetes.KubernetesFolderProperty plugin="kubernetes@1.18.2">
-          <permittedClouds/>
-        </org.csanchez.jenkins.plugins.kubernetes.KubernetesFolderProperty>
-        <org.jenkinsci.plugins.pipeline.modeldefinition.config.FolderConfig plugin="pipeline-model-definition@1.4.0">
-          <dockerLabel></dockerLabel>
-          <registry plugin="docker-commons@1.15"/>
-        </org.jenkinsci.plugins.pipeline.modeldefinition.config.FolderConfig>
-      </properties>
-      <folderViews class="com.cloudbees.hudson.plugins.folder.views.DefaultFolderViewHolder">
-        <views>
-          <hudson.model.AllView>
-            <owner class="com.cloudbees.hudson.plugins.folder.Folder" reference="../../../.."/>
-            <name>All</name>
-            <filterExecutors>false</filterExecutors>
-            <filterQueue>false</filterQueue>
-            <properties class="hudson.model.View$PropertyList"/>
-          </hudson.model.AllView>
-        </views>
-        <tabBar class="hudson.views.DefaultViewsTabBar"/>
-      </folderViews>
-      <healthMetrics>
-        <com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric>
-          <nonRecursive>false</nonRecursive>
-        </com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric>
-      </healthMetrics>
-      <icon class="com.cloudbees.hudson.plugins.folder.icons.StockFolderIcon"/>
-    </com.cloudbees.hudson.plugins.folder.Folder>
-  build-config.xml: |-
-    <?xml version='1.1' encoding='UTF-8'?>
-    <org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject plugin="workflow-multibranch@2.21">
-      <actions/>
-      <description></description>
-      <displayName>Build</displayName>
-      <properties>
-        <org.csanchez.jenkins.plugins.kubernetes.KubernetesFolderProperty plugin="kubernetes@1.18.2">
-          <permittedClouds/>
-        </org.csanchez.jenkins.plugins.kubernetes.KubernetesFolderProperty>
-        <org.jenkinsci.plugins.pipeline.modeldefinition.config.FolderConfig plugin="pipeline-model-definition@1.4.0">
-          <dockerLabel></dockerLabel>
-          <registry plugin="docker-commons@1.15"/>
-        </org.jenkinsci.plugins.pipeline.modeldefinition.config.FolderConfig>
-      </properties>
-      <folderViews class="jenkins.branch.MultiBranchProjectViewHolder" plugin="branch-api@2.5.4">
-        <owner class="org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject" reference="../.."/>
-      </folderViews>
-      <healthMetrics>
-        <com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric plugin="cloudbees-folder@6.9">
-          <nonRecursive>false</nonRecursive>
-        </com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric>
-      </healthMetrics>
-      <icon class="jenkins.branch.MetadataActionFolderIcon" plugin="branch-api@2.5.4">
-        <owner class="org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject" reference="../.."/>
-      </icon>
-      <orphanedItemStrategy class="com.cloudbees.hudson.plugins.folder.computed.DefaultOrphanedItemStrategy" plugin="cloudbees-folder@6.9">
-        <pruneDeadBranches>true</pruneDeadBranches>
-        <daysToKeep>2</daysToKeep>
-        <numToKeep>10</numToKeep>
-      </orphanedItemStrategy>
-      <triggers>
-        <com.cloudbees.hudson.plugins.folder.computed.PeriodicFolderTrigger plugin="cloudbees-folder@6.9">
-          <spec>* * * * *</spec>
-          <interval>300000</interval>
-        </com.cloudbees.hudson.plugins.folder.computed.PeriodicFolderTrigger>
-      </triggers>
-      <disabled>false</disabled>
-      <sources class="jenkins.branch.MultiBranchProject$BranchSourceList" plugin="branch-api@2.5.4">
-        <data>
-          <jenkins.branch.BranchSource>
-            <source class="com.cloudbees.jenkins.plugins.bitbucket.BitbucketSCMSource" plugin="cloudbees-bitbucket-branch-source@2.6.0">
-              <id>9c19f900-3f7b-4f13-818d-7e0088101389</id>
-              <serverUrl>https://stash.agiledigital.com.au</serverUrl>
-              <credentialsId>stash-admin</credentialsId>
-              <repoOwner>CSC</repoOwner>
-              <repository>${REPO_NAME}</repository>
-              <traits>
-                <com.cloudbees.jenkins.plugins.bitbucket.BranchDiscoveryTrait>
-                  <strategyId>1</strategyId>
-                </com.cloudbees.jenkins.plugins.bitbucket.BranchDiscoveryTrait>
-                <com.cloudbees.jenkins.plugins.bitbucket.OriginPullRequestDiscoveryTrait>
-                  <strategyId>1</strategyId>
-                </com.cloudbees.jenkins.plugins.bitbucket.OriginPullRequestDiscoveryTrait>
-                <com.cloudbees.jenkins.plugins.bitbucket.ForkPullRequestDiscoveryTrait>
-                  <strategyId>1</strategyId>
-                  <trust class="com.cloudbees.jenkins.plugins.bitbucket.ForkPullRequestDiscoveryTrait$TrustTeamForks"/>
-                </com.cloudbees.jenkins.plugins.bitbucket.ForkPullRequestDiscoveryTrait>
-                <jenkins.plugins.git.traits.SubmoduleOptionTrait plugin="git@4.0.0">
-                  <extension class="hudson.plugins.git.extensions.impl.SubmoduleOption">
-                    <disableSubmodules>false</disableSubmodules>
-                    <recursiveSubmodules>true</recursiveSubmodules>
-                    <trackingSubmodules>false</trackingSubmodules>
-                    <reference></reference>
-                    <parentCredentials>true</parentCredentials>
-                    <shallow>false</shallow>
-                  </extension>
-                </jenkins.plugins.git.traits.SubmoduleOptionTrait>
-              </traits>
-            </source>
-            <strategy class="jenkins.branch.DefaultBranchPropertyStrategy">
-              <properties class="empty-list"/>
-            </strategy>
-          </jenkins.branch.BranchSource>
-        </data>
-        <owner class="org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject" reference="../.."/>
-      </sources>
-      <factory class="org.jenkinsci.plugins.workflow.multibranch.WorkflowBranchProjectFactory">
-        <owner class="org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject" reference="../.."/>
+      <keepDependencies>false</keepDependencies>
+      <properties/>
+      <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps@2.78">
+        <scm class="hudson.plugins.git.GitSCM" plugin="git@4.0.0">
+          <configVersion>2</configVersion>
+          <userRemoteConfigs>
+            <hudson.plugins.git.UserRemoteConfig>
+            </hudson.plugins.git.UserRemoteConfig>
+          </userRemoteConfigs>
+          <branches>
+            <hudson.plugins.git.BranchSpec>
+            </hudson.plugins.git.BranchSpec>
+          </branches>
+          <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+          <submoduleCfg class="list"/>
+          <extensions/>
+        </scm>
         <scriptPath>.agile-cicd/build.Jenkinsfile</scriptPath>
-      </factory>
-    </org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject>
-  build-state.xml: |-
+        <lightweight>true</lightweight>
+      </definition>
+      <triggers/>
+      <disabled>false</disabled>
+    </flow-definition>
+
+
+    jenkins.CLI.xml:
+    ----
     <?xml version='1.1' encoding='UTF-8'?>
-    <jenkins.branch.MultiBranchProject_-State plugin="branch-api@2.5.4">
-      <sourceActions>
-        <entry>
-          <string>9c19f900-3f7b-4f13-818d-7e0088101389</string>
-          <list>
-            <com.cloudbees.jenkins.plugins.bitbucket.BitbucketRepoMetadataAction plugin="cloudbees-bitbucket-branch-source@2.6.0">
-              <scm>git</scm>
-            </com.cloudbees.jenkins.plugins.bitbucket.BitbucketRepoMetadataAction>
-            <com.cloudbees.jenkins.plugins.bitbucket.BitbucketDefaultBranch plugin="cloudbees-bitbucket-branch-source@2.6.0">
-              <repoOwner>CSC</repoOwner>
-              <repository>${REPO_NAME}</repository>
-              <defaultBranch>develop</defaultBranch>
-            </com.cloudbees.jenkins.plugins.bitbucket.BitbucketDefaultBranch>
-            <com.cloudbees.jenkins.plugins.bitbucket.BitbucketLink plugin="cloudbees-bitbucket-branch-source@2.6.0">
-              <iconClassName>icon-bitbucket-repo</iconClassName>
-              <url>https://stash.agiledigital.com.au/projects/CSC/repos/${REPO_NAME}</url>
-            </com.cloudbees.jenkins.plugins.bitbucket.BitbucketLink>
-            <jenkins.scm.api.metadata.ObjectMetadataAction plugin="scm-api@2.6.3">
-              <objectDisplayName>${REPO_NAME}</objectDisplayName>
-              <objectUrl>https://stash.agiledigital.com.au/projects/CSC/repos/${REPO_NAME}</objectUrl>
-            </jenkins.scm.api.metadata.ObjectMetadataAction>
-          </list>
-        </entry>
-      </sourceActions>
-    </jenkins.branch.MultiBranchProject_-State>
+    <jenkins.CLI>
+      <enabled>false</enabled>
+    </jenkins.CLI>
+    jenkins.model.JenkinsLocationConfiguration.xml:
+    ----
+    <?xml version='1.1' encoding='UTF-8'?>
+    <jenkins.model.JenkinsLocationConfiguration>
+      <adminAddress></adminAddress>
+      <jenkinsUrl>http://jenkins.local</jenkinsUrl>
+    </jenkins.model.JenkinsLocationConfiguration>
+    plugins.txt:
+    ----
+    kubernetes:1.21.2
+    workflow-job:2.36
+    workflow-aggregator:2.6
+    credentials-binding:1.20
+    git:4.0.0

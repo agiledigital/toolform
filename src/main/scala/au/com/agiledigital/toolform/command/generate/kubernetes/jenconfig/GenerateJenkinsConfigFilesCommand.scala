@@ -1,16 +1,15 @@
 package au.com.agiledigital.toolform.command.generate.jenkins
 
-import java.io.{BufferedWriter, File, FileWriter}
-import java.nio.file.{Path, Paths}
+import java.io.{BufferedWriter, FileWriter}
+import java.nio.file.{Files, Path, Paths}
 
 import au.com.agiledigital.toolform.app.ToolFormError
-import au.com.agiledigital.toolform.model.Project
 import au.com.agiledigital.toolform.plugin.ToolFormGenerateCommandPlugin
-import au.com.agiledigital.toolform.reader.ProjectReader
 import cats.data.NonEmptyList
 import cats.implicits._
 import com.monovore.decline.Opts
 import org.fusesource.scalate.TemplateEngine
+import com.typesafe.config.{ ConfigFactory }
 
 /**
   * Takes an abstract project definition and outputs it to a file in the Jenkinsfile format.
@@ -26,63 +25,59 @@ class GenerateJenkinsConfigFilesCommand extends ToolFormGenerateCommandPlugin {
     */
   def command: Opts[Either[NonEmptyList[ToolFormError], String]] =
     Opts.subcommand("jenkinsconfigfiles", "Generate config files and deploy them on jenkins") {
-      (Opts.option[String]("name", short = "n", metavar = "name", help = "the name of the config map") |@|
-        Opts.option[String]("namespace", short = "ns", metavar = "namespace", help = "the namespace in kubernetes") |@|
-        Opts.option[String]("instance", short = "i", metavar = "instance", help = "the instance in kubernetes") |@|
-        Opts.option[String]("volume", short = "v", metavar = "volume", help = "the name of the volume it will mount on") |@|
-        Opts.option[String]("repo", short = "r", metavar = "repo", help = "the name of the repo that contains the code"))
+      (Opts.option[Path]("in-file", short = "i", metavar = "file", help = "the path to the project config file") |@|
+        Opts.option[Path]("out-folder", short = "o", metavar = "folder", help = "the output folder for the config file") |@|
+        Opts.option[String]("template", short = "t", metavar = "file", help = "the template for config map") |@|
+        Opts.option[String]("namespace", short = "n", metavar = "namespace", help = "the namespace of kubernetes"))
         .map(execute)
     }
 
-  def execute(name: String, namespace: String, instance: String, volume: String, repo: String): Either[NonEmptyList[ToolFormError], String] =
-    for {
-      status <- GenerateJenkinsConfigFilesCommand.runGenerateConfigFiles(name, namespace, instance, volume, repo)
-    } yield status
+  def execute(inputFilePath: Path, outputFolderPath: Path, templateFilePath: String, namespace: String): Either[NonEmptyList[ToolFormError], String] = {
+    val inputFile = inputFilePath.toFile
+    val templateFile = Paths.get(templateFilePath).toFile
+    val config = ConfigFactory.parseFile(inputFile)
+    val name = config.getString("id")
+
+    if (!inputFile.exists()) {
+      Left(NonEmptyList.of(ToolFormError(s"Input file [$inputFile] does not exist.")))
+    } else if (!inputFile.isFile) {
+      Left(NonEmptyList.of(ToolFormError(s"Input file [$inputFile] is not a valid file.")))
+    } else if (!templateFile.exists()) {
+      Left(NonEmptyList.of(ToolFormError(s"Template file [$templateFile] does not exist.")))
+    } else if (!inputFile.isFile) {
+      Left(NonEmptyList.of(ToolFormError(s"Template file [$templateFile] is not a valid file.")))
+    } else if (!Files.exists(outputFolderPath)) {
+      Left(NonEmptyList.of(ToolFormError(s"Output directory [$outputFolderPath] does not exist.")))
+    } else {
+      for {
+        status <- GenerateJenkinsConfigFilesCommand.runGenerateConfigFiles(name, namespace, name.concat("-job"), outputFolderPath, templateFilePath)
+      } yield status
+    }
+  }
 }
 
 object GenerateJenkinsConfigFilesCommand {
   val engine = new TemplateEngine
 
-  def runGenerateConfigFiles(name: String, namespace: String, instance: String, volume: String, repo: String): Either[NonEmptyList[ToolFormError], String] =
+  def runGenerateConfigFiles(name: String, namespace: String, job_name: String, outputFolderPath: Path, templatePath: String): Either[NonEmptyList[ToolFormError], String] =
     for {
-      configFileStatus   <- writeConfigFile(name, namespace, instance, repo)
-      dispatchFileStatus <- writeDispatchFile(name, namespace, repo, volume)
-    } yield s"$configFileStatus\n$dispatchFileStatus"
+      configFileStatus   <- writeConfigFile(name, namespace, job_name, outputFolderPath, templatePath)
+    } yield s"$configFileStatus"
 
-  def writeConfigFile(name: String, namespace: String, instance: String, repo: String): Either[NonEmptyList[ToolFormError], String] = {
-    val configFile         = "configMaps/config_map.yml"
-    val configFileTemplate = "configMaps/config_map.yml.mustache"
-    val templateMapping    = Map("name" -> name, "namespace" -> namespace, "instance" -> instance, "repo" -> repo)
+  def writeConfigFile(name: String, namespace: String, job_name: String, outputFolderPath: Path, templatePath: String): Either[NonEmptyList[ToolFormError], String] = {
+    val configFile         = s"$outputFolderPath/config_map.yml"
+    val templateMapping    = Map("name" -> name, "namespace" -> namespace, "job_name" -> job_name)
 
     val writer = new BufferedWriter(new FileWriter(configFile, false))
 
     val buildConfigFile = engine.layout(
-      configFileTemplate,
+      templatePath,
       templateMapping
     )
 
     try {
       writer.write(buildConfigFile)
       Right(s"Wrote the config map into $configFile")
-    } finally {
-      writer.close()
-    }
-  }
-
-  def writeDispatchFile(name: String, namespace: String, repo: String, volume: String): Either[NonEmptyList[ToolFormError], String] = {
-    val dispatchFile         = "configMaps/dep_patch.yml"
-    val dispatchFileTemplate = "configMaps/dep_patch.yml.mustache"
-    val templateMapping      = Map("name" -> name, "namespace" -> namespace, "repo" -> repo, "volume" -> volume)
-
-    val writer = new BufferedWriter(new FileWriter(dispatchFile, false))
-    val buildDispatchFile = engine.layout(
-      dispatchFileTemplate,
-      templateMapping
-    )
-
-    try {
-      writer.write(buildDispatchFile)
-      Right(s"Wrote the dispatch file into $dispatchFile")
     } finally {
       writer.close()
     }
