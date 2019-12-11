@@ -144,21 +144,21 @@ Options and flags:
 toolform generate jenkinsconfigfiles --help
 Usage: toolform generate jenkinsconfigfiles --name <name> --namespace <namespace> --instance <instance> --volume <volume> --repo <repo>
 
+Usage: toolform generate jenkinsconfigfiles --in-file <file> --out-folder <folder> --template <file> --namespace <namespace>
+
 Generate config files and deploy them on jenkins
 
 Options and flags:
     --help
         Display this help text.
-    --name <name>, -n <name>
-        the name of the config map
-    --namespace <namespace>, -n <namespace>, -s <namespace>
-        the namespace in kubernetes
-    --instance <instance>, -i <instance>
-        the instance in kubernetes
-    --volume <volume>, -v <volume>
-        the name of the volume it will mount on
-    --repo <repo>, -r <repo>
-        the name of the repo that contains the code
+    --in-file <file>, -i <file>
+        the path to the project config file
+    --out-folder <folder>, -o <folder>
+        the output folder for the config file
+    --template <file>, -t <file>
+        the template for config map
+    --namespace <namespace>, -n <namespace>
+        the namespace of kubernetes
 ````
 
 Example Usage
